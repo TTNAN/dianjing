@@ -12,7 +12,9 @@
 
 ![点睛界面](docs/screenshot.png)
 
-🎬 [动效演示视频](docs/demo.mp4)
+🎬 动效演示视频
+
+https://github.com/user-attachments/assets/1dd060c5-f948-4e76-8a56-a7c16788132e
 
 </div>
 
