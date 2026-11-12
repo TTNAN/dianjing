@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>点睛 Dianjing · 圈出来，说清楚</title>
+  <meta name="description" content="在 AI 生成的界面截图上圈出想改的地方，自动翻译成设计语言、预览多个方案，生成给 AI 编程工具的精准提示词。" />
+  <meta name="theme-color" content="#08080d" />
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="top">
+    <div class="brand">
+      <span class="logo"><span></span></span>
+      <span class="wordmark">点睛</span><span class="en">Dianjing</span>
+      <span class="tag">圈出来，说清楚</span>
+    </div>
+    <nav class="actions">
+      <label class="btn primary"><span>上传截图</span><input id="file" type="file" accept="image/*" hidden /></label>
+      <button class="btn" id="demo"><span>载入示例</span></button>
+      <button class="btn icon" id="settingsBtn" title="模型设置"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Zm7.43-2.53a7.8 7.8 0 0 0 0-1.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.3 7.3 0 0 0-1.68-.97l-.36-2.54A.5.5 0 0 0 14.13 2h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.6.24-1.17.57-1.68.97l-2.39-.96a.5.5 0 0 0-.6.22L2.84 8.51a.5.5 0 0 0 .12.64l2.03 1.58a7.8 7.8 0 0 0 0 1.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.51.4 1.08.73 1.68.97l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.6-.24 1.17-.57 1.68-.97l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58Z"/></svg><i class="dot" id="aiDot"></i></button>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="stage" id="stage">
+      <div class="empty" id="empty">
+        <div class="hero-phone" aria-hidden="true">
+          <div class="hp-screen">
+            <i class="hp-bar"></i><i class="hp-card"></i><i class="hp-row"></i><i class="hp-row short"></i>
+            <i class="hp-tab"></i>
+            <i class="hp-select"><b>1</b></i>
+          </div>
+        </div>
+        <h1>你觉得哪里不对，<br /><span class="grad">圈出来就行。</span></h1>
+        <p class="sub">拖入截图或 <kbd>⌘</kbd><kbd>V</kbd> 粘贴，在图上拖拽圈出想改的地方。<br />点睛帮你说成设计师的语言，再交给 AI。</p>
+        <div class="cta-row">
+          <label class="btn primary lg"><span>上传截图</span><input id="file2" type="file" accept="image/*" hidden /></label>
+          <button class="btn lg" id="demo2"><span>先看看示例</span></button>
+        </div>
+        <ol class="flow">
+          <li><b>圈</b>选中元素</li><li><b>译</b>设计术语</li><li><b>看</b>三个方案</li><li><b>发</b>精准提示词</li>
+        </ol>
+      </div>
+      <div class="canvas" id="canvas" hidden>
+        <img id="shot" alt="截图" draggable="false" />
+        <div class="overlay" id="overlay"></div>
+        <div class="hint" id="hint">按住拖拽，圈出想改的地方</div>
+      </div>
+    </section>
+
+    <aside class="panel" id="panel">
+      <section class="card step">
+        <header class="step-h"><span class="n">1</span><h3>圈中的区域</h3><span class="count" id="count"></span></header>
+        <div class="regions" id="regionTabs"></div>
+        <div id="editor"></div>
+      </section>
+      <section class="card step">
+        <header class="step-h"><span class="n">2</span><h3>提示词</h3>
+          <div class="seg" id="seg"><i class="seg-thumb"></i><button data-lang="zh" class="on">中文</button><button data-lang="en">EN</button></div>
+        </header>
+        <div class="prompt-wrap"><textarea id="prompt" spellcheck="false" placeholder="圈选并选一个修改方向，这里会实时生成提示词。"></textarea></div>
+        <div class="row">
+          <button class="btn primary grow" id="copy"><span class="l1">复制提示词</span><span class="l2">✓ 已复制</span></button>
+          <button class="btn" id="download"><span>下载标注图</span></button>
+        </div>
+        <p class="muted small">提示词 + 标注图一起发给 Cursor、Claude Code、Trae、Lovable、v0。</p>
+      </section>
+    </aside>
+  </main>
+
+  <dialog id="settings">
+    <form method="dialog" class="settings">
+      <h3>模型设置 <span class="muted small">可选</span></h3>
+      <p class="muted small">不填也能用：设计词典和提示词完全离线。填写后解锁「AI 识别」和「三个方案预览」。Key 只保存在你的浏览器里，请求直接发往你选的服务商。</p>
+      <label>服务商<select id="provider"></select></label>
+      <label>Base URL<input id="baseUrl" placeholder="https://api.openai.com/v1" /></label>
+      <label>模型（需支持图片）<input id="model" placeholder="gpt-4o-mini" /></label>
+      <label>API Key<input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" /></label>
+      <div class="row end"><button class="btn" value="cancel"><span>取消</span></button><button class="btn primary" id="saveSettings" value="ok"><span>保存</span></button></div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast"></div>
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
