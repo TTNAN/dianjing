@@ -162,8 +162,50 @@ async def main():
     await pg.screenshot(path="./tmp-e11.png")
     await pg.locator('.vs[data-t="v-row-to-col"]').click(); await pg.wait_for_timeout(400)
     assert await pg.locator(".preview-layer").count() == 0, "取消后本地预览应消失"
+    # ---- 画界面模式 ----
+    await pg.click('#modeSeg button[data-mode="sketch"]'); await pg.wait_for_timeout(500)
+    assert await pg.locator("#sketchRoot").is_visible(), "画界面模式应显示"
+    assert await pg.locator("body.mode-sketch").count() == 1, "切到画界面后 body 应带 mode-sketch"
+    assert await pg.locator(".sk-stab[data-sid]").count() == 2, "种子应有首页、详情页两页"
+    await pg.screenshot(path="./tmp-s0.png")
+    # 点零件加进当前屏
+    before = await pg.locator(".sk-phone-col.on .sk-part").count()
+    await pg.locator('.sk-part-card[data-kind="button"]').click(); await pg.wait_for_timeout(300)
+    after = await pg.locator(".sk-phone-col.on .sk-part").count()
+    assert after == before + 1, (before, after)
+    # 选中零件后检查器出现，改标题实时同步到手机
+    assert await pg.locator("#skFLabel").count() == 1
+    await pg.fill("#skFLabel", "马上开做"); await pg.wait_for_timeout(300)
+    assert "马上开做" in (await pg.locator(".sk-phone-col.on .sk-btn").inner_text())
+    assert "宫保鸡丁" in (await pg.locator("#skPrompt").input_value())
+    # 触发：把新按钮连到详情页，提示词应多一行跳转
+    await pg.locator("#skITabs button[data-itab='trigger']").click(); await pg.wait_for_timeout(200)
+    await pg.select_option("#skFAction", "s2"); await pg.wait_for_timeout(300)
+    assert "跳转到详情页屏幕" in (await pg.locator("#skPrompt").input_value())
+    await pg.screenshot(path="./tmp-s1.png")
+    # 预览：点卡片滑到详情页，返回退回，关闭回到编辑
+    await pg.click("#skPreviewBtn"); await pg.wait_for_timeout(500)
+    assert await pg.locator(".sk-player").is_visible()
+    await pg.locator("#skPlayerVp .sk-card").click(); await pg.wait_for_timeout(600)
+    assert "详情页" in (await pg.locator("#skPlayerName").inner_text())
+    await pg.screenshot(path="./tmp-s2.png")
+    await pg.click("#skPlayerBack"); await pg.wait_for_timeout(500)
+    assert "首页" in (await pg.locator("#skPlayerName").inner_text())
+    await pg.click("#skPlayerClose"); await pg.wait_for_timeout(300)
+    assert not await pg.locator(".sk-player").is_visible()
+    # 复制提示词
+    await pg.click("#skCopy"); await pg.wait_for_timeout(500)
+    assert "done" in (await pg.locator("#skCopy").get_attribute("class") or "")
+    # 持久化：刷新后画界面里新加的按钮还在；回改截图，老模式的圈选也还在
+    await pg.wait_for_timeout(500)
+    await pg.reload(); await pg.wait_for_timeout(500)
+    await pg.click('#modeSeg button[data-mode="sketch"]'); await pg.wait_for_timeout(500)
+    assert "马上开做" in (await pg.locator("#skPrompt").input_value())
+    await pg.click('#modeSeg button[data-mode="annotate"]'); await pg.wait_for_timeout(300)
+    s = await state(pg)
+    assert len(s["regions"]) == 2, s
     print("ERRS", errs)
     assert not errs, errs
-    print("E2E PASS: 圈选/识别/互斥/方案贴图/移动/缩放/持久化/复制/点一下就变/本地重排全部通过")
+    print("E2E PASS: 圈选/识别/互斥/方案贴图/移动/缩放/持久化/复制/点一下就变/本地重排/画界面（加零件/改标题/连跳转/预览切页/复制/持久化）全部通过")
     await ctx.close(); await b.close()
 asyncio.run(main())
