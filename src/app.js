@@ -1,7 +1,7 @@
-import { VOCAB, QUICK, TERM_INDEX, VISUAL, CONFLICTS } from "./vocab.js";
+import { VOCAB, QUICK, TERM_INDEX, VISUAL, CONFLICTS, LIVE, STRUCTURAL } from "./vocab.js";
 import { buildPrompt } from "./prompt.js";
 import { PROVIDERS, loadSettings, saveSettings, hasModel, recognize, variants } from "./llm.js";
-import { demoDataUrl } from "./demo.js";
+import { demoDataUrl, renderDemo, demoElementAt, structuralHtml } from "./demo.js";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -13,8 +13,12 @@ const state = {
   selected: null,
   lang: "zh",
   settings: loadSettings(),
-  preview: null,        // { regionId, variantIdx }：把选中的方案贴回原图上
+  preview: null,        // { regionId, variantIdx }：把选中的方案贴回原图上；或 { regionId, localId }：结构类本地重排预览
   wipe: 100,            // 预览擦除位置 0-100，100 = 全是改后
+  isDemo: false,        // 当前图是不是内置示例（只有它是活的，能按元素重绘）
+  tweakSrc: null,       // 改后图的 PNG（显示层）；原图永远留在 #shot，裁剪/导出都用原图
+  tweakChanged: false,  // 改后图与原图是否真有差别
+  compare: "after",     // "after" 看改后 / "before" 看原图
 };
 window.__dianjing = state; // 供端到端测试读取
 let nextId = 1;
@@ -30,7 +34,7 @@ function saveState() {
       if (!state.image) return;
       if (state.image.src.length > 3_500_000) return; // 图太大就不存了，免得爆 localStorage
       localStorage.setItem(SAVE_KEY, JSON.stringify({
-        image: state.image, regions: state.regions, selected: state.selected, lang: state.lang,
+        image: state.image, regions: state.regions, selected: state.selected, lang: state.lang, isDemo: state.isDemo,
       }));
     } catch { /* 空间不足就静静跳过 */ }
   }, 400);
@@ -42,6 +46,7 @@ function loadSaved() {
     const d = JSON.parse(raw);
     if (!d?.image?.src || !Array.isArray(d.regions)) return false;
     state.image = d.image;
+    state.isDemo = !!d.isDemo;
     state.regions = d.regions.map((r) => ({ text: "", chosen: null, variants: [], recog: null, busy: "", note: "", terms: [], ...r }));
     state.selected = d.selected ?? state.regions.at(-1)?.id ?? null;
     nextId = Math.max(0, ...state.regions.map((r) => r.id || 0)) + 1;
@@ -59,38 +64,54 @@ function loadSaved() {
 function clearWorkspace() {
   try { localStorage.removeItem(SAVE_KEY); } catch {}
   state.image = null; state.regions = []; state.selected = null; state.preview = null; nextId = 1;
+  state.isDemo = false; state.tweakSrc = null; state.tweakChanged = false; state.compare = "after";
   zoom = "fit"; applyZoom();
   $("#shot").removeAttribute("src");
+  $("#shotAfter").removeAttribute("src");
   $("#empty").hidden = false; $("#canvas").hidden = true; $("#zoombar").hidden = true; $("#previewbar").hidden = true;
   document.body.classList.add("no-image");
   renderAll();
 }
 
 // ---------- 图片载入 ----------
-function loadImage(src) {
+function rasterizeSvg(src, cb) {
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement("canvas");
+    c.width = img.naturalWidth * 2; c.height = img.naturalHeight * 2;
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    cb(c.toDataURL("image/png"), c.width, c.height);
+  };
+  img.onerror = () => cb(null);
+  img.src = src;
+}
+function loadImage(src, isDemo = false) {
   const img = new Image();
   img.onload = () => {
     // SVG 等矢量图先栅格化为 PNG，保证后续裁剪/导出一致
-    let finalSrc = src, w = img.naturalWidth, h = img.naturalHeight;
     if (src.startsWith("data:image/svg")) {
-      const c = document.createElement("canvas");
-      c.width = w * 2; c.height = h * 2;
-      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-      finalSrc = c.toDataURL("image/png"); w = c.width; h = c.height;
+      rasterizeSvg(src, (png, w, h) => { if (png) finishLoad(png, w, h, isDemo); });
+      return;
     }
+    finishLoad(src, img.naturalWidth, img.naturalHeight, isDemo);
+  };
+  img.onerror = () => toast("图片读取失败");
+  img.src = src;
+}
+function finishLoad(finalSrc, w, h, isDemo) {
     state.image = { src: finalSrc, w, h };
+    state.isDemo = isDemo;
     state.regions = []; state.selected = null; state.preview = null; nextId = 1;
+    state.tweakSrc = null; state.tweakChanged = false; state.compare = "after"; lastOvJson = "";
     zoom = "fit"; applyZoom();
     $("#shot").src = finalSrc;
+    $("#shotAfter").removeAttribute("src");
     $("#empty").hidden = true;
     const cv = $("#canvas"); cv.hidden = false; cv.style.animation = "none"; cv.offsetHeight; cv.style.animation = "";
     $("#zoombar").hidden = false;
     document.body.classList.remove("no-image");
     $("#hint").classList.remove("gone");
     renderAll();
-  };
-  img.onerror = () => toast("图片读取失败");
-  img.src = src;
 }
 function loadFile(file) {
   if (!file || !file.type.startsWith("image/")) return;
@@ -100,7 +121,7 @@ function loadFile(file) {
 }
 
 ["#file", "#file2"].forEach((id) => $(id).addEventListener("change", (e) => loadFile(e.target.files[0])));
-["#demo", "#demo2"].forEach((id) => $(id).addEventListener("click", () => loadImage(demoDataUrl())));
+["#demo", "#demo2"].forEach((id) => $(id).addEventListener("click", () => loadImage(demoDataUrl(), true)));
 window.addEventListener("paste", (e) => {
   const item = [...(e.clipboardData?.items || [])].find((i) => i.type.startsWith("image/"));
   if (item) loadFile(item.getAsFile());
@@ -243,6 +264,73 @@ function removeRegion(id) {
 }
 const current = () => state.regions.find((r) => r.id === state.selected);
 
+// ---------- 点一下就变：内置示例按元素重绘 ----------
+// 圈中的区域 → 示例里的元素（区域中心落在哪个元素上；小元素先命中）。
+// 只有内置示例是活的：上传的截图是像素，改不了本身，变化还是靠 AI 方案贴图看。
+function elementAtRegion(r) {
+  if (!state.isDemo) return null;
+  const cx = (r.x + r.w / 2) / 2, cy = (r.y + r.h / 2) / 2; // 栅格化后是 2 倍坐标，除以 2 回到 demo 坐标
+  return demoElementAt(cx, cy);
+}
+function computeDemoOverrides() {
+  const map = {};
+  for (const r of state.regions) {
+    const el = elementAtRegion(r);
+    if (!el) continue;
+    for (const id of r.terms) {
+      const live = LIVE[id];
+      if (!live) continue;
+      map[el] = { ...map[el], ...live };
+    }
+  }
+  return map;
+}
+let tweakSeq = 0, lastOvJson = "";
+function updateTweakVisibility() {
+  const after = $("#shotAfter");
+  after.hidden = !(state.tweakSrc && state.compare === "after");
+  const btn = $("#compareBtn");
+  btn.hidden = !state.tweakSrc;
+  btn.textContent = state.compare === "after" ? "◐ 对比原图" : "◐ 看改后";
+}
+$("#compareBtn").onclick = () => {
+  state.compare = state.compare === "after" ? "before" : "after";
+  updateTweakVisibility();
+};
+// 按所有圈选重绘示例。返回改后图与原图是否真有差别
+// （字符串没变 = 这个词条对这个元素没用，点它只会写进提示词）。
+// 带 JSON 护栏：框拖动、方向键微调这些只调位置的操作不会反复重绘。
+function refreshTweaks() {
+  const after = $("#shotAfter");
+  const ov = state.isDemo ? computeDemoOverrides() : {};
+  const json = JSON.stringify(ov);
+  if (json === lastOvJson) { updateTweakVisibility(); return state.tweakChanged; }
+  lastOvJson = json;
+  if (Object.keys(ov).length === 0) {
+    state.tweakSrc = null; state.tweakChanged = false;
+    after.removeAttribute("src");
+    updateTweakVisibility();
+    return false;
+  }
+  const changed = renderDemo(ov) !== renderDemo();
+  state.tweakChanged = changed;
+  if (!changed) {
+    state.tweakSrc = null;
+    after.removeAttribute("src");
+    updateTweakVisibility();
+    return false;
+  }
+  const seq = ++tweakSeq;
+  rasterizeSvg(demoDataUrl(ov), (png) => {
+    if (seq !== tweakSeq || !png) return;
+    state.tweakSrc = png;
+    state.compare = "after"; // 有新变化就亮出来看，别停在原图上
+    after.src = png;
+    updateTweakVisibility();
+  });
+  return true;
+}
+
 // ---------- 裁剪 ----------
 function crop(r, pad = 12) {
   const img = $("#shot");
@@ -297,7 +385,7 @@ async function runVariants(r) {
 }
 
 // ---------- 渲染 ----------
-function renderAll() { renderBoxes(); renderTabs(); renderEditor(); renderPrompt(); renderPreview(); saveState(); }
+function renderAll() { renderBoxes(); renderTabs(); renderEditor(); renderPrompt(); renderPreview(); refreshTweaks(); saveState(); }
 
 function renderBoxes() {
   overlay.querySelectorAll(".box:not(.drawing)").forEach((b) => b.remove());
@@ -340,11 +428,28 @@ function syncChips(r) {
   });
 }
 
-// 把选中的方案贴回原截图：覆盖在对应区域上，滑块擦除对比改前改后
+// 把选中的方案贴回原截图：覆盖在对应区域上，滑块擦除对比改前改后。
+// 结构类（横排↔竖排、列表↔网格）没有 AI 方案，改用本地重排预览，同一条对比条。
 function renderPreview() {
   document.querySelectorAll(".preview-layer").forEach((n) => n.remove());
   const bar = $("#previewbar");
   const r = state.preview ? state.regions.find((x) => x.id === state.preview.regionId) : null;
+  if (!r) { bar.hidden = true; return; }
+  if (state.preview.localId) {
+    const el = elementAtRegion(r);
+    const spec = el ? structuralHtml(el, state.preview.localId === "v-row-to-col" ? "col" : "grid") : null;
+    if (!spec) { bar.hidden = true; return; }
+    const d = document.createElement("div");
+    d.className = "preview-layer";
+    d.innerHTML = `<iframe sandbox="" loading="lazy" srcdoc="${esc(`<!doctype html><meta charset=utf-8><body style='margin:0;background:transparent;font-family:-apple-system,PingFang SC,sans-serif'>${spec.html}</body>`)}"></iframe><i class="wipe"></i>`;
+    place(d, r);
+    d.style.height = (spec.height * 2 / state.image.h * 100) + "%"; // 重排比框高，按内容高度展开
+    overlay.appendChild(d);
+    bar.hidden = false;
+    $("#pvTitle").textContent = `正在预览：「${TERM_INDEX[state.preview.localId]?.zh || ""}」（本地）`;
+    applyWipe();
+    return;
+  }
   const v = r?.variants?.[state.preview.variantIdx];
   if (!r || !v) { bar.hidden = true; return; }
   const d = document.createElement("div");
@@ -421,7 +526,7 @@ function renderEditor() {
     <div ${R()}><h4>一句话方向 <span class="muted">不懂术语就点这里 · 再点取消</span></h4>
     <div class="chips">${QUICK.map((q, k) => `<button class="chip quick ${q.terms.every((id) => r.terms.includes(id)) ? "on" : ""}" data-q="${k}">${q.zh}</button>`).join("")}</div></div>
 
-    <div ${R()}><h4>一眼对比 <span class="muted">点一下，前 → 后就写进提示词</span></h4>
+    <div ${R()}><h4>一眼对比 <span class="muted">${state.isDemo ? "点一下，图上直接变，也写进提示词" : "点一下，前 → 后就写进提示词"}</span></h4>
     <div class="vsgrid">${VISUAL.map((v) => `<button class="vs ${r.terms.includes(v.id) ? "on" : ""} ${suggested.has(v.id) ? "star" : ""}" data-t="${v.id}" title="${esc(v.prompt.zh)}">
       <span class="pair"><span class="fr">${v.before}</span><span class="arr">→</span><span class="fr">${v.after}</span></span>
       <span class="vl">${v.zh}</span></button>`).join("")}</div></div>
@@ -448,6 +553,7 @@ function renderEditor() {
   `;
   ed.querySelectorAll("[data-t]").forEach((c) => c.onclick = () => {
     const id = c.dataset.t;
+    let added = false;
     if (!r.terms.includes(id)) {
       // 互斥方向自动取消相反的那一个，不让提示词自相矛盾
       for (const [a, b] of CONFLICTS) {
@@ -458,10 +564,36 @@ function renderEditor() {
         }
       }
       r.terms = [...r.terms, id];
+      added = true;
     } else {
       r.terms = r.terms.filter((x) => x !== id);
     }
     syncChips(r); renderPrompt();
+    // 结构类：本地重排预览（不动像素，改布局）
+    if (STRUCTURAL.includes(id)) {
+      if (added) {
+        const el = elementAtRegion(r);
+        const layout = id === "v-row-to-col" ? "col" : "grid";
+        if (el && structuralHtml(el, layout)) {
+          state.preview = { regionId: r.id, localId: id };
+          state.wipe = 100;
+        } else {
+          if (state.preview?.localId === id && state.preview?.regionId === r.id) state.preview = null;
+          toast(`「${TERM_INDEX[id]?.zh}」对这个元素没有可换的布局，已写进提示词`);
+        }
+      } else if (state.preview?.localId === id && state.preview?.regionId === r.id) {
+        state.preview = null;
+      }
+      renderPreview();
+      return;
+    }
+    // 参数类：内置示例上直接画出来；这个元素上看不出变化时说一声，提示词照样记
+    if (LIVE[id]) {
+      const changed = refreshTweaks();
+      if (added && state.isDemo && !changed) toast(`「${TERM_INDEX[id]?.zh}」在这个元素上看不出变化，已写进提示词`);
+      return;
+    }
+    refreshTweaks();
   });
   ed.querySelectorAll(".chip.quick").forEach((c) => c.onclick = () => {
     bump(c);
@@ -470,7 +602,7 @@ function renderEditor() {
     r.terms = all
       ? r.terms.filter((id) => !q.terms.includes(id))
       : [...r.terms, ...q.terms.filter((id) => !r.terms.includes(id))];
-    syncChips(r); renderPrompt();
+    syncChips(r); renderPrompt(); refreshTweaks();
   });
   ed.querySelectorAll("[data-coord]").forEach((inp) => inp.onchange = () => {
     const k = inp.dataset.coord;
