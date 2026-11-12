@@ -94,6 +94,19 @@ export function seedSketchDoc() {
   };
 }
 
+// ---------- 旧种子识别：v0.5.4 之前内置的菜谱示例 ----------
+// 只用来判断「存在浏览器里、没动过的旧示例」，以便打开时自动换成新种子。
+// 认三处：标题「菜谱」、2 屏共 14 个零件、卡片「宫保鸡丁」+ 按钮「开始做饭」。
+// 用户自己改过的设计（标题、关键零件、零件数有变）一律不认，绝不覆盖。
+// 主题、辅助文案不算标记，改了主题也照样迁移。
+export function isLegacyRecipeSeed(doc) {
+  if (!doc || doc.title !== "菜谱" || !Array.isArray(doc.screens) || doc.screens.length !== 2) return false;
+  const parts = doc.screens.flatMap((s) => s.parts || []);
+  if (parts.length !== 14) return false;
+  const has = (kind, label) => parts.some((p) => p.kind === kind && p.label === label);
+  return has("card", "宫保鸡丁") && has("button", "开始做饭");
+}
+
 // ---------- 一个零件一句话（进提示词） ----------
 const q = (s) => `“${s}”`;
 export function describePart(p) {
@@ -260,8 +273,15 @@ if (typeof document !== "undefined") {
       if (!raw) return false;
       const d = JSON.parse(raw);
       if (!d?.doc?.screens?.length) return false;
-      state.doc = d.doc;
-      state.screenId = screenById(state.doc, d.screenId) ? d.screenId : state.doc.screens[0].id;
+      // 旧种子迁移：存的是没动过的菜谱示例 -> 换成新种子（旅行记录）；自己改过的设计一律不动
+      if (isLegacyRecipeSeed(d.doc)) {
+        state.doc = seedSketchDoc();
+        state.screenId = state.doc.screens[0].id;
+        save();
+      } else {
+        state.doc = d.doc;
+        state.screenId = screenById(state.doc, d.screenId) ? d.screenId : state.doc.screens[0].id;
+      }
       // 续上 id 计数器，避免新零件撞 id
       let max = 100;
       for (const s of state.doc.screens) {
