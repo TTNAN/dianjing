@@ -2,8 +2,9 @@
 // 跑法：node --test tests/unit.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { VOCAB, VISUAL, QUICK, TERM_INDEX, CONFLICTS } from "../src/vocab.js";
+import { VOCAB, VISUAL, QUICK, TERM_INDEX, CONFLICTS, LIVE, STRUCTURAL } from "../src/vocab.js";
 import { locate, buildPrompt } from "../src/prompt.js";
+import { renderDemo, demoElementAt, structuralHtml } from "../src/demo.js";
 
 const termCount = VOCAB.reduce((n, c) => n + c.terms.length, 0);
 
@@ -72,4 +73,41 @@ test("buildPrompt：英文版同样跳过空区域", () => {
   const out = buildPrompt(s, "en");
   assert.match(out, /marked 1 element/);
   assert.match(out, /## 2\. element/);
+});
+
+test("demo 默认渲染：布局锚点都在（搜索 y152、主卡、底栏）", () => {
+  const svg = renderDemo();
+  assert.match(svg, /x="20" y="152" width="290" height="52" rx="12"/);
+  assert.match(svg, /x="20" y="300" width="350" height="230"/);
+  assert.match(svg, /<rect x="0" y="776" width="390" height="68"/);
+  assert.match(svg, /今日总览/);
+});
+
+test("demo 覆盖：主卡圆角改直角只动裁剪，不动锚点", () => {
+  const a = renderDemo({ hero: { rx: 1 } });
+  assert.match(a, /<clipPath id="hero"><rect x="20" y="300" width="350" height="230" rx="1"\/><\/clipPath>/);
+  assert.match(a, /x="20" y="300" width="350" height="230"/);
+  assert.notEqual(a, renderDemo());
+});
+
+test("demoElementAt：嵌套的、小元素先命中", () => {
+  assert.equal(demoElementAt(300, 354), "statusPill");
+  assert.equal(demoElementAt(48, 243), "pills");
+  assert.equal(demoElementAt(100, 800), "tabbar");
+  assert.equal(demoElementAt(195, 400), "hero");
+  assert.equal(demoElementAt(10, 10), null);
+});
+
+test("LIVE：16 组参数类 + 2 组结构类，结构类不在 LIVE 里", () => {
+  assert.equal(Object.keys(LIVE).length, 16);
+  assert.equal(STRUCTURAL.length, 2);
+  for (const id of STRUCTURAL) assert.ok(!LIVE[id], id);
+  for (const id of Object.keys(LIVE)) assert.ok(TERM_INDEX[id], id);
+});
+
+test("structuralHtml：胶囊竖排的高度与条目数对得上", () => {
+  const s = structuralHtml("pills", "col");
+  assert.ok(s.html.includes("全部") && s.html.includes("今年"));
+  assert.equal(s.height, 5 * 38 + 4 * 8 + 24);
+  assert.equal(structuralHtml("hero", "col"), null);
 });
