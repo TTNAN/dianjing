@@ -45,6 +45,7 @@
       </div>
       <div class="canvas" id="canvas" hidden>
         <img id="shot" alt="截图" draggable="false" />
+        <img id="shotAfter" alt="" draggable="false" hidden />
         <div class="overlay" id="overlay"></div>
         <div class="hint" id="hint">按住拖拽，圈出想改的地方</div>
       </div>
@@ -53,6 +54,7 @@
         <span id="zoomLabel">适应</span>
         <button class="zbtn" id="zoomIn" title="放大">＋</button>
         <button class="zbtn wide" id="zoomFit" title="适应大小">⤢</button>
+        <button class="zbtn wide" id="compareBtn" hidden title="在原图和改后之间切换">◐ 对比原图</button>
       </div>
       <div class="previewbar" id="previewbar" hidden>
         <span class="pv-title" id="pvTitle"></span>
