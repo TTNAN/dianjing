@@ -1,5 +1,10 @@
 # 更新日志 / Changelog
 
+## v0.5.5 (2026-11-12)
+- 旧种子自动迁移：v0.5.4 只换了种子（新用户看到旅行记录），但之前打开过画界面的浏览器里还存着旧的菜谱设计，种子换了也动不了它。打开时如果存的是「没动过的菜谱示例」（标题菜谱、2 屏 14 个零件、卡片宫保鸡丁、按钮开始做饭全对上），就自动换成旅行记录；自己改过标题、关键零件或零件数的设计一律不动。单元 19/19，真机三态（旧种子迁过来、改过的留原样、全新进旅行）全过
+
+- Old seed auto-migration: v0.5.4 only changed the seed (new visitors got the travel journal), but browsers that had opened sketch mode before still held the saved recipe design — a new seed never touches it. On open, a saved doc that is still the untouched recipe example (title 菜谱， 2 screens, 14 parts, card 宫保鸡丁， button 开始做饭） is swapped for the travel journal; any design you edited (title, key parts, part count) is left alone. Unit 19/19; live three-state check passed
+
 ## v0.5.4 (2026-11-12)
 - 黑块根治：模式切换的黑底不再是靠 JS 量尺寸再推过去的滑块（样式晚到一步就会量错、再也不纠正，「图」字右半边伸到灰底上就是这么来的）。现在选中按钮本身就是黑底（纯 CSS），黑块永远等于按钮盒子，量不错的可能没了
 - 内置示例换成旅行记录：画界面的种子示例从菜谱应用改成旅行记录应用（首页：大理三日卡片 + 京都樱花、成都美食行、厦门海边漫步；详情页：行程、花费、写游记），零件库的默认文案同步换成旅行口径；文档截图与演示视频同步重录
