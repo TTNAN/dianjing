@@ -2,6 +2,7 @@
 
 ## v0.5.5 (2026-11-12)
 - 旧种子自动迁移：v0.5.4 只换了种子（新用户看到旅行记录），但之前打开过画界面的浏览器里还存着旧的菜谱设计，种子换了也动不了它。打开时如果存的是「没动过的菜谱示例」（标题菜谱、2 屏 14 个零件、卡片宫保鸡丁、按钮开始做饭全对上），就自动换成旅行记录；自己改过标题、关键零件或零件数的设计一律不动。单元 19/19，真机三态（旧种子迁过来、改过的留原样、全新进旅行）全过
+- README 视频改走附件库：仓库里的 mp4 在 README 里永远只是下载链接（GitHub 只给 user-attachments 的链接渲染播放器）。视频已传到附件库，README 中英文改贴裸链接，渲染确认是 `<video controls>` 播放器；注意附件要被已提交的内容引用过一次才公开，光传完关掉草稿会 404；PAT 调上传口子被拒 401，只认浏览器登录
 
 - Old seed auto-migration: v0.5.4 only changed the seed (new visitors got the travel journal), but browsers that had opened sketch mode before still held the saved recipe design — a new seed never touches it. On open, a saved doc that is still the untouched recipe example (title 菜谱， 2 screens, 14 parts, card 宫保鸡丁， button 开始做饭） is swapped for the travel journal; any design you edited (title, key parts, part count) is left alone. Unit 19/19; live three-state check passed
 
