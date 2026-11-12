@@ -204,8 +204,26 @@ async def main():
     await pg.click('#modeSeg button[data-mode="annotate"]'); await pg.wait_for_timeout(300)
     s = await state(pg)
     assert len(s["regions"]) == 2, s
+    # ---- 手机端（390px）----
+    mctx = await b.new_context(viewport={"width":390,"height":844})
+    mpg = await mctx.new_page()
+    merrs=[]; mpg.on("pageerror", lambda e: merrs.append(str(e)))
+    await mpg.goto("http://localhost:8766/")
+    await mpg.wait_for_timeout(1000)
+    w = await mpg.evaluate("() => document.documentElement.scrollWidth")
+    assert w <= 390, f"手机空状态横向溢出 {w}"
+    assert await mpg.locator("#demo").is_hidden(), "窄屏顶栏的载入示例应隐藏"
+    assert await mpg.locator(".top").bounding_box() and (await mpg.locator(".top").bounding_box())["height"] <= 120, "手机顶栏不应超过两行"
+    await mpg.click("#demo2"); await mpg.wait_for_timeout(1000)
+    assert (await mpg.evaluate("() => document.documentElement.scrollWidth")) <= 390
+    await mpg.click('#modeSeg button[data-mode="sketch"]'); await mpg.wait_for_timeout(700)
+    assert (await mpg.evaluate("() => document.documentElement.scrollWidth")) <= 390, "手机画界面横向溢出"
+    await mpg.click("#skPreviewBtn"); await mpg.wait_for_timeout(500)
+    assert await mpg.locator(".sk-player").is_visible()
+    assert not merrs, merrs
+    await mctx.close()
     print("ERRS", errs)
     assert not errs, errs
-    print("E2E PASS: 圈选/识别/互斥/方案贴图/移动/缩放/持久化/复制/点一下就变/本地重排/画界面（加零件/改标题/连跳转/预览切页/复制/持久化）全部通过")
+    print("E2E PASS: 圈选/识别/互斥/方案贴图/移动/缩放/持久化/复制/点一下就变/本地重排/画界面（加零件/改标题/连跳转/预览切页/复制/持久化）/手机端（390px 无横向溢出）全部通过")
     await ctx.close(); await b.close()
 asyncio.run(main())
