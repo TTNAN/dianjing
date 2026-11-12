@@ -119,8 +119,51 @@ async def main():
     prompt = await pg.locator("#prompt").input_value()
     assert "底部导航栏" in prompt and "框内文字" in prompt, prompt
     await pg.screenshot(path="./tmp-e9.png")
+    # 点一下就变：再圈一组时间胶囊，点“圆角 → 直角”，图上应直接变
+    box = await pg.locator("#overlay").bounding_box()
+    sx=box["width"]/390; sy=box["height"]/844
+    await pg.mouse.move(box["x"]+24*sx, box["y"]+228*sy); await pg.mouse.down()
+    await pg.mouse.move(box["x"]+366*sx, box["y"]+258*sy, steps=20); await pg.mouse.up(); await pg.wait_for_timeout(600)
+    s = await state(pg)
+    assert len(s["regions"]) == 2, s
+    r2 = s["regions"][1]
+    assert tuple(round(r2[k]) for k in ("x", "y", "w", "h")) == (48, 456, 684, 60), r2
+    await pg.locator(".vsgrid").scroll_into_view_if_needed(); await pg.wait_for_timeout(300)
+    await pg.locator('.vs[data-t="v-round-to-square"]').click(); await pg.wait_for_timeout(900)
+    assert await pg.locator("#shotAfter").is_visible(), "点圆角→直角后改后图层应出现"
+    assert (await pg.locator("#shotAfter").get_attribute("src")) != (await pg.locator("#shot").get_attribute("src"))
+    assert await pg.locator("#compareBtn").is_visible(), "对比按钮应出现"
+    prompt = await pg.locator("#prompt").input_value()
+    assert "圆角改为直角" in prompt, prompt
+    await pg.screenshot(path="./tmp-e10.png")
+    await pg.click("#compareBtn"); await pg.wait_for_timeout(300)
+    assert not await pg.locator("#shotAfter").is_visible(), "对比原图时改后图层应隐藏"
+    await pg.click("#compareBtn"); await pg.wait_for_timeout(300)
+    assert await pg.locator("#shotAfter").is_visible(), "再点应回到改后"
+    await pg.evaluate("window.__srcOn = document.querySelector('#shotAfter').src")
+    await pg.locator('.vs[data-t="v-round-to-square"]').click()
+    # 取消后图应重绘：1 号框的「通栏 → 悬浮」还活着，所以图层不消失，只是胶囊变回圆角
+    await pg.wait_for_function("() => document.querySelector('#shotAfter').src !== window.__srcOn", timeout=5000)
+    assert await pg.locator("#shotAfter").is_visible(), "1 号框的悬浮底栏还活着，改后图层应仍在"
+    # 全部生效的改动都取消后图层才消失：选中 1 号框，取消它的悬浮
+    await pg.locator(".box").first.click(); await pg.wait_for_timeout(300)
+    await pg.locator(".vsgrid").scroll_into_view_if_needed(); await pg.wait_for_timeout(300)
+    await pg.locator('.vs[data-t="v-full-to-inset"]').click(); await pg.wait_for_timeout(600)
+    assert not await pg.locator("#shotAfter").is_visible(), "没有生效的改动后，改后图层应消失"
+    assert not await pg.locator("#compareBtn").is_visible(), "没有生效的改动后，对比按钮应消失"
+    # 结构类：横排→竖排，本地重排预览应贴到原位置（先选回胶囊那框）
+    await pg.locator(".box").nth(1).click(); await pg.wait_for_timeout(300)
+    s = await state(pg); assert s["selected"] == s["regions"][1]["id"], s
+    await pg.locator(".vsgrid").scroll_into_view_if_needed(); await pg.wait_for_timeout(300)
+    await pg.locator('.vs[data-t="v-row-to-col"]').click(); await pg.wait_for_timeout(600)
+    assert await pg.locator(".preview-layer").count() == 1, "横排→竖排应弹出本地重排预览"
+    assert await pg.locator("#previewbar").is_visible()
+    assert "横排" in (await pg.locator("#pvTitle").inner_text())
+    await pg.screenshot(path="./tmp-e11.png")
+    await pg.locator('.vs[data-t="v-row-to-col"]').click(); await pg.wait_for_timeout(400)
+    assert await pg.locator(".preview-layer").count() == 0, "取消后本地预览应消失"
     print("ERRS", errs)
     assert not errs, errs
-    print("E2E PASS: 圈选/识别/互斥/方案贴图/移动/缩放/持久化/复制全部通过")
+    print("E2E PASS: 圈选/识别/互斥/方案贴图/移动/缩放/持久化/复制/点一下就变/本地重排全部通过")
     await ctx.close(); await b.close()
 asyncio.run(main())
