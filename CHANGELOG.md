@@ -1,5 +1,16 @@
 # 更新日志 / Changelog
 
+## v0.5 (2026-11-12)
+- 新模式「画界面」：顶栏「改截图 / 画界面」切换，照 m3e-canvas 的骨架做的中文版——16 种中文零件点一下加进屏幕，卡片、按钮可在触发里连跳转（7 种过渡动画），点「预览切页」进播放器，点一下滑到下一页、返回退栈
+- 整套设计实时生成十段结构的中提示词（配色、形状字体动效、屏幕结构、行为跳转、组件样式、整体原则），一键复制给 Claude Code / Codex / Cursor；主题可选蓝/紫/绿三套配色与方/圆/全圆三档圆角
+- 内置一套中文菜谱示例（首页 → 详情页），新屏幕自带状态栏与引导，零件加在底栏前面；设计自动保存在浏览器里，刷新还在
+- 改截图模式原样不动（v0.4 的全部流程回归通过）
+
+- New mode "画界面" (Sketch screens): switch modes in the top bar — a Chinese take on m3e-canvas. 16 Chinese parts, click to add to the current screen; cards and buttons link to other screens (7 transitions); the preview player plays the tap-through flow with a history stack
+- The whole design generates a live 10-section Chinese prompt (colors, shape/type/motion, screen structure, behavior & navigation, component styles, principles) — one click to copy into Claude Code / Codex / Cursor; 3 palettes (blue/purple/green) × 3 corner styles; autosaved to the browser
+- Ships with a Chinese recipe example app (Home → Detail); new screens come with a status bar and guidance; new parts insert above the bottom nav
+- The annotate mode is untouched (v0.4 flows all pass regression)
+
 ## v0.4 (2026-11-12)
 - 点一下就变：内置示例是活的——圈中元素后，点右侧「一眼对比」里的建议（圆角→直角、实心→描边、放大、变深色……），改动直接画进图里，立刻看得见；再点一下取消；左下角「◐ 对比原图」可在原图和改后之间切换
 - 横排变竖排、列表变网格这两类改布局的，点一下在原位置弹出本地重排预览，滑块擦除对比
