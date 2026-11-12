@@ -125,14 +125,14 @@ test("画界面：零件表 16 种、5 类，每种都有中文名和默认标�
   }
 });
 
-test("画界面：种子是两页菜谱，首页卡片连着详情页", () => {
+test("画界面：种子是两页旅行记录，首页卡片连着详情页", () => {
   const doc = seedSketchDoc();
   assert.equal(doc.screens.length, 2);
   const home = screenById(doc, "s1");
   assert.equal(home.name, "首页");
   assert.equal(home.parts.length, 8);
   const card = home.parts.find((p) => p.kind === "card");
-  assert.equal(card.label, "宫保鸡丁");
+  assert.equal(card.label, "大理三日");
   assert.equal(card.action.to, "s2");
   assert.equal(card.action.transition, "slide");
   assert.equal(partById(doc, card.id).screen.id, "s1");
@@ -144,7 +144,7 @@ test("画界面：提示词含十段结构与跳转句", () => {
   for (const h of ["## 配色", "## 形状、字体与动效", "## 屏幕结构", "## 行为与屏幕跳转", "## 各组件的样式", "## 整体原则"]) {
     assert.ok(pr.includes(h), h);
   }
-  assert.ok(pr.includes("宫保鸡丁"));
+  assert.ok(pr.includes("大理三日"));
   assert.ok(pr.includes("跳转到详情页屏幕"));
   assert.ok(pr.includes("共有 2 个屏幕"));
   assert.ok(pr.includes("primaryContainer"));
@@ -154,7 +154,7 @@ test("画界面：describePart 覆盖全部 16 种且不为空", () => {
   const all = Object.keys(PARTS).map((kind) => describePart({ kind, label: "测", supporting: "副", variant: "filled", selected: 0 }));
   assert.equal(all.length, 16);
   for (const d of all) assert.ok(d.length > 1, d);
-  assert.ok(describePart({ kind: "card", label: "宫保鸡丁", supporting: "鸡腿肉", variant: "filled" }).includes("宫保鸡丁"));
+  assert.ok(describePart({ kind: "card", label: "大理三日", supporting: "洱海", variant: "filled" }).includes("大理三日"));
 });
 
 test("画界面：主题与过渡表完整", () => {
