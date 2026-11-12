@@ -263,10 +263,10 @@ function annotated(maxW = Infinity) {
   g.drawImage(img, 0, 0, c.width, c.height);
   const lw = Math.max(2, c.width / 250);
   state.regions.forEach((r, i) => {
-    g.strokeStyle = "#ff3b6b"; g.lineWidth = lw;
+    g.strokeStyle = "#246fff"; g.lineWidth = lw;
     g.strokeRect(r.x * s, r.y * s, r.w * s, r.h * s);
     const R = lw * 6;
-    g.fillStyle = "#ff3b6b"; g.beginPath(); g.arc(r.x * s, r.y * s, R, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#246fff"; g.beginPath(); g.arc(r.x * s, r.y * s, R, 0, Math.PI * 2); g.fill();
     g.fillStyle = "#fff"; g.font = `bold ${R * 1.2}px sans-serif`; g.textAlign = "center"; g.textBaseline = "middle";
     g.fillText(String(i + 1), r.x * s, r.y * s + 1);
   });
