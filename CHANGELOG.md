@@ -1,5 +1,10 @@
 # 更新日志 / Changelog
 
+## v0.5.2 (2026-11-12)
+- 样式加版本戳：v0.5.1 的修复已经在线上，但手机浏览器还攥着部署前的旧样式（截图里「载入示例」和 Dianjing 还在就是证据），光靠刷新不一定重新下载。现在 CSS 和 JS 链接都带上 `?v=0.5.2`，地址一变浏览器必须拉新的，以后每次发版改一位数就行
+
+- Cache-busting asset URLs: the v0.5.1 fix was live, but phone browsers can keep serving the pre-deploy stylesheet (the stale screenshot still showed the demo button and the Dianjing wordmark that the new CSS hides). CSS and JS links now carry `?v=0.5.2`, so a new deploy always fetches fresh
+
 ## v0.5.1 (2026-11-12)
 - 手机端顶栏修好：之前顶栏不换行，v0.5 新加的模式切换把总宽推到 600 多，390px 的手机上品牌、切换、按钮全叠在一起。现在窄屏（≤960px）顶栏可换行、切换单独居中一行（放得下时仍在一行），品牌只留 logo + 点睛，顶栏的「载入示例」收起来（空状态里还有「先看看示例」）；画界面在手机上改为零件库、画布、检查器上下堆叠
 - 端到端加了 390px 手机检查：空状态、示例、画界面、预览四态均无横向溢出
