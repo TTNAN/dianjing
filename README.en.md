@@ -12,7 +12,9 @@ There's a second mode, **画界面 (Sketch screens)**, in the top bar: click par
 
 ![Dianjing UI](docs/screenshot.png)
 
-🎬 [Demo video](docs/demo.mp4)
+🎬 Demo video
+
+https://github.com/user-attachments/assets/1dd060c5-f948-4e76-8a56-a7c16788132e
 
 </div>
 
