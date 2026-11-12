@@ -87,6 +87,7 @@ python3 -m http.server 8000   # 或 npx serve
 
 ```
 index.html        页面骨架
+favicon.svg       图标（16px 下的简化眼睛）
 src/app.js        圈选、渲染、交互与动效
 src/vocab.js      设计词典 + 一眼对比（最欢迎 PR 的地方）
 src/prompt.js     提示词组装（中 / 英）
