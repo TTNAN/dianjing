@@ -1,5 +1,12 @@
 # 更新日志 / Changelog
 
+## v0.5.1 (2026-11-12)
+- 手机端顶栏修好：之前顶栏不换行，v0.5 新加的模式切换把总宽推到 600 多，390px 的手机上品牌、切换、按钮全叠在一起。现在窄屏（≤960px）顶栏可换行、切换单独居中一行（放得下时仍在一行），品牌只留 logo + 点睛，顶栏的「载入示例」收起来（空状态里还有「先看看示例」）；画界面在手机上改为零件库、画布、检查器上下堆叠
+- 端到端加了 390px 手机检查：空状态、示例、画界面、预览四态均无横向溢出
+
+- Mobile header fixed: the top bar never wrapped, and the v0.5 mode switch pushed its total width past 600px, so brand, switch and buttons all piled up on a 390px phone. Below 960px the bar now wraps (switch on its own centered row when needed), the brand keeps only logo + 点睛， and the header demo button is hidden (the empty state still has one). Sketch mode stacks parts / canvas / inspector vertically on phones
+- E2E now includes a 390px mobile check: no horizontal overflow in empty, demo, sketch or preview states
+
 ## v0.5 (2026-11-12)
 - 新模式「画界面」：顶栏「改截图 / 画界面」切换，照 m3e-canvas 的骨架做的中文版——16 种中文零件点一下加进屏幕，卡片、按钮可在触发里连跳转（7 种过渡动画），点「预览切页」进播放器，点一下滑到下一页、返回退栈
 - 整套设计实时生成十段结构的中提示词（配色、形状字体动效、屏幕结构、行为跳转、组件样式、整体原则），一键复制给 Claude Code / Codex / Cursor；主题可选蓝/紫/绿三套配色与方/圆/全圆三档圆角
