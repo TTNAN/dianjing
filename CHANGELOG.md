@@ -1,5 +1,14 @@
 # 更新日志 / Changelog
 
+## v0.3 (2026-11-12)
+- 工具页改成浅色：白底＋浅灰卡＋鲜蓝 #246FFF（按 BoardUI 实测配色），深色毛玻璃、极光背景、噪点全部拿掉；选中态改成黑色滑动胶囊（EasyUI 的路子）
+- 暖灰画布（Oil UI 的路子）：舞台与面板改成浅暖灰 #F4F3F0，卡片换成白底＋细边框；模型设置改成右侧抽屉；“圈出想改的地方”提示加了引导脉冲
+- Logo 换成取景眼：眼睛＋四角取景框；favicon 用 16px 下的简化眼睛
+- 标注框、按钮、眼睛 logo、标注图导出颜色全部换成蓝色
+
+- Light theme for the tool page: white + light-gray cards + vivid blue #246FFF (BoardUI palette); dark glass, aurora and grain removed; selected states use a black sliding capsule (EasyUI)
+- Selection boxes, buttons, the eye logo and annotated-image export are all blue now
+
 ## v0.2 (2026-11-12)
 - 方案贴回原图：选中的方案直接覆盖在原截图对应区域上，滑块擦除对比改前改后
 - 框选可改：拖框体移动、拖四角缩放、方向键微调（Shift ×10）、数字坐标输入、Ctrl/⌘+滚轮缩放
