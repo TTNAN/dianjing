@@ -1,5 +1,12 @@
 # 更新日志 / Changelog
 
+## v0.5.4 (2026-11-12)
+- 黑块根治：模式切换的黑底不再是靠 JS 量尺寸再推过去的滑块（样式晚到一步就会量错、再也不纠正，「图」字右半边伸到灰底上就是这么来的）。现在选中按钮本身就是黑底（纯 CSS），黑块永远等于按钮盒子，量不错的可能没了
+- 内置示例换成旅行记录：画界面的种子示例从菜谱应用改成旅行记录应用（首页：大理三日卡片 + 京都樱花、成都美食行、厦门海边漫步；详情页：行程、花费、写游记），零件库的默认文案同步换成旅行口径；文档截图与演示视频同步重录
+
+- Black pill, fixed for real: the mode-switch thumb is no longer a JS-measured slider (a late stylesheet made it measure the wrong width once and never correct it — that's how the 图 glyph ended up half past the black edge). The selected button is now black by pure CSS, so the pill always equals the button's own box
+- Seed example is now a travel journal: sketch mode's built-in app changed from recipes to a travel journal (home: 大理三日 card + three trips; detail: 行程、花费、写游记), part-library defaults switched to travel wording; docs screenshots and demo video re-recorded
+
 ## v0.5.3 (2026-11-12)
 - 手机顶栏再改：v0.5.1 那版在 390 宽是一行塞进去的，总宽 386、只剩 4px 余量，真机字体稍大就得挤爆。现在手机上模式切换永远独占一行、拉满整宽，两按钮各占一半（以后加第三个模式也放得下），320 / 360 / 390 三档均无重叠、无横向溢出
 
