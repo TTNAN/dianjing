@@ -50,6 +50,18 @@
         <div class="overlay" id="overlay"></div>
         <div class="hint" id="hint">按住拖拽，圈出想改的地方</div>
       </div>
+      <div class="zoombar" id="zoombar" hidden>
+        <button class="zbtn" id="zoomOut" title="缩小">−</button>
+        <span id="zoomLabel">适应</span>
+        <button class="zbtn" id="zoomIn" title="放大">＋</button>
+        <button class="zbtn wide" id="zoomFit" title="适应大小">⤢</button>
+      </div>
+      <div class="previewbar" id="previewbar" hidden>
+        <span class="pv-title" id="pvTitle"></span>
+        <input type="range" id="wipeRange" min="0" max="100" value="100" title="左右拖动，对比改前改后" />
+        <span id="wipeLabel">100%</span>
+        <button class="btn sm" id="pvClose"><span>关闭预览</span></button>
+      </div>
     </section>
 
     <aside class="panel" id="panel">
@@ -67,7 +79,11 @@
           <button class="btn primary grow" id="copy"><span class="l1">复制提示词</span><span class="l2">✓ 已复制</span></button>
           <button class="btn" id="download"><span>下载标注图</span></button>
         </div>
-        <p class="muted small">提示词 + 标注图一起发给 Cursor、Claude Code、Trae、Lovable、v0。</p>
+        <div class="row">
+          <button class="btn grow" id="copyBoth"><span>文字 + 标注图一起复制</span></button>
+          <button class="btn danger" id="clearAll"><span>重新开始</span></button>
+        </div>
+        <p class="muted small">提示词 + 标注图一起发给 Cursor、Claude Code、Trae、Lovable、v0。圈选会自动保存在浏览器里，刷新还在。</p>
       </section>
     </aside>
   </main>

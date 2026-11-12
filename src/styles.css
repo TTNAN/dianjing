@@ -9,9 +9,10 @@
   --line: rgba(255, 255, 255, .09);
   --line-2: rgba(255, 255, 255, .16);
   --pink: #ff4d8d;
+  --coral: #ff7a5c;
   --violet: #8b5cff;
   --cyan: #2ee6d6;
-  --grad: linear-gradient(120deg, var(--pink), var(--violet) 55%, var(--cyan));
+  --grad: linear-gradient(120deg, var(--pink), var(--coral));
   --r: 18px;
   --spring: cubic-bezier(.34, 1.56, .64, 1);
   --out: cubic-bezier(.16, 1, .3, 1);
@@ -28,12 +29,12 @@ kbd { font: 600 11px/1 ui-monospace, Menlo, monospace; padding: 3px 6px; border-
 
 /* ============ Ambient background ============ */
 .aurora { position: fixed; inset: 0; z-index: -2; overflow: hidden; }
-.aurora i { position: absolute; width: 60vmax; height: 60vmax; border-radius: 50%; filter: blur(90px); opacity: .33; animation: drift 26s ease-in-out infinite alternate; }
+.aurora i { position: absolute; width: 60vmax; height: 60vmax; border-radius: 50%; filter: blur(90px); opacity: .20; animation: drift 26s ease-in-out infinite alternate; }
 .aurora i:nth-child(1) { background: var(--violet); top: -25vmax; left: -15vmax; }
-.aurora i:nth-child(2) { background: var(--pink); bottom: -30vmax; right: -10vmax; animation-duration: 32s; animation-delay: -8s; opacity: .22; }
-.aurora i:nth-child(3) { background: var(--cyan); top: 30%; left: 40%; width: 35vmax; height: 35vmax; animation-duration: 38s; animation-delay: -14s; opacity: .12; }
+.aurora i:nth-child(2) { background: var(--pink); bottom: -30vmax; right: -10vmax; animation-duration: 32s; animation-delay: -8s; opacity: .14; }
+.aurora i:nth-child(3) { background: var(--cyan); top: 30%; left: 40%; width: 35vmax; height: 35vmax; animation-duration: 38s; animation-delay: -14s; opacity: .07; }
 @keyframes drift { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(8vmax, 6vmax) scale(1.15); } 100% { transform: translate(-6vmax, 10vmax) scale(.95); } }
-.grain { position: fixed; inset: -50%; z-index: -1; pointer-events: none; opacity: .06;
+.grain { position: fixed; inset: -50%; z-index: -1; pointer-events: none; opacity: .045;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   animation: grain 1.2s steps(6) infinite; }
 @keyframes grain { 0%,100% { transform: translate(0,0); } 20% { transform: translate(-3%,2%); } 40% { transform: translate(2%,-4%); } 60% { transform: translate(-4%,-1%); } 80% { transform: translate(3%,3%); } }
@@ -41,11 +42,11 @@ kbd { font: 600 11px/1 ui-monospace, Menlo, monospace; padding: 3px 6px; border-
 /* ============ Header ============ */
 .top { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid var(--line); background: rgba(8, 8, 13, .55); backdrop-filter: blur(20px) saturate(1.4); position: relative; z-index: 5; animation: fadeDown .8s var(--out) both; }
 .brand { display: flex; align-items: center; gap: 10px; }
-.logo { width: 28px; height: 28px; border-radius: 50%; position: relative; background: conic-gradient(from 0deg, var(--pink), var(--violet), var(--cyan), var(--pink)); animation: spin 6s linear infinite; }
-.logo span { position: absolute; inset: 5px; border-radius: 50%; background: var(--bg); }
-.logo span::after { content: ""; position: absolute; inset: 5px; border-radius: 50%; background: var(--grad); animation: breathe 2.4s ease-in-out infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes breathe { 50% { transform: scale(.55); opacity: .7; } }
+/* Logo：一只眼睛 —— 外圈是眼眶，中间是点下去的瞳孔 */
+.logo { width: 28px; height: 28px; border-radius: 50%; position: relative; border: 2px solid var(--pink); background: rgba(255, 77, 141, .08); }
+.logo span { position: absolute; inset: 7px; border-radius: 50%; background: var(--pink); animation: pupil 3.2s ease-in-out infinite; }
+.logo span::after { content: ""; position: absolute; left: 2px; top: 1px; width: 4px; height: 4px; border-radius: 50%; background: rgba(255, 255, 255, .9); }
+@keyframes pupil { 50% { transform: scale(.72); } }
 .wordmark { font-size: 19px; font-weight: 750; letter-spacing: .02em; }
 .en { color: var(--muted); font-weight: 500; font-size: 14px; letter-spacing: .08em; }
 .tag { font-size: 11px; padding: 3px 9px; border-radius: 99px; border: 1px solid var(--line-2); color: var(--ink-2); background: var(--glass); }
@@ -59,7 +60,7 @@ kbd { font: 600 11px/1 ui-monospace, Menlo, monospace; padding: 3px 6px; border-
 .btn:hover::before { transform: translateX(120%); }
 .btn:active { transform: translateY(0) scale(.96); transition-duration: .1s; }
 .btn.primary { border: 0; background: var(--grad); background-size: 200% 100%; color: #fff; box-shadow: 0 6px 24px -6px rgba(255, 77, 141, .55), inset 0 1px 0 rgba(255,255,255,.25); animation: gradShift 6s ease infinite; }
-.btn.primary:hover { box-shadow: 0 10px 34px -6px rgba(139, 92, 255, .7), inset 0 1px 0 rgba(255,255,255,.3); }
+.btn.primary:hover { box-shadow: 0 10px 34px -6px rgba(255, 122, 92, .7), inset 0 1px 0 rgba(255,255,255,.3); }
 @keyframes gradShift { 50% { background-position: 100% 0; } }
 .btn.lg { --h: 46px; padding: 0 24px; font-size: 15px; border-radius: 14px; }
 .btn.sm { --h: 28px; padding: 0 11px; font-size: 12px; border-radius: 9px; }
@@ -92,7 +93,7 @@ h1 { font-size: clamp(30px, 3.6vw, 46px); line-height: 1.12; margin: 26px 0 14px
 .flow { list-style: none; display: flex; justify-content: center; gap: 8px; padding: 0; margin: 34px 0 0; flex-wrap: wrap; }
 .flow li { font-size: 12px; color: var(--muted); padding: 6px 12px 6px 6px; border: 1px solid var(--line); border-radius: 99px; background: var(--glass); display: flex; align-items: center; gap: 7px; }
 .flow b { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--glass-2); color: var(--ink); font-size: 11px; }
-.flow li:nth-child(1) b { background: var(--pink); } .flow li:nth-child(4) b { background: var(--cyan); color: #04201d; }
+.flow li:nth-child(1) b { background: var(--pink); } .flow li:nth-child(4) b { background: var(--coral); color: #fff; }
 
 .hero-phone { width: 150px; height: 270px; margin: 0 auto; border-radius: 30px; padding: 7px; background: linear-gradient(160deg, rgba(255,255,255,.22), rgba(255,255,255,.04)); box-shadow: 0 30px 80px -20px rgba(139, 92, 255, .55), inset 0 0 0 1px rgba(255,255,255,.12); animation: float 6s ease-in-out infinite, rise .9s var(--out) both; }
 @keyframes float { 50% { transform: translateY(-10px) rotate(-1.5deg); } }
@@ -114,7 +115,7 @@ h1 { font-size: clamp(30px, 3.6vw, 46px); line-height: 1.12; margin: 26px 0 14px
 .hint { position: absolute; left: 50%; bottom: -46px; transform: translateX(-50%); white-space: nowrap; font-size: 12px; color: var(--ink-2); padding: 7px 14px; border-radius: 99px; border: 1px solid var(--line); background: var(--glass); backdrop-filter: blur(10px); transition: opacity .4s, transform .4s var(--out); animation: rise .8s .4s var(--out) both; }
 .hint.gone { opacity: 0; transform: translate(-50%, 8px); }
 
-.box { position: absolute; border-radius: 6px; cursor: pointer; transition: box-shadow .3s, background .3s; background: rgba(255, 77, 141, .07);
+.box { position: absolute; z-index: 3; border-radius: 6px; cursor: pointer; touch-action: none; transition: box-shadow .3s, background .3s; background: rgba(255, 77, 141, .07);
   /* marching ants */
   background-image: linear-gradient(90deg, var(--pink) 50%, transparent 50%), linear-gradient(90deg, var(--pink) 50%, transparent 50%), linear-gradient(0deg, var(--pink) 50%, transparent 50%), linear-gradient(0deg, var(--pink) 50%, transparent 50%);
   background-repeat: repeat-x, repeat-x, repeat-y, repeat-y; background-size: 10px 2px, 10px 2px, 2px 10px, 2px 10px; background-position: 0 0, 0 100%, 0 0, 100% 0; animation: ants .6s linear infinite; }
@@ -122,7 +123,30 @@ h1 { font-size: clamp(30px, 3.6vw, 46px); line-height: 1.12; margin: 26px 0 14px
 .box.drawing { pointer-events: none; }
 .box .size { position: absolute; right: 0; bottom: -26px; font: 600 11px/1 ui-monospace, Menlo, monospace; padding: 5px 7px; border-radius: 6px; background: var(--pink); color: #fff; white-space: nowrap; }
 .box:not(.drawing) { background-image: none; animation: none; border: 2px solid var(--pink); }
-.box.sel { background: rgba(255, 77, 141, .16); box-shadow: 0 0 0 4px rgba(255, 77, 141, .22), 0 0 40px rgba(255, 77, 141, .45); animation: glow 2.4s ease-in-out infinite; }
+.box.sel { cursor: move; background: rgba(255, 77, 141, .16); box-shadow: 0 0 0 4px rgba(255, 77, 141, .22), 0 0 40px rgba(255, 77, 141, .45); animation: glow 2.4s ease-in-out infinite; }
+/* 四角缩放手柄，只在选中的框上出现 */
+.box .h { position: absolute; width: 12px; height: 12px; background: #fff; border: 2px solid var(--pink); border-radius: 3px; box-shadow: 0 2px 8px rgba(0, 0, 0, .5); z-index: 4; }
+.box .h.nw { left: -8px; top: -8px; cursor: nwse-resize; }
+.box .h.ne { right: -8px; top: -8px; cursor: nesw-resize; }
+.box .h.sw { left: -8px; bottom: -8px; cursor: nesw-resize; }
+.box .h.se { right: -8px; bottom: -8px; cursor: nwse-resize; }
+
+/* 贴回原图的方案预览层（不拦截鼠标，点它等于点底下的图） */
+.preview-layer { position: absolute; z-index: 2; overflow: hidden; border-radius: 6px; pointer-events: none; box-shadow: 0 0 0 2px rgba(255, 255, 255, .65), 0 10px 30px rgba(0, 0, 0, .45); }
+.preview-layer iframe { width: 100%; height: 100%; border: 0; display: block; background: transparent; }
+.preview-layer .wipe { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 10px rgba(0, 0, 0, .7); }
+
+/* 舞台左下角缩放条 + 底部居中预览对比条 */
+.zoombar { position: absolute; left: 20px; bottom: 16px; z-index: 6; display: flex; gap: 4px; align-items: center; padding: 5px; border-radius: 12px; background: rgba(20, 20, 30, .82); border: 1px solid var(--line); backdrop-filter: blur(12px); }
+.zbtn { border: 0; background: transparent; color: var(--ink); min-width: 28px; height: 28px; padding: 0 8px; border-radius: 8px; font: 600 13px/1 inherit; font-family: inherit; cursor: pointer; }
+.zbtn:hover { background: var(--glass-2); }
+.zbtn.wide { color: var(--ink-2); font-size: 12px; }
+#zoomLabel { min-width: 44px; text-align: center; font-size: 12px; color: var(--ink-2); }
+/* 预览对比条放在舞台顶部：底栏这类贴底的区域很常见，放底部会盖住它的缩放手柄 */
+.previewbar { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); z-index: 7; display: flex; gap: 10px; align-items: center; max-width: calc(100% - 220px); padding: 8px 12px; border-radius: 14px; background: rgba(20, 20, 30, .9); border: 1px solid var(--line-2); backdrop-filter: blur(16px); box-shadow: 0 12px 40px rgba(0, 0, 0, .5); }
+.previewbar input[type="range"] { width: 150px; padding: 0; accent-color: var(--pink); border: 0; background: transparent; }
+.pv-title { font-size: 12px; font-weight: 700; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#wipeLabel { font-size: 12px; color: var(--ink-2); min-width: 34px; text-align: right; }
 @keyframes glow { 50% { box-shadow: 0 0 0 7px rgba(255, 77, 141, .12), 0 0 60px rgba(255, 77, 141, .55); } }
 .box.pop { animation: pop .6s var(--spring) both; }
 @keyframes pop { 0% { transform: scale(.85); opacity: .4; } 100% { transform: scale(1); opacity: 1; } }
@@ -178,16 +202,34 @@ h4 .muted { font-weight: 400; letter-spacing: 0; }
 .chip.quick:hover { background: rgba(139, 92, 255, .25); }
 .chip.star::before { content: "✦"; margin-right: 4px; color: var(--cyan); }
 .chip.on.star::before { color: #fff; }
+.chip.quick.on { color: #fff; border-color: transparent; background: var(--grad); box-shadow: 0 6px 20px -6px rgba(255, 77, 141, .7); }
 .chip.bump { animation: bump .45s var(--spring); }
 @keyframes bump { 40% { transform: scale(1.14); } }
-.chip[data-tip]:hover::after { content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%); white-space: nowrap; font-size: 11px; padding: 6px 9px; border-radius: 8px; background: #fff; color: #111; pointer-events: none; z-index: 3; animation: tip .25s var(--out); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+/* 白话气泡：允许折行、限宽，不再是一条横贯的白带盖住下一行 */
+.chip[data-tip]:hover::after, .chip[data-tip]:focus-visible::after { content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%); width: max-content; max-width: 190px; white-space: normal; text-align: center; line-height: 1.5; font-size: 11px; padding: 6px 9px; border-radius: 8px; background: #fff; color: #111; pointer-events: none; z-index: 5; animation: tip .25s var(--out); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
 @keyframes tip { from { opacity: 0; transform: translate(-50%, 4px); } }
+
+#regionText { margin-bottom: 8px; }
+
+/* 坐标微调行 */
+.coords { display: flex; gap: 6px; }
+.coords label { flex: 1; min-width: 0; display: grid; gap: 4px; font-size: 11px; color: var(--muted); }
+.coords input { min-width: 0; width: 100%; padding: 6px 8px; font-size: 12px; text-align: center; }
+
+/* 设计词典默认收起，搜得到才展开看 */
+.vocab-details { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 2px; }
+.vocab-details summary { cursor: pointer; font-size: 12px; font-weight: 650; color: var(--ink-2); letter-spacing: .04em; margin: 16px 0 9px; list-style: none; }
+.vocab-details summary::-webkit-details-marker { display: none; }
+.vocab-details summary:hover { color: var(--ink); }
+#vocabSearch { margin-bottom: 4px; }
 
 textarea, input, select { width: 100%; font-family: inherit; font-size: 13px; color: var(--ink); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: rgba(0,0,0,.25); transition: border-color .25s, box-shadow .3s; outline: none; resize: vertical; }
 textarea:focus, input:focus, select:focus { border-color: rgba(139,92,255,.6); box-shadow: 0 0 0 4px rgba(139,92,255,.15); }
 select option { background: #15151f; }
 .prompt-wrap { position: relative; border-radius: 12px; }
 #prompt { height: 280px; font: 12px/1.65 ui-monospace, "SF Mono", Menlo, monospace; color: #dcdaf0; }
+/* 还没有截图时，提示词框别空占半屏 */
+body.no-image #prompt { height: 110px; }
 .prompt-wrap.flash::after { content: ""; position: absolute; inset: 0; border-radius: 12px; pointer-events: none; background: linear-gradient(180deg, rgba(139,92,255,.18), transparent 60%); animation: flash .7s var(--out) forwards; }
 @keyframes flash { from { opacity: 1; } to { opacity: 0; } }
 
@@ -202,7 +244,7 @@ select option { background: #15151f; }
 .variant:hover { transform: translateY(-3px); border-color: var(--line-2); box-shadow: 0 18px 40px -18px rgba(0,0,0,.8); }
 .variant.fresh { animation: rise .7s var(--out) both; animation-delay: calc(var(--i) * 110ms); }
 .variant.on { border-color: transparent; box-shadow: 0 20px 50px -20px rgba(255, 77, 141, .6); }
-.variant.on::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; background: conic-gradient(from var(--a, 0deg), var(--pink), var(--violet), var(--cyan), var(--pink)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: rotA 4s linear infinite; pointer-events: none; z-index: 2; }
+.variant.on::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; background: conic-gradient(from var(--a, 0deg), var(--pink), var(--coral), var(--pink)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: rotA 4s linear infinite; pointer-events: none; z-index: 2; }
 @property --a { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
 @keyframes rotA { to { --a: 360deg; } }
 .variant iframe { width: 100%; height: 160px; border: 0; display: block; background: #f3f2f7; }
@@ -233,10 +275,10 @@ dialog::backdrop { background: rgba(5, 5, 10, .6); backdrop-filter: blur(6px); a
 
 /* ============ 一眼对比 ============ */
 .vsgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.vs { position: relative; display: grid; gap: 7px; justify-items: center; padding: 10px 6px 9px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255,255,255,.03); color: var(--ink-2); font-family: inherit; cursor: pointer; transition: transform .4s var(--spring), border-color .25s, background .25s, box-shadow .35s; }
+.vs { position: relative; min-width: 0; display: grid; gap: 7px; justify-items: center; padding: 10px 4px 9px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255,255,255,.03); color: var(--ink-2); font-family: inherit; cursor: pointer; transition: transform .4s var(--spring), border-color .25s, background .25s, box-shadow .35s; }
 .vs:hover { transform: translateY(-3px); border-color: var(--line-2); background: rgba(255,255,255,.06); }
-.vs .pair { display: flex; align-items: center; gap: 5px; }
-.vs .fr { position: relative; width: 46px; height: 36px; border-radius: 9px; background: #f3f2f7; display: grid; place-items: center; overflow: hidden; }
+.vs .pair { display: flex; align-items: center; gap: 4px; }
+.vs .fr { position: relative; width: 50px; height: 38px; border-radius: 9px; background: #f3f2f7; display: grid; place-items: center; overflow: hidden; }
 .vs .fr .m { display: block; transition: transform .5s var(--spring); }
 .vs .fr .m.frame-pos { display: block; }
 .vs .arr { color: var(--muted); font-size: 12px; transition: transform .4s var(--spring), color .3s; }

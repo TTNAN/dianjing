@@ -1,88 +1,91 @@
-// 内置示例：一张"AI 生成的旅行 App"首页，打开即可试圈。
+// 内置示例：一张"AI 生成的手机端数据看板"首页，打开即可试圈。
+// 视觉按 BoardUI 的路子：白底＋浅灰卡＋一抹鲜蓝（#246FFF），克制精致，
+// 多彩只出现在图表数据上。画布 390×844，关键区域坐标与端到端测试对齐，
+// 改视觉时别动布局锚点：搜索栏 y152、分类 y224、主卡 20,300,350×230、
+// 卡片 y594、底栏 y776。
 export const DEMO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844" font-family="-apple-system, 'SF Pro Display', 'PingFang SC', 'Microsoft YaHei', sans-serif">
 <defs>
-  <linearGradient id="sky" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#2b1b5a"/><stop offset=".45" stop-color="#8e4fb8"/><stop offset=".8" stop-color="#ff7a8a"/><stop offset="1" stop-color="#ffb38a"/></linearGradient>
-  <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fe3e0"/><stop offset="1" stop-color="#1e8fb3"/></linearGradient>
-  <linearGradient id="kyoto" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd7a8"/><stop offset="1" stop-color="#e8796b"/></linearGradient>
-  <linearGradient id="ava" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff8fb1"/><stop offset="1" stop-color="#8b6cff"/></linearGradient>
-  <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></linearGradient>
-  <filter id="sh" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#2b1b5a" flood-opacity=".14"/></filter>
-  <filter id="sh2" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity=".08"/></filter>
-  <clipPath id="hero"><rect x="20" y="300" width="350" height="230" rx="28"/></clipPath>
-  <clipPath id="c1"><rect x="20" y="594" width="167" height="112" rx="20"/></clipPath>
-  <clipPath id="c2"><rect x="203" y="594" width="167" height="112" rx="20"/></clipPath>
+  <linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b7fff" stop-opacity=".22"/><stop offset="1" stop-color="#2b7fff" stop-opacity=".02"/></linearGradient>
+  <filter id="sh" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity=".05"/></filter>
+  <filter id="sh2" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity=".04"/></filter>
+  <clipPath id="hero"><rect x="20" y="300" width="350" height="230" rx="24"/></clipPath>
 </defs>
-<rect width="390" height="844" fill="#f7f5f2"/>
-<text x="32" y="38" font-size="15" font-weight="600" fill="#1a1a1a">9:41</text>
-<rect x="330" y="28" width="26" height="12" rx="3.5" fill="none" stroke="#1a1a1a" stroke-width="1.2"/><rect x="332.5" y="30.5" width="18" height="7" rx="1.5" fill="#1a1a1a"/>
+<rect width="390" height="844" fill="#fff"/>
+<text x="32" y="38" font-size="15" font-weight="600" fill="#0a0a0a">9:41</text>
+<g fill="#0a0a0a"><rect x="288" y="35" width="3" height="5" rx="1"/><rect x="293" y="33" width="3" height="7" rx="1"/><rect x="298" y="31" width="3" height="9" rx="1"/><rect x="303" y="29" width="3" height="11" rx="1"/></g>
+<g stroke="#0a0a0a" stroke-width="1.6" fill="none" stroke-linecap="round"><path d="M310 36 a10 10 0 0 1 16 0"/><path d="M312.5 38.5 a6.5 6.5 0 0 1 11 0"/></g>
+<circle cx="318" cy="41" r="1.6" fill="#0a0a0a"/>
+<rect x="330" y="28" width="26" height="12" rx="3.5" fill="none" stroke="#0a0a0a" stroke-width="1.2"/><rect x="332.5" y="30.5" width="18" height="7" rx="1.5" fill="#0a0a0a"/>
 
-<text x="24" y="92" font-size="14" fill="#8a8794">早上好 👋</text>
-<text x="24" y="128" font-size="28" font-weight="800" fill="#16151c">去哪里走走？</text>
-<circle cx="342" cy="104" r="22" fill="url(#ava)"/><text x="342" y="110" font-size="16" font-weight="700" fill="#fff" text-anchor="middle">C</text>
+<text x="24" y="92" font-size="14" fill="#737373">早上好 👋</text>
+<text x="24" y="128" font-size="28" font-weight="800" fill="#0a0a0a">今日总览</text>
+<circle cx="342" cy="104" r="22" fill="#246fff"/><text x="342" y="110" font-size="16" font-weight="700" fill="#fff" text-anchor="middle">C</text>
 
-<rect x="20" y="152" width="290" height="52" rx="18" fill="#fff" filter="url(#sh2)"/>
-<circle cx="47" cy="176" r="7" fill="none" stroke="#9a97a6" stroke-width="2"/><line x1="52" y1="181" x2="57" y2="186" stroke="#9a97a6" stroke-width="2" stroke-linecap="round"/>
-<text x="68" y="183" font-size="14" fill="#a8a5b3">搜索目的地、酒店、体验</text>
-<rect x="318" y="152" width="52" height="52" rx="18" fill="#16151c"/>
-<g stroke="#fff" stroke-width="2" stroke-linecap="round"><line x1="334" y1="170" x2="354" y2="170"/><line x1="334" y1="178" x2="354" y2="178"/><line x1="334" y1="186" x2="354" y2="186"/></g>
-<circle cx="340" cy="170" r="3" fill="#16151c" stroke="#fff" stroke-width="2"/><circle cx="349" cy="186" r="3" fill="#16151c" stroke="#fff" stroke-width="2"/>
+<rect x="20" y="152" width="290" height="52" rx="12" fill="#fff" stroke="#ebebeb" filter="url(#sh2)"/>
+<circle cx="47" cy="176" r="7" fill="none" stroke="#737373" stroke-width="2"/><line x1="52" y1="181" x2="57" y2="186" stroke="#737373" stroke-width="2" stroke-linecap="round"/>
+<text x="68" y="183" font-size="14" fill="#737373">搜索订单、客户、商品</text>
+<rect x="318" y="152" width="52" height="52" rx="12" fill="#fff" stroke="#ebebeb"/>
+<g stroke="#0a0a0a" stroke-width="2" stroke-linecap="round"><line x1="334" y1="170" x2="354" y2="170"/><line x1="334" y1="178" x2="354" y2="178"/><line x1="334" y1="186" x2="354" y2="186"/></g>
+<circle cx="340" cy="170" r="3" fill="#fff" stroke="#0a0a0a" stroke-width="2"/><circle cx="349" cy="186" r="3" fill="#fff" stroke="#0a0a0a" stroke-width="2"/>
 
 <g font-size="13" font-weight="600">
-  <rect x="20" y="224" width="62" height="38" rx="19" fill="#16151c"/><text x="51" y="248" fill="#fff" text-anchor="middle">全部</text>
-  <rect x="90" y="224" width="74" height="38" rx="19" fill="#fff" stroke="#ebe8e4"/><text x="127" y="248" fill="#4a4856" text-anchor="middle">🏝 海岛</text>
-  <rect x="172" y="224" width="74" height="38" rx="19" fill="#fff" stroke="#ebe8e4"/><text x="209" y="248" fill="#4a4856" text-anchor="middle">🏔 雪山</text>
-  <rect x="254" y="224" width="74" height="38" rx="19" fill="#fff" stroke="#ebe8e4"/><text x="291" y="248" fill="#4a4856" text-anchor="middle">🏯 古镇</text>
-  <rect x="336" y="224" width="74" height="38" rx="19" fill="#fff" stroke="#ebe8e4"/><text x="373" y="248" fill="#4a4856" text-anchor="middle">🌃 城市</text>
+  <rect x="20" y="224" width="56" height="38" rx="19" fill="#246fff"/><text x="48" y="248" fill="#fff" text-anchor="middle">全部</text>
+  <rect x="84" y="224" width="68" height="38" rx="19" fill="#fff" stroke="#ebebeb"/><text x="118" y="248" fill="#737373" text-anchor="middle">今日</text>
+  <rect x="160" y="224" width="68" height="38" rx="19" fill="#fff" stroke="#ebebeb"/><text x="194" y="248" fill="#737373" text-anchor="middle">本周</text>
+  <rect x="236" y="224" width="68" height="38" rx="19" fill="#fff" stroke="#ebebeb"/><text x="270" y="248" fill="#737373" text-anchor="middle">本月</text>
+  <rect x="312" y="224" width="68" height="38" rx="19" fill="#fff" stroke="#ebebeb"/><text x="346" y="248" fill="#737373" text-anchor="middle">今年</text>
 </g>
 
 <g filter="url(#sh)">
 <g clip-path="url(#hero)">
-  <rect x="20" y="300" width="350" height="230" fill="url(#sky)"/>
-  <g fill="#fff" opacity=".9"><circle cx="70" cy="330" r="1.2"/><circle cx="120" cy="318" r="1"/><circle cx="210" cy="336" r="1.4"/><circle cx="300" cy="322" r="1"/><circle cx="160" cy="350" r=".9"/><circle cx="250" cy="312" r="1.1"/></g>
-  <path d="M20 360 C 90 330, 140 380, 210 345 S 330 330, 370 352 L370 380 C 300 360, 240 395, 170 372 S 60 370, 20 392 Z" fill="#7dffc4" opacity=".35"/>
-  <circle cx="300" cy="420" r="26" fill="#ffd9a8" opacity=".9"/>
-  <path d="M20 470 L95 400 L140 440 L205 375 L270 445 L310 415 L370 460 L370 530 L20 530 Z" fill="#3a2366" opacity=".85"/>
-  <path d="M20 500 L80 455 L150 490 L220 440 L300 495 L370 470 L370 530 L20 530 Z" fill="#1f1340"/>
-  <rect x="20" y="300" width="350" height="230" fill="url(#fade)"/>
+  <rect x="20" y="300" width="350" height="230" fill="#f7f7f7"/>
+  <text x="38" y="336" font-size="13" fill="#737373">总收入</text>
+  <text x="38" y="368" font-size="30" font-weight="800" fill="#0a0a0a">¥48,290</text>
+  <rect x="268" y="342" width="64" height="24" rx="12" fill="#d8f999"/>
+  <text x="300" y="358" font-size="11" font-weight="700" fill="#3c6300" text-anchor="middle">+14.8%</text>
+  <g stroke="#ebebeb" stroke-width="1"><line x1="36" y1="420" x2="354" y2="420"/><line x1="36" y1="455" x2="354" y2="455"/><line x1="36" y1="490" x2="354" y2="490"/></g>
+  <path d="M48 463 L94 448 L140 456 L186 433 L232 443 L278 418 L324 426 L324 498 L48 498 Z" fill="url(#area)"/>
+  <path d="M48 463 L94 448 L140 456 L186 433 L232 443 L278 418 L324 426" fill="none" stroke="#246fff" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="324" cy="426" r="4" fill="#246fff" stroke="#fff" stroke-width="2"/>
+  <g font-size="10" fill="#737373" text-anchor="middle"><text x="48" y="518">周一</text><text x="94" y="518">周二</text><text x="140" y="518">周三</text><text x="186" y="518">周四</text><text x="232" y="518">周五</text><text x="278" y="518">周六</text><text x="324" y="518">周日</text></g>
 </g>
-<rect x="36" y="316" width="62" height="28" rx="14" fill="#fff" fill-opacity=".22" stroke="#fff" stroke-opacity=".35"/>
-<text x="67" y="335" font-size="12" font-weight="700" fill="#fff" text-anchor="middle">★ 4.9</text>
-<circle cx="338" cy="330" r="18" fill="#fff" fill-opacity=".22" stroke="#fff" stroke-opacity=".35"/>
-<path d="M338 338 l-7-7a4.2 4.2 0 0 1 7-4.6a4.2 4.2 0 0 1 7 4.6z" fill="#fff"/>
-<text x="38" y="470" font-size="13" fill="#fff" fill-opacity=".8">冰岛 · 雷克雅未克</text>
-<text x="38" y="498" font-size="22" font-weight="800" fill="#fff">追一场极光</text>
-<text x="38" y="518" font-size="12" fill="#fff" fill-opacity=".8">7 天 6 晚 · ¥8,999 起</text>
-<rect x="262" y="482" width="92" height="34" rx="17" fill="#fff"/>
-<text x="308" y="504" font-size="13" font-weight="700" fill="#16151c" text-anchor="middle">立即预订</text>
 </g>
 
-<text x="24" y="572" font-size="19" font-weight="800" fill="#16151c">热门目的地</text>
-<text x="366" y="572" font-size="13" fill="#8b6cff" text-anchor="end" font-weight="600">查看全部 →</text>
+<text x="24" y="572" font-size="19" font-weight="800" fill="#0a0a0a">最近订单</text>
+<text x="366" y="572" font-size="13" fill="#246fff" text-anchor="end" font-weight="600">查看全部 →</text>
 
 <g filter="url(#sh2)">
-  <rect x="20" y="594" width="167" height="168" rx="20" fill="#fff"/>
-  <g clip-path="url(#c1)"><rect x="20" y="594" width="167" height="112" fill="url(#sea)"/>
-    <path d="M20 670 q20 -8 42 0 t42 0 t42 0 t42 0 v40 h-168z" fill="#fff" opacity=".25"/>
-    <path d="M20 684 q20 -8 42 0 t42 0 t42 0 t42 0 v30 h-168z" fill="#fff" opacity=".35"/>
-    <circle cx="150" cy="626" r="14" fill="#fff6c9"/></g>
-  <text x="34" y="730" font-size="15" font-weight="700" fill="#16151c">马尔代夫</text>
-  <text x="34" y="750" font-size="12" fill="#8a8794">水屋 · ¥12,800 起</text>
+  <rect x="20" y="594" width="167" height="168" rx="20" fill="#fff" stroke="#ebebeb"/>
+  <circle cx="52" cy="632" r="18" fill="#e8f0ff"/><text x="52" y="637" font-size="14" font-weight="700" fill="#246fff" text-anchor="middle">约</text>
+  <text x="78" y="628" font-size="14" font-weight="700" fill="#0a0a0a">约翰</text>
+  <text x="78" y="646" font-size="11" fill="#737373">订单 #8241 · 今天</text>
+  <line x1="34" y1="672" x2="173" y2="672" stroke="#ebebeb"/>
+  <text x="34" y="706" font-size="20" font-weight="800" fill="#0a0a0a">¥3,412</text>
+  <rect x="34" y="720" width="64" height="22" rx="11" fill="#d8f999"/>
+  <text x="66" y="735" font-size="11" font-weight="700" fill="#3c6300" text-anchor="middle">已发货</text>
 
-  <rect x="203" y="594" width="167" height="168" rx="20" fill="#fff"/>
-  <g clip-path="url(#c2)"><rect x="203" y="594" width="167" height="112" fill="url(#kyoto)"/>
-    <g fill="#8c2f2a"><rect x="245" y="640" width="84" height="8" rx="2"/><rect x="252" y="654" width="70" height="5"/><rect x="258" y="648" width="7" height="58"/><rect x="309" y="648" width="7" height="58"/></g>
-    <circle cx="340" cy="618" r="10" fill="#fff" opacity=".7"/></g>
-  <text x="217" y="730" font-size="15" font-weight="700" fill="#16151c">京都</text>
-  <text x="217" y="750" font-size="12" fill="#8a8794">赏枫季 · ¥4,299 起</text>
+  <rect x="203" y="594" width="167" height="168" rx="20" fill="#fff" stroke="#ebebeb"/>
+  <circle cx="235" cy="632" r="18" fill="#f3e8ff"/><text x="235" y="637" font-size="14" font-weight="700" fill="#7f22fe" text-anchor="middle">阿</text>
+  <text x="261" y="628" font-size="14" font-weight="700" fill="#0a0a0a">阿斯彭</text>
+  <text x="261" y="646" font-size="11" fill="#737373">订单 #8238 · 今天</text>
+  <line x1="217" y1="672" x2="356" y2="672" stroke="#ebebeb"/>
+  <text x="217" y="706" font-size="20" font-weight="800" fill="#0a0a0a">¥1,899</text>
+  <rect x="217" y="720" width="64" height="22" rx="11" fill="#fff" stroke="#ebebeb"/>
+  <circle cx="229" cy="731" r="3.5" fill="#615fff"/>
+  <text x="256" y="735" font-size="11" font-weight="700" fill="#0a0a0a" text-anchor="middle">待处理</text>
 </g>
 
 <rect x="0" y="776" width="390" height="68" fill="#fff"/>
-<line x1="0" y1="776" x2="390" y2="776" stroke="#ebe8e4"/>
+<line x1="0" y1="776" x2="390" y2="776" stroke="#ebebeb"/>
 <g font-size="10" text-anchor="middle" font-weight="600">
-  <path d="M38 800 l11 -9 l11 9 v10 h-22z" fill="#16151c"/><text x="49" y="826" fill="#16151c">首页</text>
-  <circle cx="146" cy="800" r="10" fill="none" stroke="#a8a5b3" stroke-width="2"/><path d="M146 794 l3 6 l-3 6 l-3 -6z" fill="#a8a5b3"/><text x="146" y="826" fill="#a8a5b3">发现</text>
-  <path d="M243 808 l-8-8a5 5 0 0 1 8-5.5a5 5 0 0 1 8 5.5z" fill="none" stroke="#a8a5b3" stroke-width="2"/><text x="243" y="826" fill="#a8a5b3">收藏</text>
-  <circle cx="340" cy="795" r="5" fill="none" stroke="#a8a5b3" stroke-width="2"/><path d="M330 810 a10 8 0 0 1 20 0" fill="none" stroke="#a8a5b3" stroke-width="2"/><text x="340" y="826" fill="#a8a5b3">我的</text>
+  <path d="M38 800 l11 -9 l11 9 v10 h-22z" fill="#246fff"/><text x="49" y="826" fill="#246fff">总览</text>
+  <g stroke="#737373" stroke-width="2" stroke-linecap="round"><line x1="141" y1="792" x2="153" y2="792"/><line x1="141" y1="799" x2="153" y2="799"/><line x1="141" y1="806" x2="149" y2="806"/></g>
+  <circle cx="137" cy="792" r="1.8" fill="#737373"/><circle cx="137" cy="799" r="1.8" fill="#737373"/><circle cx="137" cy="806" r="1.8" fill="#737373"/>
+  <text x="146" y="826" fill="#737373">订单</text>
+  <g fill="#737373"><rect x="235" y="801" width="4" height="9" rx="1.5"/><rect x="242" y="796" width="4" height="14" rx="1.5"/><rect x="249" y="799" width="4" height="11" rx="1.5"/></g>
+  <line x1="233" y1="812" x2="255" y2="812" stroke="#737373" stroke-width="2" stroke-linecap="round"/>
+  <text x="243" y="826" fill="#737373">数据</text>
+  <circle cx="340" cy="795" r="5.5" fill="none" stroke="#737373" stroke-width="2.2"/><path d="M330 810 a10 8 0 0 1 20 0" fill="none" stroke="#737373" stroke-width="2.2"/><text x="340" y="826" fill="#737373">我的</text>
 </g>
 </svg>`;
 

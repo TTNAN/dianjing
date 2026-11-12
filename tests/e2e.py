@@ -1,17 +1,25 @@
-import json, asyncio
+"""点睛端到端测试：跑在 http://localhost:8766/ 上，模型请求被拦截成固定假数据。
+跑法：
+  python3 -m http.server 8766   # 在仓库根目录
+  python3 tests/e2e.py
+断言失败或页面报错都会让脚本以非零退出码结束，只截图不算通过。"""
+import json, asyncio, sys
 from playwright.async_api import async_playwright
-REC = {"type_zh":"底部导航栏","type_en":"Bottom tab bar","description":"白色通栏底栏，灰色方块图标，选中项蓝色，顶部细灰线","issues":["图标是占位方块，缺乏识别度","视觉偏廉价，缺少层次"],"suggested_terms":["floating-tabbar","premium"]}
+REC = {"type_zh":"底部导航栏","type_en":"Bottom tab bar","description":"白色通栏底栏，灰色线性图标，选中项蓝色，顶部细灰线","issues":["线性图标偏细，小尺寸下识别度一般","选中态只有颜色区分，缺少其他层次"],"suggested_terms":["floating-tabbar","premium"]}
 VAR = {"variants":[
- {"title":"悬浮胶囊","summary":"底栏浮起成胶囊，选中项实心高亮","changes":["左右下各留 16px","圆角 28px","阴影 0 8px 24px rgba(0,0,0,.12)"],"html":"<div style='margin:16px;background:#fff;border-radius:28px;box-shadow:0 8px 24px rgba(0,0,0,.12);display:flex;justify-content:space-around;padding:10px'><span style='background:#3b5bdb;color:#fff;border-radius:20px;padding:8px 16px'>首页</span><span style='padding:8px'>分类</span><span style='padding:8px'>购物车</span><span style='padding:8px'>我的</span></div>"},
- {"title":"毛玻璃通栏","summary":"保留通栏，半透明模糊","changes":["背景 rgba(255,255,255,.7)","backdrop-filter: blur(20px)"],"html":"<div style='background:rgba(255,255,255,.7);display:flex;justify-content:space-around;padding:16px;border-top:1px solid #eee'><b style='color:#3b5bdb'>首页</b><span>分类</span><span>购物车</span><span>我的</span></div>"},
- {"title":"极简指示条","summary":"去掉图标底色，选中项下方小圆点","changes":["图标线性化","选中项 4px 圆点指示"],"html":"<div style='background:#fff;display:flex;justify-content:space-around;padding:16px'><b>首页•</b><span style='color:#999'>分类</span><span style='color:#999'>购物车</span><span style='color:#999'>我的</span></div>"}]}
+ {"title":"悬浮胶囊","summary":"底栏浮起成胶囊，选中项实心高亮","changes":["左右下各留 16px","圆角 28px","阴影 0 8px 24px rgba(0,0,0,.12)"],"html":"<div style='margin:16px;background:#fff;border-radius:28px;box-shadow:0 8px 24px rgba(0,0,0,.12);display:flex;justify-content:space-around;padding:10px'><span style='background:#3b5bdb;color:#fff;border-radius:20px;padding:8px 16px'>总览</span><span style='padding:8px'>订单</span><span style='padding:8px'>数据</span><span style='padding:8px'>我的</span></div>"},
+ {"title":"毛玻璃通栏","summary":"保留通栏，半透明模糊","changes":["背景 rgba(255,255,255,.7)","backdrop-filter: blur(20px)"],"html":"<div style='background:rgba(255,255,255,.7);display:flex;justify-content:space-around;padding:16px;border-top:1px solid #eee'><b style='color:#3b5bdb'>总览</b><span>订单</span><span>数据</span><span>我的</span></div>"},
+ {"title":"极简指示条","summary":"去掉图标底色，选中项下方小圆点","changes":["图标线性化","选中项 4px 圆点指示"],"html":"<div style='background:#fff;display:flex;justify-content:space-around;padding:16px'><b>总览•</b><span style='color:#999'>订单</span><span style='color:#999'>数据</span><span style='color:#999'>我的</span></div>"}]}
+
+async def state(pg):
+  return await pg.evaluate("() => { const s = window.__dianjing; return { regions: s.regions, selected: s.selected, preview: s.preview, lang: s.lang }; }")
+
 async def main():
   async with async_playwright() as p:
     b = await p.chromium.launch()
     ctx = await b.new_context(viewport={"width":1400,"height":900}, record_video_dir="./tmp-video", record_video_size={"width":1400,"height":900})
     pg = await ctx.new_page()
     errs=[]; pg.on("pageerror", lambda e: errs.append(str(e))); pg.on("console", lambda m: m.type=="error" and errs.append(m.text))
-    calls=[0]
     async def handle(route):
       body = json.loads(route.request.post_data)
       txt = body["messages"][0]["content"][0]["text"]
@@ -20,9 +28,11 @@ async def main():
     await pg.route("https://fake.api/v1/chat/completions", handle)
     await pg.goto("http://localhost:8766/")
     await pg.wait_for_timeout(3500); await pg.screenshot(path="./tmp-e0.png")
+    assert await pg.locator("body.no-image").count() == 1, "空状态下 body 应带 no-image"
     await pg.evaluate("localStorage.setItem('dianjing.settings', JSON.stringify({baseUrl:'https://fake.api/v1',model:'x',apiKey:'k'}))")
     await pg.reload(); await pg.wait_for_timeout(300)
     await pg.click("#demo"); await pg.wait_for_timeout(1300)
+    assert await pg.locator("#zoombar").is_visible(), "载入截图后缩放条应出现"
     box = await pg.locator("#overlay").bounding_box()
     sx=box["width"]/390; sy=box["height"]/844
     await pg.mouse.move(box["x"]+4*sx, box["y"]+778*sy); await pg.mouse.down()
@@ -30,24 +40,87 @@ async def main():
     await pg.screenshot(path="./tmp-e1.png")
     await pg.mouse.up(); await pg.wait_for_timeout(500)
     await pg.screenshot(path="./tmp-e2.png")
-    await pg.wait_for_timeout(1600)
+    await pg.wait_for_function("window.__dianjing.regions[0]?.recog?.type_zh === '底部导航栏'", timeout=8000)
+    s = await state(pg)
+    assert len(s["regions"]) == 1, s
+    r = s["regions"][0]
+    assert tuple(round(r[k]) for k in ("x", "y", "w", "h")) == (8, 1556, 764, 128), r
+    assert "floating-tabbar" in r["terms"] and "premium" in r["terms"], r["terms"]
+    # 快捷方向可开关：点“更高级”补齐三项，再点一次全部取消
+    await pg.locator(".chip.quick").first.click(); await pg.wait_for_timeout(300)
+    s = await state(pg); assert "shadow" in s["regions"][0]["terms"], s["regions"][0]["terms"]
+    await pg.locator(".chip.quick").first.click(); await pg.wait_for_timeout(300)
+    s = await state(pg)
+    assert "premium" not in s["regions"][0]["terms"] and "shadow" not in s["regions"][0]["terms"], s["regions"][0]["terms"]
+    # 互斥方向：选了圆角→直角，再选直角→圆角，前者应被自动取消
+    await pg.locator('.vs[data-t="v-round-to-square"]').click(); await pg.wait_for_timeout(300)
+    await pg.locator('.vs[data-t="v-square-to-round"]').click(); await pg.wait_for_timeout(300)
+    s = await state(pg)
+    assert "v-square-to-round" in s["regions"][0]["terms"], s["regions"][0]["terms"]
+    assert "v-round-to-square" not in s["regions"][0]["terms"], s["regions"][0]["terms"]
     await pg.locator(".vsgrid").scroll_into_view_if_needed(); await pg.wait_for_timeout(500)
     await pg.locator('.vs[data-t="v-full-to-inset"]').hover(); await pg.wait_for_timeout(400)
-    await pg.locator('.vs[data-t="v-full-to-inset"]').click(); await pg.wait_for_timeout(500)
-    await pg.locator('.vs[data-t="v-square-to-round"]').click(); await pg.wait_for_timeout(700)
     await pg.screenshot(path="./tmp-e7.png")
+    await pg.locator('.vs[data-t="v-full-to-inset"]').click(); await pg.wait_for_timeout(500)
+    # 框内文字进提示词，帮 AI 在代码里定位
+    await pg.fill("#regionText", "总览 订单 数据 我的")
     await pg.fill("#note","看起来很廉价，想要像苹果那样")
+    await pg.wait_for_timeout(300)
+    prompt = await pg.locator("#prompt").input_value()
+    assert "框内文字：总览 订单 数据 我的" in prompt, prompt
     await pg.click("#varBtn"); await pg.wait_for_timeout(600)
     await pg.locator(".panel").evaluate("e=>e.scrollTo({top:900,behavior:'smooth'})"); await pg.screenshot(path="./tmp-e3.png")
-    await pg.wait_for_timeout(2200)
+    await pg.wait_for_function("window.__dianjing.regions[0]?.variants?.length === 3", timeout=8000)
+    assert await pg.locator(".variant").count() == 3
     await pg.locator(".variant").first.locator("button").click(); await pg.wait_for_timeout(700)
-    await pg.locator(".chip.quick").first.click(); await pg.wait_for_timeout(900)
+    s = await state(pg)
+    assert s["regions"][0]["chosen"] == 0, s["regions"][0]
+    assert s["preview"] == {"regionId": s["regions"][0]["id"], "variantIdx": 0}, s["preview"]
+    assert await pg.locator(".preview-layer").count() == 1, "选中的方案应贴回原图上"
+    assert await pg.locator("#previewbar").is_visible(), "预览对比条应出现"
+    await pg.screenshot(path="./tmp-e8.png")
+    # 拖框体移动（向左拖 30 屏像素，x 应 clamp 到 0），再用方向键微调
+    info = await pg.evaluate("""() => { const s = window.__dianjing; const r = s.regions[0];
+      const o = document.querySelector('#overlay').getBoundingClientRect();
+      return { r, ox: o.x, oy: o.y, ow: o.width, oh: o.height, iw: s.image.w, ih: s.image.h }; }""")
+    cx = info["ox"] + (info["r"]["x"] + info["r"]["w"]/2) / info["iw"] * info["ow"]
+    cy = info["oy"] + (info["r"]["y"] + info["r"]["h"]/2) / info["ih"] * info["oh"]
+    await pg.mouse.move(cx, cy); await pg.mouse.down()
+    await pg.mouse.move(cx - 30, cy, steps=10); await pg.mouse.up(); await pg.wait_for_timeout(300)
+    s = await state(pg); assert s["regions"][0]["x"] == 0, s["regions"][0]
+    await pg.mouse.click(cx - 30, cy)  # 点一下框体，把焦点还给画布
+    for _ in range(3): await pg.keyboard.press("ArrowRight"); await pg.wait_for_timeout(120)
+    s = await state(pg); assert s["regions"][0]["x"] == 3, s["regions"][0]
+    # 拖右下角手柄缩小（向左上拖，宽应减小）
+    h = await pg.locator(".box.sel .h.se").bounding_box()
+    w0 = s["regions"][0]["w"]
+    await pg.mouse.move(h["x"]+h["width"]/2, h["y"]+h["height"]/2); await pg.mouse.down()
+    await pg.mouse.move(h["x"]+h["width"]/2-30, h["y"]+h["height"]/2-20, steps=10); await pg.mouse.up(); await pg.wait_for_timeout(300)
+    s = await state(pg); assert s["regions"][0]["w"] < w0 - 20, (w0, s["regions"][0]["w"])
+    # 缩放：放大到 100%，再回到适应
+    await pg.click("#zoomIn"); await pg.wait_for_timeout(300)
+    assert (await pg.locator("#zoomLabel").inner_text()) == "100%"
+    await pg.click("#zoomFit"); await pg.wait_for_timeout(300)
+    assert (await pg.locator("#zoomLabel").inner_text()) == "适应"
     await pg.locator(".panel").evaluate("e=>e.scrollTo({top:0,behavior:'smooth'})"); await pg.wait_for_timeout(300)
     await pg.screenshot(path="./tmp-e4.png")
     await pg.locator(".panel").evaluate("e=>e.scrollTo({top:900,behavior:'smooth'})"); await pg.wait_for_timeout(300)
     await pg.screenshot(path="./tmp-e5.png")
-    await pg.click("#copy"); await pg.locator(".panel").evaluate("e=>e.scrollTo({top:99999,behavior:'smooth'})"); await pg.wait_for_timeout(1500)
+    await pg.click("#copy"); await pg.wait_for_timeout(500)
+    assert "done" in (await pg.locator("#copy").get_attribute("class") or "")
+    await pg.locator(".panel").evaluate("e=>e.scrollTo({top:99999,behavior:'smooth'})"); await pg.wait_for_timeout(1500)
     await pg.screenshot(path="./tmp-e6.png")
+    # 持久化：等保存防抖落盘后刷新，圈选应还在
+    await pg.wait_for_timeout(900)
+    await pg.reload(); await pg.wait_for_timeout(800)
+    s = await state(pg)
+    assert len(s["regions"]) == 1, s
+    assert s["regions"][0]["recog"]["type_zh"] == "底部导航栏", s["regions"][0]
+    prompt = await pg.locator("#prompt").input_value()
+    assert "底部导航栏" in prompt and "框内文字" in prompt, prompt
+    await pg.screenshot(path="./tmp-e9.png")
     print("ERRS", errs)
+    assert not errs, errs
+    print("E2E PASS: 圈选/识别/互斥/方案贴图/移动/缩放/持久化/复制全部通过")
     await ctx.close(); await b.close()
 asyncio.run(main())
