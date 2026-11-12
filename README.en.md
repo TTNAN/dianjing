@@ -6,7 +6,7 @@
 
 Circle what bugs you on any UI screenshot. Dianjing turns the feeling into precise design language, shows visual before → after tweaks and three live previews, then writes a prompt your AI coding tool gets right the first time.
 
-There's a second mode, **画界面 (Sketch screens)**, in the top bar: click parts from a library to assemble an app's screens, link cards to other screens, tap through the flow in a preview player, and get a full Chinese prompt for the whole design — paste it into Claude Code / Codex / Cursor and it generates a runnable app.
+There's also a second mode, **画界面 (Sketch screens)**, in the top bar: click parts from a library to assemble an app's screens, link cards to other screens, tap through the flow in a preview player, and get a full Chinese prompt for the whole design — paste it into Claude Code / Codex / Cursor and it generates a runnable app. Target platform and component library are selectable (WeChat Mini Program, uni-app, Taro, HarmonyOS ArkUI, Flutter × Vant, TDesign, Ant Design Mobile, NutUI), and the prompt uses the chosen system's component names.
 
 [**Live demo**](https://ttnan.github.io/dianjing/) · [中文](README.md) · MIT
 
@@ -42,14 +42,15 @@ Plenty of tools already help an AI *locate* an element (React Grab, Agentation, 
 2. **One-tap directions** — "More premium", "More compact", "Too messy"… no jargon needed.
 3. **Visual tweaks** — 18 tiny before → after illustrations such as rounded → sharp, filled → outline, row → column, full-width → inset floating. Tap one and the exact instruction goes into the prompt.
 4. **Design vocabulary** — 27 terms in 7 groups (spacing, hierarchy, color, typography, shape & depth, layout, overall style), each with a plain-language hint.
-5. **AI recognition** (optional) — identifies the element ("bottom tab bar"), describes its current style, points out issues and suggests terms.
-6. **Three variations** (optional) — generates three visual alternatives that match your intent; pick one to include in the prompt.
-7. **Output** — copy the prompt in Chinese or English plus a numbered annotated image, ready for Cursor, Claude Code, Trae, Codex, Lovable, v0, Bolt and more.
-8. **Sketch screens (second mode)** — 16 Chinese parts (button, chip, card, list item, bottom navigation…), click to add; edit copy, style and tap targets in the inspector; the preview player plays the tap-through flow with a history stack; the whole design generates a live 10-section Chinese prompt (colors, shape/type/motion, screen structure, behavior & navigation, component styles, principles). 3 palettes × 3 corner styles; autosaved to the browser.
+5. **Sketch screens (second mode)** — 16 Chinese parts (button, chip, card, list item, bottom navigation…), click to add; edit copy, style and tap targets in the inspector; the preview player plays the tap-through flow with a history stack; the whole design generates a live 10-section Chinese prompt (colors, shape/type/motion, screen structure, behavior & navigation, component styles, principles). 3 palettes × 3 corner styles; autosaved to the browser.
 
 ![Sketch screens](docs/sketch.png)
 
-Features 1–4 and 7–8 work fully offline. Add any **OpenAI-compatible vision model** to unlock 5 and 6: OpenAI, Qwen (DashScope), Zhipu GLM, Gemini, OpenRouter or local Ollama. Your API key stays in your own browser, and requests go straight to the provider you choose — no middle server.
+6. **AI recognition** (optional) — identifies the element ("bottom tab bar"), describes its current style, points out issues and suggests terms.
+7. **Three variations** (optional) — generates three visual alternatives that match your intent; pick one to include in the prompt.
+8. **Output** — copy the prompt in Chinese or English plus a numbered annotated image, ready for Cursor, Claude Code, Trae, Codex, Lovable, v0, Bolt and more.
+
+Features 1–5 and 8 work fully offline. Add any **OpenAI-compatible vision model** to unlock 6 and 7: OpenAI, Qwen (DashScope), Zhipu GLM, Gemini, OpenRouter or local Ollama. Your API key stays in your own browser, and requests go straight to the provider you choose — no middle server.
 
 ### Quick start
 
@@ -95,13 +96,21 @@ src/vocab.js      Design vocabulary + visual tweaks (PRs most welcome here)
 src/prompt.js     Prompt builder (Chinese / English)
 src/llm.js        OpenAI-compatible client: recognition + variations
 src/demo.js       Built-in example screen (a travel app)
+src/sketch.js     Sketch mode: parts, screens and prompt builder (adapted from m3e-canvas, see NOTICE)
+src/sketch.css    Sketch-mode styles (phone frame, part library, inspector)
 src/styles.css    UI and animation
 tests/e2e.py      Playwright end-to-end test and screen recording (mocked model)
+tests/unit.test.mjs  Unit tests: vocabulary scale, conflict pairs, prompt builder, sketch seed and migration
 ```
 
 ### Roadmap
 
 - [x] v0.1 Screenshot circling, design vocabulary, visual tweaks, three variations, prompt output
+- [x] v0.2 In-place variant preview, box move/resize/nudge, collapsible searchable vocabulary, region text, conflicting directions auto-cancelled, autosave, copy text + image together
+- [x] v0.3 Light tool page (BoardUI palette), warm-gray canvas, viewfinder-eye logo
+- [x] v0.4 Click to change: apply a tweak straight onto the demo, local re-layout previews
+- [x] v0.5 Sketch screens mode: 16 Chinese parts, navigation and preview player, 10-section Chinese prompt
+- [x] v0.5.5 Travel-journal example, old-seed auto-migration, header and cache fixes
 - [ ] Browser extension: circle directly on any web page, no screenshot needed
 - [ ] MCP server so Claude Code / Cursor can read your selections directly
 - [ ] Integrate element pickers (React Grab, Agentation, ComposeBridge) to add source locations
@@ -121,3 +130,5 @@ Issues and pull requests are welcome.
 ### License
 
 [MIT](LICENSE) © 2026 Caesar T
+
+Sketch mode is adapted from [lnkiai/m3e-canvas](https://github.com/lnkiai/m3e-canvas) (MIT); see [NOTICE](NOTICE) for the attribution.

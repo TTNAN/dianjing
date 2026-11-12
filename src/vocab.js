@@ -90,7 +90,7 @@ export const CONFLICTS = [
 ];
 
 // ---------- 一眼对比：前 → 后的小图示，点一下就懂 ----------
-const C = "#8b5cff";
+const C = "#246fff";
 const el = (style, inner = "") => `<i class="m" style="${style}">${inner}</i>`;
 const bar = (s = "") => `<b style="display:block;background:rgba(255,255,255,.85);border-radius:2px;${s}"></b>`;
 const base = `width:34px;height:22px;background:${C};`;
@@ -108,9 +108,9 @@ export const VISUAL = [
     prompt: { zh: "样式：实心填充改为描边（透明背景 + 1.5px 主色边框 + 主色文字）", en: "Style: change solid fill to outline (transparent bg, 1.5px brand-color border and text)" } },
   { id: "v-outline-to-fill", zh: "描边 → 实心", en: "Outline → Filled", before: el(`width:34px;height:22px;border:2px solid ${C};border-radius:6px`), after: el(base + "border-radius:6px"),
     prompt: { zh: "样式：描边改为实心填充（主色背景 + 白色文字），更突出", en: "Style: change outline to solid fill (brand-color bg, white text)" } },
-  { id: "v-flat-to-float", zh: "平面 → 悬浮", en: "Flat → Elevated", before: el("width:34px;height:22px;background:#fff;border-radius:6px;border:1.5px solid #bbb"), after: el("width:34px;height:22px;background:#fff;border-radius:6px;box-shadow:0 10px 18px rgba(60,40,120,.5);transform:translateY(-4px)"),
+  { id: "v-flat-to-float", zh: "平面 → 悬浮", en: "Flat → Elevated", before: el("width:34px;height:22px;background:#fff;border-radius:6px;border:1.5px solid #bbb"), after: el("width:34px;height:22px;background:#fff;border-radius:6px;box-shadow:0 10px 18px rgba(36,111,255,.45);transform:translateY(-4px)"),
     prompt: { zh: "层次：去掉边框，加柔和投影让它浮起来（如 0 8px 24px rgba(0,0,0,.12)）", en: "Depth: remove border, add a soft shadow to lift it (e.g. 0 8px 24px rgba(0,0,0,.12))" } },
-  { id: "v-border-to-none", zh: "有边框 → 无边框", en: "Bordered → Borderless", before: el("width:34px;height:22px;background:#fff;border:1.5px solid #999;border-radius:6px"), after: el("width:34px;height:22px;background:#c9bfff;border-radius:6px"),
+  { id: "v-border-to-none", zh: "有边框 → 无边框", en: "Bordered → Borderless", before: el("width:34px;height:22px;background:#fff;border:1.5px solid #999;border-radius:6px"), after: el("width:34px;height:22px;background:#d6e4ff;border-radius:6px"),
     prompt: { zh: "样式：去掉边框，改用浅色底色区分区域", en: "Style: remove the border; use a subtle tinted background instead" } },
   { id: "v-row-to-col", zh: "横排 → 竖排", en: "Row → Column", before: el("display:flex;gap:3px", bar("width:9px;height:14px;background:" + C) + bar("width:9px;height:14px;background:" + C) + bar("width:9px;height:14px;background:" + C)), after: el("display:flex;flex-direction:column;gap:3px", bar("width:24px;height:5px;background:" + C) + bar("width:24px;height:5px;background:" + C) + bar("width:24px;height:5px;background:" + C)),
     prompt: { zh: "布局：子元素由横向排列改为纵向堆叠（flex-direction: column）", en: "Layout: stack children vertically instead of horizontally (flex-direction: column)" } },
@@ -126,11 +126,11 @@ export const VISUAL = [
     prompt: { zh: "间距：子元素之间的间距加大一倍（如 8px → 16px）", en: "Spacing: double the gap between children (e.g. 8px → 16px)" } },
   { id: "v-light-to-dark", zh: "浅底 → 深底", en: "Light → Dark", before: el("width:34px;height:22px;background:#fff;border-radius:6px;border:1px solid #ddd", bar("width:16px;height:3px;margin:9px auto;background:#333")), after: el("width:34px;height:22px;background:#1d1b26;border-radius:6px", bar("width:16px;height:3px;margin:9px auto;background:#eee")),
     prompt: { zh: "配色：浅色背景改为深色背景（#1C1B22 左右），文字改为浅色", en: "Color: switch to a dark background (~#1C1B22) with light text" } },
-  { id: "v-solid-to-gradient", zh: "纯色 → 渐变", en: "Solid → Gradient", before: el(base + "border-radius:6px"), after: el("width:34px;height:22px;border-radius:6px;background:linear-gradient(120deg,#ff4d8d,#8b5cff,#2ee6d6)"),
+  { id: "v-solid-to-gradient", zh: "纯色 → 渐变", en: "Solid → Gradient", before: el(base + "border-radius:6px"), after: el("width:34px;height:22px;border-radius:6px;background:linear-gradient(120deg,#1761fd,#246fff,#2b7fff)"),
     prompt: { zh: "配色：纯色背景改为品牌色线性渐变（约 120°，两到三个相邻色）", en: "Color: replace solid fill with a brand linear gradient (~120°, 2–3 adjacent hues)" } },
   { id: "v-text-to-icon", zh: "纯文字 → 图标+文字", en: "Text → Icon + text", before: el(`width:40px;height:22px;background:${C};border-radius:6px;color:#fff;font:700 9px/22px sans-serif;text-align:center`, "Aa"), after: el(`width:40px;height:22px;background:${C};border-radius:6px;color:#fff;font:700 9px/22px sans-serif;text-align:center`, "★ Aa"),
     prompt: { zh: "内容：在文字左侧加一个语义相关的线性图标（16–20px，与文字间距 6px）", en: "Content: add a relevant line icon to the left of the label (16–20px, 6px gap)" } },
-  { id: "v-full-to-inset", zh: "通栏 → 内缩悬浮", en: "Full-width → Inset", before: `<i class="m frame-pos" style="position:absolute;left:0;right:0;bottom:0;height:12px;background:${C}"></i>`, after: `<i class="m frame-pos" style="position:absolute;left:6px;right:6px;bottom:4px;height:12px;background:${C};border-radius:99px;box-shadow:0 4px 8px rgba(60,40,120,.45)"></i>`,
+  { id: "v-full-to-inset", zh: "通栏 → 内缩悬浮", en: "Full-width → Inset", before: `<i class="m frame-pos" style="position:absolute;left:0;right:0;bottom:0;height:12px;background:${C}"></i>`, after: `<i class="m frame-pos" style="position:absolute;left:6px;right:6px;bottom:4px;height:12px;background:${C};border-radius:99px;box-shadow:0 4px 8px rgba(36,111,255,.4)"></i>`,
     prompt: { zh: "布局：贴边通栏改为四周留边距的悬浮条（左右 16px、底部 12px、大圆角、投影）", en: "Layout: turn the edge-to-edge bar into an inset floating bar (16px sides, 12px bottom, large radius, shadow)" } },
 ];
 

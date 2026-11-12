@@ -1,5 +1,5 @@
 /* 点睛 · 画界面模式样式。复用主站的 token（--blue / --canvas / --grad）与 .btn / .card / .seg。 */
-#sketchRoot { --sk-primary: #246fff; --sk-primary-soft: #d3e3fd; --sk-radius: 20px; }
+#sketchRoot { --sk-primary: #246fff; --sk-primary-soft: #d3e3fd; --sk-radius: 20px; --sk-gap: 12px; --sk-zoom: 1; --sk-shadow: 0 1px 2px rgba(16,24,40,.05); --sk-shadow-strong: 0 8px 22px rgba(0,0,0,.12); --sk-dur: .42s; }
 .sketch { display: none; flex: 1; min-height: 0; }
 body.mode-sketch .layout { display: none; }
 body.mode-sketch nav.actions { display: none; }
@@ -14,7 +14,8 @@ body.sk-previewing .sketch { grid-template-columns: minmax(0, 1fr); }
 .sk-search { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--line-2); border-radius: 10px; padding: 8px 12px; margin-bottom: 6px; }
 .sk-search input { border: none; outline: none; background: none; font-size: 13px; width: 100%; font-family: inherit; }
 .sk-pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.sk-part-card { border: 1px solid var(--line-2); border-radius: 12px; padding: 10px 6px 8px; background: #fff; text-align: center; cursor: pointer; font-family: inherit; transition: border-color .15s, box-shadow .15s; }
+.sk-part-card { border: 1px solid var(--line-2); border-radius: 12px; padding: 10px 6px 8px; background: #fff; text-align: center; cursor: pointer; font-family: inherit; transition: transform .2s cubic-bezier(.34,1.56,.64,1), border-color .15s, box-shadow .15s; }
+.sk-part-card:active { transform: scale(.96); transition-duration: .08s; }
 .sk-part-card:hover { border-color: var(--blue); box-shadow: 0 2px 10px rgba(36,111,255,.12); }
 .sk-part-card span:last-child { font-size: 12px; font-weight: 600; display: block; margin-top: 6px; }
 .pv { display: block; height: 34px; position: relative; }
@@ -39,8 +40,23 @@ body.sk-previewing .sketch { grid-template-columns: minmax(0, 1fr); }
 
 /* ---------- 中：画布 ---------- */
 .sk-stage { min-width: 0; display: flex; flex-direction: column; background: var(--canvas); background-image: radial-gradient(rgba(10,10,10,.045) 1px, transparent 1px); background-size: 22px 22px; }
+/* 画布背景三选一（展示设置，不进设计文档） */
+.sk-stage.sk-bg-dark { background-color: #232529; background-image: radial-gradient(rgba(255,255,255,.13) 1px, transparent 1px); }
+.sk-stage.sk-bg-dark .sk-phone-label { color: #b9bec7; }
+.sk-stage.sk-bg-dark .sk-phone-label b { color: #fff; }
+.sk-stage.sk-bg-dark .sk-flow { color: #b9bec7; }
+.sk-stage.sk-bg-grid { background-color: #fff; background-image: linear-gradient(#e6e9ee 1px, transparent 1px), linear-gradient(90deg, #e6e9ee 1px, transparent 1px); background-size: 24px 24px; }
+/* 缩放 100%：手机按 390×844 的真实尺寸显示，两屏放不下就换行 */
+.sk-stage.sk-zoom-100 .sk-phone { width: 390px; height: 844px; }
+.sk-stage.sk-zoom-100 .sk-phones { flex-wrap: wrap; justify-content: center; }
+/* 展示用工具条：设备框 / 缩放 / 背景 */
+.sk-displaybar { flex: none; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 10px 16px 0; }
+.sk-dgroup { display: flex; align-items: center; gap: 7px; }
+.sk-dgroup > label { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.sk-dgroup .sk-styleseg button { padding: 6px 10px; white-space: nowrap; }
 .sk-screenbar { flex: none; display: flex; align-items: center; gap: 6px; padding: 12px 16px 0; }
-.sk-stab { border: 1px solid var(--line-2); background: #fff; color: var(--ink-2); padding: 7px 13px; border-radius: 99px; font: 600 12px/1 inherit; font-family: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.sk-stab { border: 1px solid var(--line-2); background: #fff; color: var(--ink-2); padding: 7px 13px; border-radius: 99px; font: 600 12px/1 inherit; font-family: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: transform .2s cubic-bezier(.34,1.56,.64,1), background .2s, color .2s; }
+.sk-stab:active { transform: scale(.96); transition-duration: .08s; }
 .sk-stab.on { background: var(--ink); color: #fff; border-color: var(--ink); }
 .sk-stab.add { border-style: dashed; color: var(--muted); }
 .sk-stab i { font-style: normal; font-size: 14px; line-height: 1; padding: 0 2px; border-radius: 50%; }
@@ -52,8 +68,15 @@ body.sk-previewing .sketch { grid-template-columns: minmax(0, 1fr); }
 .sk-phone-label { font-size: 12px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 8px; }
 .sk-phone-label b { color: var(--ink); }
 .sk-phone { width: 300px; height: 650px; background: #111; border-radius: 44px; padding: 9px; box-shadow: 0 24px 60px rgba(0,0,0,.2), 0 2px 8px rgba(0,0,0,.14); position: relative; transition: box-shadow .25s; }
-.sk-notch { position: absolute; top: 9px; left: 50%; transform: translateX(-50%); width: 92px; height: 22px; background: #111; border-radius: 0 0 14px 14px; z-index: 6; }
-.sk-viewport { position: relative; width: 100%; height: 100%; border-radius: 36px; overflow-y: auto; overflow-x: hidden; background: #fff; scrollbar-width: none; }
+/* 内容超出手机框时的提示：固定在底栏上方，滚到底自动消失 */
+.sk-more { position: absolute; left: 50%; bottom: 56px; transform: translateX(-50%); z-index: 7; font-size: 11px; font-weight: 700; color: var(--ink-2); background: rgba(255,255,255,.94); border: 1px solid var(--line-2); padding: 4px 10px; border-radius: 999px; box-shadow: 0 4px 14px rgba(0,0,0,.14); pointer-events: none; white-space: nowrap; }
+/* 手机外框顶部：居中打孔摄像头（安卓式），不做 iPhone 刘海——提示词写的是 Material 3 + Web，外框别自带 iOS 味 */
+.sk-notch { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; background: #111; border-radius: 50%; z-index: 6; }
+/* 设备框三选一：刘海是 92×22 的黑条，挖孔是 12px 的圆点，无框直接藏起 */
+body.sk-frame-notch .sk-notch { width: 92px; height: 22px; border-radius: 12px; }
+body.sk-frame-hole .sk-notch { width: 12px; height: 12px; border-radius: 50%; }
+body.sk-frame-none .sk-notch { display: none; }
+.sk-viewport { position: relative; width: 100%; height: 100%; border-radius: 36px; overflow-y: auto; overflow-x: hidden; background: #fff; scrollbar-width: none; zoom: var(--sk-zoom, 1); }
 .sk-viewport::-webkit-scrollbar { display: none; }
 .sk-status { height: 34px; padding: 12px 18px 0; display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; flex: none; }
 .sk-screen-body { display: flex; flex-direction: column; min-height: calc(100% - 34px); }
@@ -61,10 +84,12 @@ body.sk-previewing .sketch { grid-template-columns: minmax(0, 1fr); }
 .sk-flow span { font-size: 12px; font-weight: 600; color: var(--blue); background: #fff; border: 1px solid var(--line-2); padding: 5px 11px; border-radius: 999px; }
 
 /* 手机里的零件 */
-.sk-part { position: relative; margin: 0 16px 12px; border-radius: 12px; cursor: default; }
+.sk-part { position: relative; margin: 0 16px var(--sk-gap, 12px); border-radius: 12px; cursor: default; }
 .sk-part.sel { outline: 2px solid var(--blue); outline-offset: 2px; }
 .sk-part.tap { cursor: pointer; }
-.sk-link { position: absolute; top: -8px; right: 6px; z-index: 2; font-style: normal; font-size: 10px; font-weight: 700; color: #fff; background: var(--blue); padding: 2px 7px; border-radius: 999px; box-shadow: 0 2px 6px rgba(36,111,255,.4); white-space: nowrap; }
+/* 跳转徽章：平时不显示，只在鼠标悬停或零件被选中时出现，免得盖住卡片和底栏 */
+.sk-link { position: absolute; top: -8px; right: 6px; z-index: 2; font-style: normal; font-size: 10px; font-weight: 700; color: #fff; background: var(--blue); padding: 2px 7px; border-radius: 999px; box-shadow: 0 2px 6px rgba(36,111,255,.4); white-space: nowrap; opacity: 0; transition: opacity .2s; }
+.sk-part:hover .sk-link, .sk-part.sel .sk-link { opacity: 1; }
 /* 卡片有 overflow:hidden，标签放不下会裁一半，改放卡片里面 */
 .sk-card .sk-link { top: 8px; right: 8px; }
 .sk-topbar { margin: 0 0 12px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 0; }
@@ -74,10 +99,11 @@ body.sk-previewing .sketch { grid-template-columns: minmax(0, 1fr); }
 .sk-chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .sk-chips span { padding: 7px 13px; border-radius: 999px; font-size: 13px; font-weight: 600; background: #fff; border: 1px solid var(--line-2); color: var(--muted); }
 .sk-chips span.on { background: var(--sk-primary); border-color: var(--sk-primary); color: #fff; }
-.sk-card { background: #fff; border: 1px solid var(--line-2); border-radius: var(--sk-radius); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
-.sk-card.v-elevated { box-shadow: 0 8px 22px rgba(0,0,0,.12); }
+.sk-card { background: #fff; border: 1px solid var(--line-2); border-radius: var(--sk-radius); overflow: hidden; box-shadow: var(--sk-shadow, 0 1px 2px rgba(16,24,40,.05)); transition: transform .2s ease, box-shadow .2s ease; }
+.sk-card:hover { transform: translateY(-2px); box-shadow: var(--sk-shadow-strong, 0 8px 22px rgba(0,0,0,.12)); }
+.sk-card.v-elevated { box-shadow: var(--sk-shadow-strong, 0 8px 22px rgba(0,0,0,.12)); }
 .sk-card.v-outlined { box-shadow: none; }
-.sk-card-media { height: 118px; background: linear-gradient(140deg, var(--sk-primary), #7c3aed 70%); }
+.sk-card-media { height: 118px; background: linear-gradient(140deg, var(--sk-primary), #1761fd 70%); }
 .sk-card b { display: block; font-size: 17px; font-weight: 800; padding: 12px 14px 2px; }
 .sk-card span { display: block; font-size: 12.5px; color: var(--muted); padding: 0 14px 12px; }
 .sk-list { display: flex; gap: 12px; align-items: center; padding: 8px 4px; border-radius: 14px; }
@@ -90,7 +116,7 @@ body.sk-previewing .sketch { grid-template-columns: minmax(0, 1fr); }
 .sk-btn.v-filled { background: var(--sk-primary); color: #fff; }
 .sk-btn.v-tonal { background: var(--sk-primary-soft); color: var(--sk-primary); }
 .sk-btn.v-outlined { border: 1.5px solid var(--sk-primary); color: var(--sk-primary); }
-.sk-btn.v-elevated { background: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.14); }
+.sk-btn.v-elevated { background: #fff; box-shadow: var(--sk-shadow-strong, 0 6px 18px rgba(0,0,0,.14)); }
 .sk-btn.v-text { color: var(--sk-primary); }
 .sk-fabrow { display: flex; justify-content: flex-end; }
 .sk-fab { width: 52px; height: 52px; border-radius: 50%; background: var(--sk-primary); color: #fff; font-size: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(36,111,255,.4); }
@@ -116,9 +142,10 @@ body.sk-previewing .sketch { grid-template-columns: minmax(0, 1fr); }
 
 /* ---------- 右：检查器 + 提示词 ---------- */
 .sk-panel { overflow-y: auto; padding: 20px 20px 48px; display: grid; gap: 16px; align-content: start; border-left: 1px solid var(--line); background: var(--canvas); scrollbar-width: thin; }
-.itabs { display: flex; gap: 4px; background: #f0f0f0; border: 1px solid var(--line); border-radius: 10px; padding: 3px; margin-bottom: 14px; }
-.itabs button { flex: 1; padding: 6px; font-size: 13px; font-weight: 700; border-radius: 8px; color: var(--muted); background: transparent; border: none; cursor: pointer; font-family: inherit; }
-.itabs button.on { background: var(--ink); color: #fff; }
+.itabs { position: relative; display: flex; gap: 4px; background: #f0f0f0; border: 1px solid var(--line); border-radius: 10px; padding: 3px; margin-bottom: 14px; }
+.itabs button { flex: 1; padding: 6px; font-size: 13px; font-weight: 700; border-radius: 8px; color: var(--muted); background: transparent; border: none; cursor: pointer; font-family: inherit; position: relative; z-index: 1; }
+.itabs button.on { background: transparent; color: #fff; }
+.itabs .seg-thumb { border-radius: 8px; transition: transform 320ms cubic-bezier(.2,0,0,1), width 320ms cubic-bezier(.2,0,0,1); }
 .sk-field { margin-bottom: 13px; }
 .sk-field label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
 .sk-field label .val { float: right; color: var(--ink); }
@@ -132,32 +159,68 @@ body.sk-previewing .sketch { grid-template-columns: minmax(0, 1fr); }
 .prompt-wrap textarea { width: 100%; height: 260px; resize: vertical; border: 1px solid var(--line-2); border-radius: 12px; padding: 12px; font: 12.5px/1.8 inherit; font-family: inherit; color: var(--ink-2); background: #fff; }
 #skCopy.done .l1 { display: none; }
 #skCopy .l2 { display: none; }
-#skCopy.done .l2 { display: inline; }
+#skCopy.done .l2 { display: inline-flex; align-items: center; gap: 5px; }
+/* 复制完成：勾号一笔画出来（只在状态第一次变化时播，重复点不重播——.done 已在时动画不重启） */
+#skCopy.done .check-draw path { animation: checkDraw .2s cubic-bezier(.65,0,.35,1) forwards; }
+
+/* 数字滚动：花费等数值被改动时，旧值滚出、新值滚入（变大从下方进、变小从上方进）
+   注意：.sk-text span / .sk-card span 是 display:block，必须用 .sk-part .sk-num（0,2,0）才压得住，否则数字会被撑成独占一行的块 */
+.sk-part .sk-num { display: inline-block; }
+.sk-num.roll-up { animation: skNumRollUp .22s ease-out; }
+.sk-num.roll-down { animation: skNumRollDown .22s ease-out; }
+@keyframes skNumRollUp { from { opacity: .35; transform: translateY(10px); } }
+@keyframes skNumRollDown { from { opacity: .35; transform: translateY(-10px); } }
+/* 点击涟漪：从触点扩散，抬起手指时消退 */
+.sk-ripple { position: absolute; border-radius: 50%; background: rgba(36,111,255,.18); pointer-events: none; transform: scale(0); animation: skRippleIn .45s cubic-bezier(.2,0,0,1) forwards; z-index: 5; }
+@keyframes skRippleIn { to { transform: scale(1); } }
+.sk-ripple.fade { opacity: 0; transition: opacity .2s; }
+
+/* ---------- 错峰入场 ---------- */
+/* 新零件：行高 0fr → 1fr 展开 400ms，同时零件本身从上方滑入 400ms、淡入 240ms（淡入比位移短） */
+.sk-enter-wrap { display: grid; grid-template-rows: 0fr; overflow: hidden; transition: grid-template-rows 400ms ease-out; }
+.sk-enter-wrap.open { grid-template-rows: 1fr; }
+.sk-enter-wrap > .sk-part { min-height: 0; }
+.sk-part.sk-entering { animation: skPartInY 400ms ease-out, skPartInFade 240ms ease-out; }
+@keyframes skPartInY { from { transform: translateY(-8px); } }
+@keyframes skPartInFade { from { opacity: 0; filter: blur(2px); } }
+/* 删除反向：收起 225ms ease-in，淡出 160ms（比滑动更短），下面的行补上来 */
+.sk-enter-wrap.closing { transition: grid-template-rows 225ms ease-in; }
+.sk-part.sk-leaving { animation: skPartOutFade 160ms ease-in both; }
+@keyframes skPartOutFade { to { opacity: 0; } }
 
 /* ---------- 预览播放器 ---------- */
-.sk-stage.previewing .sk-screenbar, .sk-stage.previewing .sk-canvas { display: none; }
+.sk-stage.previewing .sk-screenbar, .sk-stage.previewing .sk-displaybar, .sk-stage.previewing .sk-canvas { display: none; }
 .sk-player { display: none; flex: 1; min-height: 0; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 20px; }
 .sk-stage.previewing .sk-player { display: flex; }
 .sk-player-phone { width: 300px; height: 650px; background: #111; border-radius: 44px; padding: 9px; box-shadow: 0 24px 60px rgba(0,0,0,.25); position: relative; }
-.sk-playerbar { display: flex; gap: 10px; align-items: center; background: #fff; border: 1px solid var(--line-2); border-radius: 999px; padding: 6px 8px; box-shadow: 0 8px 24px rgba(0,0,0,.1); white-space: nowrap; }
+.sk-playerbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; background: #fff; border: 1px solid var(--line-2); border-radius: 18px; padding: 6px 8px; box-shadow: 0 8px 24px rgba(0,0,0,.1); max-width: 100%; }
 .sk-playerbar .btn { white-space: nowrap; }
+#skPlayerAuto.on { background: var(--ink); color: #fff; border-color: var(--ink); }
 @keyframes skInRight { from { transform: translateX(102%); } }
 @keyframes skInLeft { from { transform: translateX(-102%); } }
 @keyframes skInUp { from { transform: translateY(102%); } }
 @keyframes skInDown { from { transform: translateY(-102%); } }
 @keyframes skFade { from { opacity: 0; } }
 @keyframes skExpand { from { transform: scale(.92); opacity: 0; } }
-.sk-viewport.anim-slide { animation: skInRight .42s cubic-bezier(.32,.72,.24,1); }
-.sk-viewport.anim-slideLeft { animation: skInLeft .42s cubic-bezier(.32,.72,.24,1); }
-.sk-viewport.anim-slideUp { animation: skInUp .42s cubic-bezier(.32,.72,.24,1); }
-.sk-viewport.anim-slideDown { animation: skInDown .42s cubic-bezier(.32,.72,.24,1); }
-.sk-viewport.anim-fade { animation: skFade .3s ease; }
-.sk-viewport.anim-expand { animation: skExpand .35s cubic-bezier(.32,.72,.24,1); }
-.sk-viewport.anim-back { animation: skInLeft .42s cubic-bezier(.32,.72,.24,1); }
+.sk-viewport.anim-slide { animation: skInRight var(--sk-dur, .42s) cubic-bezier(.32,.72,.24,1); }
+.sk-viewport.anim-slideLeft { animation: skInLeft var(--sk-dur, .42s) cubic-bezier(.32,.72,.24,1); }
+.sk-viewport.anim-slideUp { animation: skInUp var(--sk-dur, .42s) cubic-bezier(.32,.72,.24,1); }
+.sk-viewport.anim-slideDown { animation: skInDown var(--sk-dur, .42s) cubic-bezier(.32,.72,.24,1); }
+.sk-viewport.anim-fade { animation: skFade calc(var(--sk-dur, .42s) * .7) ease; }
+.sk-viewport.anim-expand { animation: skExpand calc(var(--sk-dur, .42s) * .83) cubic-bezier(.32,.72,.24,1); }
+.sk-viewport.anim-back { animation: skInLeft var(--sk-dur, .42s) cubic-bezier(.32,.72,.24,1); }
+@keyframes skZoomIn { from { transform: scale(.92); opacity: 0; } }
+@keyframes skZoomOut { to { transform: scale(.92); opacity: 0; } }
+/* 放大（共享元素）：从被点卡片的中心放大进来，360ms；返回是进入的精确逆过程 */
+.sk-viewport.anim-zoom { animation: skZoomIn 360ms cubic-bezier(.2,0,0,1); }
+.sk-viewport.anim-zoom-out { animation: skZoomOut 360ms cubic-bezier(.2,0,0,1) forwards; }
 
 @media (max-width: 960px) {
   body.mode-sketch .sketch { grid-template-columns: 1fr; overflow-y: auto; }
   .sk-parts, .sk-panel { border: 0; }
   .sk-screenbar { flex-wrap: wrap; row-gap: 8px; }
   .sk-stage { overflow-y: auto; }
+  /* 预览在手机上：工具条会换成两行，手机框收短一点，让整条工具条都落在视口里 */
+  .sk-player { padding: 12px; gap: 10px; }
+  .sk-player-phone { width: 300px; height: 580px; }
 }

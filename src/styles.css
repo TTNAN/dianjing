@@ -40,6 +40,19 @@ kbd { font: 600 11px/1 ui-monospace, Menlo, monospace; padding: 3px 6px; border-
 
 /* ============ Header ============ */
 .top { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid var(--line); background: rgba(255, 255, 255, .85); backdrop-filter: blur(12px); position: relative; z-index: 5; animation: fadeDown .8s var(--out) both; }
+/* 顶栏三段式：品牌左、切换器居中、操作右——两模式同一位置。
+   flex 的 space-between 会因左右两边不等宽把切换器推偏，桌面端改成三列网格。 */
+@media (min-width: 961px) {
+  .top { display: grid; grid-template-columns: 1fr auto 1fr; }
+  .brand { grid-column: 1; }
+  .mode-seg { grid-column: 2; justify-self: center; }
+  nav.actions { grid-column: 3; justify-self: end; }
+}
+/* 「圈出来，说清楚」是改截图模式的标签，画界面里不对，隐藏 */
+body.mode-sketch .tag { display: none; }
+/* 空状态下顶栏那套上传/示例按钮和首屏重复了，只留模型设置 */
+body.no-image nav.actions label.btn,
+body.no-image nav.actions #demo { display: none; }
 .brand { display: flex; align-items: center; gap: 10px; }
 /* Logo：一只眼睛 —— 外圈是眼眶，中间是点下去的瞳孔 */
 .logo { flex: none; width: 28px; height: 28px; }
@@ -53,11 +66,11 @@ kbd { font: 600 11px/1 ui-monospace, Menlo, monospace; padding: 3px 6px; border-
 
 /* ============ Buttons ============ */
 .btn { --h: 36px; position: relative; overflow: hidden; height: var(--h); padding: 0 16px; border-radius: 12px; border: 1px solid var(--line-2); background: #fff; color: var(--ink); font: 600 13px/1 inherit; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; isolation: isolate;
-  transition: transform .35s var(--spring), border-color .25s, background .25s, box-shadow .35s; }
+  transition: transform .2s var(--spring), border-color .25s, background .25s, box-shadow .2s ease; }
 .btn::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(110deg, transparent 30%, rgba(36,111,255,.08) 50%, transparent 70%); transform: translateX(-120%); transition: transform .7s var(--out); }
-.btn:hover { transform: translateY(-2px); border-color: #d4d4d4; box-shadow: 0 8px 20px -12px rgba(0, 0, 0, .25); }
+.btn:hover { transform: translateY(-2px); border-color: #d4d4d4; box-shadow: 0 8px 20px -12px rgba(0, 0, 0, .25); transition: transform .2s ease, border-color .25s, background .25s, box-shadow .2s ease; }
 .btn:hover::before { transform: translateX(120%); }
-.btn:active { transform: translateY(0) scale(.96); transition-duration: .1s; }
+.btn:active { transform: translateY(0) scale(.96); transition-duration: .08s; }
 .btn.primary { border: 0; background: var(--grad); background-size: 200% 100%; color: #fff; box-shadow: 0 6px 24px -6px rgba(36, 111, 255, .5), inset 0 1px 0 rgba(255,255,255,.25); animation: gradShift 6s ease infinite; }
 .btn.primary:hover { box-shadow: 0 10px 34px -6px rgba(43, 127, 255, .55), inset 0 1px 0 rgba(255,255,255,.3); }
 @keyframes gradShift { 50% { background-position: 100% 0; } }
@@ -190,6 +203,24 @@ h4 .muted { font-weight: 400; letter-spacing: 0; }
 .issues li { font-size: 12px; color: var(--red); padding-left: 16px; position: relative; }
 .issues li::before { content: ""; position: absolute; left: 3px; top: 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
 .skel { height: 12px; border-radius: 6px; background: linear-gradient(90deg, rgba(0,0,0,.05) 25%, rgba(0,0,0,.12) 50%, rgba(0,0,0,.05) 75%); background-size: 200% 100%; animation: shimmer 1.3s linear infinite; }
+
+/* ---------- 思考中微光 + 勾号画笔 ---------- */
+/* 状态行文字上品牌蓝微光从左扫到右（只作用于文字本身） */
+.ai-shimmer { background: linear-gradient(100deg, #246fff55 30%, #246fff 50%, #246fff55 70%); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: aiShimmer 2.6s linear infinite; }
+@keyframes aiShimmer { from { background-position: 200% 0; } to { background-position: -100% 0; } }
+/* 旁边 2–3 颗小星星依次亮起熄灭 */
+.ai-stars { display: inline-flex; gap: 2px; margin-left: 2px; }
+.ai-stars i { font-style: normal; font-size: 10px; color: var(--blue); animation: aiStar 1.5s ease-in-out infinite; }
+.ai-stars i:nth-child(2) { animation-delay: .2s; }
+.ai-stars i:nth-child(3) { animation-delay: .4s; }
+@keyframes aiStar { 0%, 100% { transform: scale(0); opacity: 0; } 40% { transform: scale(1); opacity: 1; } 60% { transform: scale(.8); opacity: .8; } }
+/* 勾号一笔画出来（pathLength=1，dashoffset 1 → 0）；draw 只在状态第一次变化时播，done 是已画好的静态 */
+.check-draw { width: 16px; height: 16px; vertical-align: -3px; flex: none; }
+.check-draw path { stroke: var(--blue); stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.check-draw.draw path { animation: checkDraw .2s cubic-bezier(.65,0,.35,1) forwards; }
+.check-draw.done path { stroke-dashoffset: 0; }
+@keyframes checkDraw { to { stroke-dashoffset: 0; } }
+.gen-done { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--ink); }
 .skel.w60 { width: 60%; height: 16px; } .skel.w90 { width: 90%; } .skel.w75 { width: 75%; }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
@@ -238,8 +269,11 @@ body.no-image #prompt { height: 110px; }
 .seg { position: relative; display: inline-flex; padding: 3px; border-radius: 10px; background: #f0f0f0; border: 1px solid var(--line); }
 .seg button { position: relative; z-index: 1; border: 0; background: transparent; color: var(--muted); padding: 5px 12px; font: 600 12px/1 inherit; font-family: inherit; cursor: pointer; transition: color .3s; }
 .seg button.on { color: #fff; }
-.mode-seg button { transition: color .18s ease, background-color .18s ease; }
-.mode-seg button.on { color: #fff; background: var(--ink); border-radius: 7px; }
+.mode-seg button { transition: color .18s ease; }
+.mode-seg button.on { color: #fff; background: transparent; border-radius: 7px; }
+/* 模式切换器的黑底板：跟着选中的按钮滑过去，宽度也一起过渡；首次放置、窗口缩放、字体加载完都直接放到位，不从 0 宽长出来 */
+#modeSeg .seg-thumb { transition: transform 320ms cubic-bezier(.2,0,0,1), width 320ms cubic-bezier(.2,0,0,1); }
+.seg-thumb.no-anim { transition: none !important; }
 .seg-thumb { position: absolute; top: 3px; bottom: 3px; left: 3px; border-radius: 7px; background: var(--ink); transition: transform .45s var(--spring), width .45s var(--spring); }
 
 /* ============ Variants ============ */
@@ -273,7 +307,11 @@ dialog::backdrop { background: rgba(0, 0, 0, .3); backdrop-filter: blur(4px); an
 @keyframes fadeDown { from { opacity: 0; transform: translateY(-12px); } }
 @keyframes pulseIn { from { opacity: 0; transform: scale(.8); } }
 @keyframes fade { from { opacity: 0; } }
-.animate .rise { animation: rise .6s var(--out) both; animation-delay: calc(var(--i, 0) * 55ms); }
+/* 标题行入场：500ms 上浮 12px + 3px 模糊，每行错峰 40ms */
+@keyframes riseTitle { from { opacity: 0; transform: translateY(12px); filter: blur(3px); } }
+.animate .rise { animation: riseTitle .5s cubic-bezier(.22,1,.36,1) both; animation-delay: calc(var(--i, 0) * 40ms); }
+/* 一眼对比 18 张小图错峰进场：同一套标题行动效，--i 是毫秒数（渲染时封顶 560ms） */
+.vs.vs-in { animation: riseTitle .5s cubic-bezier(.22,1,.36,1) both; animation-delay: calc(var(--i, 0) * 1ms); }
 
 @media (max-width: 960px) { body { overflow: auto; height: auto; } .layout { grid-template-columns: 1fr; } .panel { border-left: 0; border-top: 1px solid var(--line); } .tag, .en { display: none; } .top { flex-wrap: wrap; padding: 12px 16px; row-gap: 10px; } .brand { flex: none; } .wordmark { white-space: nowrap; } .mode-seg { order: 3; flex-basis: 100%; display: flex; } .mode-seg button { flex: 1; padding: 9px 0; font-size: 13px; white-space: nowrap; text-align: center; } #demo { display: none; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
@@ -295,3 +333,8 @@ dialog::backdrop { background: rgba(0, 0, 0, .3); backdrop-filter: blur(4px); an
 .vs.star::before { content: "✦"; position: absolute; top: 5px; left: 7px; font-size: 10px; color: var(--blue); }
 .vs.bump { animation: bump .45s var(--spring); }
 @media (max-width: 420px) { .vsgrid { grid-template-columns: repeat(2, 1fr); } }
+
+/* 减弱动效：有明显位移的动效直接看到位状态（BoardUI 的处理） */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}

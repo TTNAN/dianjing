@@ -23,6 +23,7 @@ const state = {
 window.__dianjing = state; // 供端到端测试读取
 let nextId = 1;
 let justCreated = null;
+let vsEntered = false; // 一眼对比的小图只在第一次渲染时错峰进场，之后重渲染不重播
 
 // ---------- 本地持久化：圈选自动保存，刷新还在 ----------
 const SAVE_KEY = "dianjing.workspace.v1";
@@ -509,12 +510,13 @@ function renderEditor() {
         <div class="vbody"><div class="vmeta"><b>${esc(v.title)}</b><div>${esc(v.summary)}</div></div>
         <button class="btn sm ${r.chosen === k ? "primary" : ""}"><span>${r.chosen === k ? "✓ 已选用 · 图上预览中" : "选这个"}</span></button></div>
       </div>`).join("");
+  const wasFresh = r.fresh; // 生成刚完成的那一次渲染才画勾号，之后重渲染只留画好的静态勾号
   r.fresh = false;
 
   ed.innerHTML = `
     <div ${R()}><div class="recog">${recogHTML}
       <div class="row" style="margin-top:6px">
-        <button class="btn sm" id="recogBtn" ${ai && r.busy !== "recog" ? "" : "disabled"}><span>${r.busy === "recog" ? "识别中…" : r.recog ? "重新识别" : "✦ AI 识别"}</span></button>
+        <button class="btn sm" id="recogBtn" ${ai && r.busy !== "recog" ? "" : "disabled"}><span class="${r.busy === "recog" ? "ai-shimmer" : ""}">${r.busy === "recog" ? "识别中…" : r.recog ? "重新识别" : "✦ AI 识别"}</span>${r.busy === "recog" ? `<span class="ai-stars"><i>✦</i><i>✦</i><i>✦</i></span>` : ""}</button>
         <button class="btn sm danger" id="delBtn"><span>删除此框</span></button>
       </div></div></div>
 
@@ -527,7 +529,7 @@ function renderEditor() {
     <div class="chips">${QUICK.map((q, k) => `<button class="chip quick ${q.terms.every((id) => r.terms.includes(id)) ? "on" : ""}" data-q="${k}">${q.zh}</button>`).join("")}</div></div>
 
     <div ${R()}><h4>一眼对比 <span class="muted">${state.isDemo ? "点一下，图上直接变，也写进提示词" : "点一下，前 → 后就写进提示词"}</span></h4>
-    <div class="vsgrid">${VISUAL.map((v) => `<button class="vs ${r.terms.includes(v.id) ? "on" : ""} ${suggested.has(v.id) ? "star" : ""}" data-t="${v.id}" title="${esc(v.prompt.zh)}">
+    <div class="vsgrid">${VISUAL.map((v, k) => `<button class="vs ${r.terms.includes(v.id) ? "on" : ""} ${suggested.has(v.id) ? "star" : ""} ${vsEntered ? "" : "vs-in"}" style="--i:${Math.min(k * 40, 560)}" data-t="${v.id}" title="${esc(v.prompt.zh)}">
       <span class="pair"><span class="fr">${v.before}</span><span class="arr">→</span><span class="fr">${v.after}</span></span>
       <span class="vl">${v.zh}</span></button>`).join("")}</div></div>
 
@@ -546,11 +548,13 @@ function renderEditor() {
 
     <div ${R()}><h4>三个方案预览 <span class="muted">选一个，直接贴到原图上对比</span></h4>
     <div class="row" style="margin-top:0">
-      <button class="btn ${ai ? "primary" : ""}" id="varBtn" ${ai && r.busy !== "variants" ? "" : "disabled"}><span>${r.busy === "variants" ? "正在设计 3 个方案…" : r.variants.length ? "↻ 重新生成" : "✦ 生成 3 个方案"}</span></button>
+      <button class="btn ${ai ? "primary" : ""}" id="varBtn" ${ai && r.busy !== "variants" ? "" : "disabled"}><span class="${r.busy === "variants" ? "ai-shimmer" : ""}">${r.busy === "variants" ? "正在设计 3 个方案…" : r.variants.length ? "↻ 重新生成" : "✦ 生成 3 个方案"}</span>${r.busy === "variants" ? `<span class="ai-stars"><i>✦</i><i>✦</i><i>✦</i></span>` : ""}</button>
       ${ai ? "" : `<span class="muted small">需要先在 ⚙ 填写模型</span>`}
     </div>
+    ${r.variants.length ? `<div class="gen-done"><svg class="check-draw ${wasFresh ? "draw" : "done"}" viewBox="0 0 16 16"><path pathLength="1" d="M3 8.5 L6.5 12 L13 4.5"/></svg><span>已生成 3 个方案</span></div>` : ""}
     <div class="variants">${variantsHTML}</div></div>
   `;
+  vsEntered = true; // 一眼对比的首播只放这一次，之后重渲染不再错峰
   ed.querySelectorAll("[data-t]").forEach((c) => c.onclick = () => {
     const id = c.dataset.t;
     let added = false;

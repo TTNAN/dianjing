@@ -31,7 +31,7 @@ async def main():
     assert await pg.locator("body.no-image").count() == 1, "空状态下 body 应带 no-image"
     await pg.evaluate("localStorage.setItem('dianjing.settings', JSON.stringify({baseUrl:'https://fake.api/v1',model:'x',apiKey:'k'}))")
     await pg.reload(); await pg.wait_for_timeout(300)
-    await pg.click("#demo"); await pg.wait_for_timeout(1300)
+    await pg.click("#demo2"); await pg.wait_for_timeout(1300)  # 空状态下顶栏的 #demo 已隐藏，改走首屏的「先看看示例」
     assert await pg.locator("#zoombar").is_visible(), "载入截图后缩放条应出现"
     box = await pg.locator("#overlay").bounding_box()
     sx=box["width"]/390; sy=box["height"]/844
