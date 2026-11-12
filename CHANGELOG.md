@@ -1,5 +1,16 @@
 # 更新日志 / Changelog
 
+## v0.4 (2026-11-12)
+- 点一下就变：内置示例是活的——圈中元素后，点右侧「一眼对比」里的建议（圆角→直角、实心→描边、放大、变深色……），改动直接画进图里，立刻看得见；再点一下取消；左下角「◐ 对比原图」可在原图和改后之间切换
+- 横排变竖排、列表变网格这两类改布局的，点一下在原位置弹出本地重排预览，滑块擦除对比
+- 提示词照样实时生成，和图上的变化同步
+- 上传的截图是像素、改不了本身，那边仍靠 AI 方案贴图看变化（词条照样写进提示词）
+
+- Click to change: the built-in demo is live — circle an element, click a suggestion in "一眼对比" (round → square, solid → outline, bigger, darker…), and the change is drawn right into the picture; click again to undo; "◐ 对比原图" at the bottom left flips between original and changed
+- Layout changes (row → column, list → grid) pop a local re-layout preview in place, with the wipe slider
+- Prompts still generate live, in sync with what's on screen
+- Uploaded screenshots are pixels and can't be restyled — there, AI variants remain the way to see the change (terms still go into the prompt)
+
 ## v0.3 (2026-11-12)
 - 工具页改成浅色：白底＋浅灰卡＋鲜蓝 #246FFF（按 BoardUI 实测配色），深色毛玻璃、极光背景、噪点全部拿掉；选中态改成黑色滑动胶囊（EasyUI 的路子）
 - 暖灰画布（Oil UI 的路子）：舞台与面板改成浅暖灰 #F4F3F0，卡片换成白底＋细边框；模型设置改成右侧抽屉；“圈出想改的地方”提示加了引导脉冲
