@@ -8,11 +8,11 @@ export const CATS = ["操作", "导航", "容器", "输入", "内容"];
 export const PARTS = {
   button:     { cat: "操作", label: "按钮",       defLabel: "按钮",     hasLabel: true, hasIcon: true, hasVariant: true },
   chip:       { cat: "操作", label: "标签片",     defLabel: "标签",     hasLabel: true },
-  chipRow:    { cat: "操作", label: "标签片组",   defLabel: "全部、川菜、粤菜、素食", hasLabel: true, hasTabs: true },
+  chipRow:    { cat: "操作", label: "标签片组",   defLabel: "全部、国内、出境、周边", hasLabel: true, hasTabs: true },
   fab:        { cat: "操作", label: "悬浮按钮",   defLabel: "",         hasIcon: true },
   topAppBar:  { cat: "导航", label: "顶部应用栏", defLabel: "标题",     hasLabel: true, hasIcon: true },
-  bottomNav:  { cat: "导航", label: "底部导航",   defLabel: "首页、菜谱、收藏、我的", hasLabel: true, hasTabs: true },
-  searchBar:  { cat: "导航", label: "搜索栏",     defLabel: "搜索菜谱、食材", hasLabel: true },
+  bottomNav:  { cat: "导航", label: "底部导航",   defLabel: "首页、发现、足迹、我的", hasLabel: true, hasTabs: true },
+  searchBar:  { cat: "导航", label: "搜索栏",     defLabel: "搜索目的地、游记", hasLabel: true },
   tabs:       { cat: "导航", label: "标签页",     defLabel: "全部、进行中、已完成", hasLabel: true, hasTabs: true },
   card:       { cat: "容器", label: "卡片",       defLabel: "卡片标题", defSupporting: "这是卡片正文内容。", hasLabel: true, hasSupporting: true, hasVariant: true, media: true },
   listItem:   { cat: "容器", label: "列表项",     defLabel: "列表标题", defSupporting: "副标题", hasLabel: true, hasSupporting: true, hasIcon: true },
@@ -55,39 +55,39 @@ export const SHAPES = [
   { id: "full", zh: "全圆" },
 ];
 
-// ---------- 种子：一套中文菜谱应用（首页 + 详情页） ----------
+// ---------- 种子：一套中文旅行记录应用（首页 + 详情页） ----------
 let __n = 0;
 const nid = (p) => `${p}${++__n}`;
 export function seedSketchDoc() {
   __n = 100;
   return {
-    title: "菜谱",
-    brief: "保存和搜索菜谱的应用。",
+    title: "旅行记录",
+    brief: "记录每一次旅行的应用。",
     platform: "web",
     theme: { palette: "blue", shape: "rounded" },
     screens: [
       {
         id: "s1", name: "首页",
         parts: [
-          { id: nid("p"), kind: "topAppBar", label: "菜谱", icon: "search" },
-          { id: nid("p"), kind: "searchBar", label: "搜索菜谱、食材" },
-          { id: nid("p"), kind: "chipRow", label: "全部、川菜、粤菜、素食", selected: 0 },
-          { id: nid("p"), kind: "card", label: "宫保鸡丁", supporting: "鸡腿肉、花生、干辣椒", variant: "filled", media: true, action: { to: "s2", transition: "slide" } },
-          { id: nid("p"), kind: "listItem", label: "麻婆豆腐", supporting: "川菜 · 微辣 · 15 分钟", icon: "star" },
-          { id: nid("p"), kind: "listItem", label: "番茄炒蛋", supporting: "家常 · 10 分钟", icon: "star" },
-          { id: nid("p"), kind: "listItem", label: "清蒸鲈鱼", supporting: "粤菜 · 25 分钟", icon: "star" },
-          { id: nid("p"), kind: "bottomNav", label: "首页、菜谱、收藏、我的", selected: 0 },
+          { id: nid("p"), kind: "topAppBar", label: "旅行记录", icon: "search" },
+          { id: nid("p"), kind: "searchBar", label: "搜索目的地、游记" },
+          { id: nid("p"), kind: "chipRow", label: "全部、国内、出境、周边", selected: 0 },
+          { id: nid("p"), kind: "card", label: "大理三日", supporting: "洱海 · 苍山 · 古城", variant: "filled", media: true, action: { to: "s2", transition: "slide" } },
+          { id: nid("p"), kind: "listItem", label: "京都樱花", supporting: "日本 · 2026.03 · 5 天", icon: "star" },
+          { id: nid("p"), kind: "listItem", label: "成都美食行", supporting: "四川 · 2026.02 · 3 天", icon: "star" },
+          { id: nid("p"), kind: "listItem", label: "厦门海边漫步", supporting: "福建 · 2026.01 · 2 天", icon: "star" },
+          { id: nid("p"), kind: "bottomNav", label: "首页、发现、足迹、我的", selected: 0 },
         ],
       },
       {
         id: "s2", name: "详情页",
         parts: [
           { id: nid("p"), kind: "image", label: "" },
-          { id: nid("p"), kind: "text", label: "宫保鸡丁", supporting: "鸡腿肉、花生、干辣椒，酸甜微辣，米饭杀手。" },
-          { id: nid("p"), kind: "chipRow", label: "30 分钟、中辣、4 人份", selected: -1 },
-          { id: nid("p"), kind: "text", label: "食材", supporting: "鸡腿肉 300 克、花生米 50 克、干辣椒 8 个、葱姜蒜适量。" },
-          { id: nid("p"), kind: "text", label: "步骤", supporting: "鸡丁上浆，炸花生米，爆香调料，收汁出锅。" },
-          { id: nid("p"), kind: "button", label: "开始做饭", variant: "filled", action: { to: "back", transition: "slideLeft" } },
+          { id: nid("p"), kind: "text", label: "大理三日", supporting: "洱海边的慢时光，骑行、看云、逛古城。" },
+          { id: nid("p"), kind: "chipRow", label: "3 天、云南、洱海", selected: -1 },
+          { id: nid("p"), kind: "text", label: "行程", supporting: "第一天洱海骑行，第二天苍山索道，第三天古城夜市。" },
+          { id: nid("p"), kind: "text", label: "花费", supporting: "交通 600 元、住宿 900 元、餐饮 450 元。" },
+          { id: nid("p"), kind: "button", label: "写游记", variant: "filled", action: { to: "back", transition: "slideLeft" } },
         ],
       },
     ],
@@ -283,7 +283,7 @@ if (typeof document !== "undefined") {
     state.preview = null;
     save();
     renderAll();
-    toast("已恢复到菜谱示例");
+    toast("已恢复到旅行记录示例");
   }
 
   // ---------- 零件渲染 ----------
@@ -640,7 +640,6 @@ if (typeof document !== "undefined") {
     const sketch = mode === "sketch";
     document.body.classList.toggle("mode-sketch", sketch);
     $$("#modeSeg button").forEach((b) => b.classList.toggle("on", b.dataset.mode === mode));
-    moveModeThumb();
     if (sketch && !state.booted) {
       state.booted = true;
       if (!load()) { state.doc = seedSketchDoc(); state.screenId = state.doc.screens[0].id; }
@@ -649,21 +648,11 @@ if (typeof document !== "undefined") {
       renderParts(); renderScreenbar(); renderCanvas(); renderInspector();
     }
   }
-  function moveModeThumb() {
-    const on = $('#modeSeg button.on');
-    const th = $("#modeSeg .seg-thumb");
-    if (!on || !th) return;
-    th.style.width = on.offsetWidth + "px";
-    th.style.transform = `translateX(${on.offsetLeft - 3}px)`;
-  }
-
   function renderAll() {
     renderScreenbar(); renderCanvas(); renderInspector();
   }
   function boot() {
     $$("#modeSeg button").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
-    moveModeThumb();
-    window.addEventListener("resize", moveModeThumb);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
