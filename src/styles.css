@@ -230,3 +230,21 @@ dialog::backdrop { background: rgba(5, 5, 10, .6); backdrop-filter: blur(6px); a
 
 @media (max-width: 960px) { body { overflow: auto; height: auto; } .layout { grid-template-columns: 1fr; } .panel { border-left: 0; border-top: 1px solid var(--line); } .tag { display: none; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+
+/* ============ 一眼对比 ============ */
+.vsgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.vs { position: relative; display: grid; gap: 7px; justify-items: center; padding: 10px 6px 9px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255,255,255,.03); color: var(--ink-2); font-family: inherit; cursor: pointer; transition: transform .4s var(--spring), border-color .25s, background .25s, box-shadow .35s; }
+.vs:hover { transform: translateY(-3px); border-color: var(--line-2); background: rgba(255,255,255,.06); }
+.vs .pair { display: flex; align-items: center; gap: 5px; }
+.vs .fr { position: relative; width: 46px; height: 36px; border-radius: 9px; background: #f3f2f7; display: grid; place-items: center; overflow: hidden; }
+.vs .fr .m { display: block; transition: transform .5s var(--spring); }
+.vs .fr .m.frame-pos { display: block; }
+.vs .arr { color: var(--muted); font-size: 12px; transition: transform .4s var(--spring), color .3s; }
+.vs:hover .arr { transform: translateX(3px); color: var(--pink); }
+.vs:hover .fr:last-child .m:not(.frame-pos) { transform: scale(1.08); }
+.vs .vl { font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.vs.on { border-color: transparent; background: linear-gradient(135deg, rgba(255,77,141,.18), rgba(139,92,255,.18)); color: #fff; box-shadow: 0 0 0 1.5px var(--pink), 0 10px 26px -10px rgba(255,77,141,.6); }
+.vs.on::after { content: "✓"; position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: var(--grad); color: #fff; font-size: 10px; font-weight: 800; display: grid; place-items: center; animation: badge .45s var(--spring); }
+.vs.star::before { content: "✦"; position: absolute; top: 5px; left: 7px; font-size: 10px; color: var(--cyan); }
+.vs.bump { animation: bump .45s var(--spring); }
+@media (max-width: 420px) { .vsgrid { grid-template-columns: repeat(2, 1fr); } }

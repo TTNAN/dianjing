@@ -1,4 +1,4 @@
-import { VOCAB, QUICK, TERM_INDEX } from "./vocab.js";
+import { VOCAB, QUICK, TERM_INDEX, VISUAL } from "./vocab.js";
 import { buildPrompt } from "./prompt.js";
 import { PROVIDERS, loadSettings, saveSettings, hasModel, recognize, variants } from "./llm.js";
 import { demoDataUrl } from "./demo.js";
@@ -195,7 +195,7 @@ function renderTabs() {
 
 function bump(el) { el.classList.remove("bump"); el.offsetWidth; el.classList.add("bump"); }
 function syncChips(r) {
-  $("#editor").querySelectorAll(".chip[data-t]").forEach((c) => {
+  $("#editor").querySelectorAll("[data-t]").forEach((c) => {
     const on = r.terms.includes(c.dataset.t);
     if (on !== c.classList.contains("on")) { c.classList.toggle("on", on); bump(c); }
   });
@@ -243,6 +243,11 @@ function renderEditor() {
     <div ${R()}><h4>一句话方向 <span class="muted">不懂术语就点这里</span></h4>
     <div class="chips">${QUICK.map((q, k) => `<button class="chip quick" data-q="${k}">${q.zh}</button>`).join("")}</div></div>
 
+    <div ${R()}><h4>一眼对比 <span class="muted">点一下，前 → 后就写进提示词</span></h4>
+    <div class="vsgrid">${VISUAL.map((v) => `<button class="vs ${r.terms.includes(v.id) ? "on" : ""} ${suggested.has(v.id) ? "star" : ""}" data-t="${v.id}" title="${esc(v.prompt.zh)}">
+      <span class="pair"><span class="fr">${v.before}</span><span class="arr">→</span><span class="fr">${v.after}</span></span>
+      <span class="vl">${v.zh}</span></button>`).join("")}</div></div>
+
     <div ${R()}><h4>设计词典 <span class="muted">悬停看白话 · ✦ AI 推荐</span></h4></div>
     ${VOCAB.map((cat) => `
       <div ${R()}><div class="cat"><div class="catname">${cat.zh}</div><div class="chips">
@@ -259,7 +264,7 @@ function renderEditor() {
     </div>
     <div class="variants">${variantsHTML}</div></div>
   `;
-  ed.querySelectorAll(".chip[data-t]").forEach((c) => c.onclick = () => {
+  ed.querySelectorAll("[data-t]").forEach((c) => c.onclick = () => {
     const id = c.dataset.t;
     r.terms = r.terms.includes(id) ? r.terms.filter((x) => x !== id) : [...r.terms, id];
     syncChips(r); renderPrompt();

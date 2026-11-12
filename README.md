@@ -1,79 +1,221 @@
-# ◎ 点睛 Dianjing — 圈出来，说清楚
+<div align="center">
 
-> 画龙点睛：在界面上圈一下，让 AI 改到点子上。
+# ◎ 点睛 Dianjing
 
-![点睛界面](docs/screenshot.png)
+**圈出来，说清楚。** · *Circle it. Say it like a designer.*
 
-🎬 [动效演示视频](docs/demo.mp4) · 当前版本 **v0.1**
+在任意界面截图上圈出想改的地方，点睛把你的感觉翻译成设计语言，给你「一眼对比」和三个方案预览，再生成一段 AI 编程工具一次就能听懂的提示词。
 
-> 用 AI 做出来的网页 / App，总有地方想改，却不知道怎么说？
-> 在截图上**圈出来**，点睛把你的感觉**翻译成设计语言**，给你**三个方案预览**，再生成一段 AI 编程工具一次就能听懂的**提示词**。
+Circle what bugs you on any UI screenshot. Dianjing turns the feeling into precise design language, shows visual before → after tweaks and three live previews, then writes a prompt your AI coding tool gets right the first time.
 
-[English](#english) · MIT License · 纯前端、零构建、无需后端
+[**在线试用 / Live demo**](https://ttnan.github.io/dianjing/) · [中文](#中文) · [English](#english) · MIT
 
-## 为什么做这个
+![点睛界面 / Dianjing UI](docs/screenshot.png)
 
-已经有很多工具能帮 AI「定位」元素（React Grab、Agentation、stagewise、ComposeBridge……），但它们只解决了 **"改哪里"**。
-真正卡住大多数人的是 **"改成什么"**：你觉得底栏"很廉价"，但说不出"悬浮胶囊、大圆角、柔和投影、选中项实心高亮"。
+🎬 [动效演示视频 / Demo video](docs/demo.mp4)
 
-点睛专注这一层：
+</div>
 
-| | 定位工具（已有） | 点睛 |
+---
+
+## 中文
+
+### 名字的由来
+
+「画龙点睛」：一幅画最后点上眼睛，整条龙才活过来。AI 生成的界面往往八十分，剩下二十分就差那一下。点睛就是帮你点准那一下。
+
+### 为什么做这个
+
+已经有很多工具能帮 AI「定位」元素（React Grab、Agentation、stagewise、ComposeBridge……），但它们只解决了**改哪里**。真正卡住大多数人的是**改成什么**：你觉得底栏「很廉价」，却说不出「悬浮胶囊、大圆角、柔和投影、选中项实心高亮」。
+
+| | 定位类工具 | 点睛 |
 |---|---|---|
-| 告诉 AI 改哪个元素 | ✅ | ✅（截图坐标 + 语义位置 + 标注图） |
-| 把模糊感受翻译成设计术语 | ❌ | ✅ 内置设计词典 + AI 识别推荐 |
+| 告诉 AI 改哪个元素 | ✅ | ✅ 截图坐标 + 语义位置 + 编号标注图 |
+| 把模糊感受翻译成设计术语 | ❌ | ✅ 设计词典 + AI 识别推荐 |
+| 不懂术语也能表达 | ❌ | ✅ 「一眼对比」图示，点一下就懂 |
 | 改之前先看效果 | ❌ | ✅ 三个风格不同的方案即时预览 |
-| 需要源码 / 特定框架 | 需要 | **不需要**，任何截图都行（网页、安卓、iOS、设计稿） |
+| 需要源码 / 特定框架 | 需要 | **不需要**：网页、安卓、iOS、小程序、设计稿截图都行 |
 
-## 功能
+### 功能
 
-1. **截图圈选**：上传、拖入或 Ctrl/⌘+V 粘贴截图，拖拽圈出一处或多处。
-2. **一句话方向**：不懂术语也能点——「更高级」「更紧凑」「太乱了」……
-3. **设计词典**：7 大类 27 个词条（间距、层级、颜色、排版、质感、布局、风格），悬停看白话解释，点选即写入提示词。
-4. **AI 识别**（可选）：自动认出"这是底部导航栏"，描述现状、指出问题、推荐词条。
-5. **三个方案预览**（可选）：按你的意图生成 3 个可视化变体，选一个写入提示词。
-6. **输出**：中 / 英文提示词一键复制 + 带编号的标注图下载，粘贴给 Cursor、Claude Code、Trae、Codex、Lovable、v0、Bolt 等。
+1. **截图圈选**：上传、拖入或 ⌘/Ctrl + V 粘贴截图，按住拖拽圈出一处或多处，实时显示尺寸。
+2. **一句话方向**：「更高级」「更紧凑」「太乱了」……不懂术语也能点。
+3. **一眼对比**：18 张「前 → 后」小图示，比如圆角 → 直角、实心 → 描边、横排 → 竖排、通栏 → 内缩悬浮，一看就懂，点一下就写进提示词。
+4. **设计词典**：7 大类 27 个词条（间距、层级、颜色、排版、质感、布局、风格），悬停看白话解释。
+5. **AI 识别**（可选）：自动认出「这是底部导航栏」，描述现状、指出问题、推荐修改方向。
+6. **三个方案预览**（可选）：按你的意图生成三个可视化变体，选一个写入提示词。
+7. **输出**：中 / 英文提示词一键复制，加上带编号的标注图，发给 Cursor、Claude Code、Trae、通义灵码、Codex、Lovable、v0、Bolt 等。
 
-不填模型也能用 1、2、3、6；填入任意 **OpenAI 兼容的视觉模型**解锁 4、5：OpenAI、通义千问、智谱 GLM、Gemini、OpenRouter、本地 Ollama 均可。API Key 只保存在你自己的浏览器里，请求直接发往你选的服务商。
+不配置模型也能用 1–4 和 7；填入任意 **OpenAI 兼容的视觉模型**即可解锁 5、6，支持 OpenAI、通义千问、智谱 GLM、Gemini、OpenRouter、本地 Ollama。API Key 只保存在你自己的浏览器里，请求直接发往你选择的服务商，不经过任何第三方服务器。
 
-## 快速开始
+![一眼对比](docs/visual-tweaks.png)
+
+### 快速开始
+
+直接打开 **[在线试用](https://ttnan.github.io/dianjing/)**，点「先看看示例」。
+
+本地运行（无需构建、无需安装依赖）：
 
 ```bash
-git clone https://github.com/TTNAN/dianjing.git && cd dianjing
+git clone https://github.com/TTNAN/dianjing.git
+cd dianjing
 python3 -m http.server 8000   # 或 npx serve
-# 打开 http://localhost:8000 ，点「载入示例」试一下
+# 打开 http://localhost:8000
 ```
 
-也可以直接部署到 GitHub Pages / Vercel / Netlify，无需构建。
+> 由于使用了 ES Modules，请通过本地服务器打开，不要直接双击 `index.html`。
 
-## 目录结构
+也可以一键部署到 GitHub Pages、Vercel、Netlify。
+
+### 生成的提示词长什么样
+
+```
+# UI 修改请求
+我在一张 780×1688px 的界面截图上标出了 1 处要改的地方（标注图已附上，编号与框对应）。只修改这些元素，其余保持不变，并优先复用项目里已有的设计变量和组件。
+
+## 1. 底部导航栏 — 底部通栏
+- 位置：x=4, y=1532, 宽 772, 高 152（截图像素）
+- 现状：白色通栏底栏，灰色图标，选中项深色
+- 期望修改：
+  - 布局：贴边通栏改为四周留边距的悬浮条（左右 16px、底部 12px、大圆角、投影）
+  - 提升质感：克制的配色、更多留白、更精细的字重层次、细腻的投影和圆角
+- 我的原话：看起来很廉价，想要像苹果那样
+- 选定方案：「悬浮胶囊」— 底栏浮起成胶囊，选中项实心高亮
+
+动手前先根据文字和位置找到渲染每个元素的组件；改完后简要列出你改了哪些文件。
+```
+
+### 目录结构
 
 ```
 index.html        页面骨架
-src/app.js        圈选、渲染、交互
-src/vocab.js      设计词典（最欢迎 PR 的地方）
-src/prompt.js     提示词组装（中/英）
-src/llm.js        OpenAI 兼容接口：识别 + 多方案
-src/demo.js       内置示例界面
-src/styles.css    样式
+src/app.js        圈选、渲染、交互与动效
+src/vocab.js      设计词典 + 一眼对比（最欢迎 PR 的地方）
+src/prompt.js     提示词组装（中 / 英）
+src/llm.js        OpenAI 兼容接口：识别 + 三方案
+src/demo.js       内置示例界面（旅行 App）
+src/styles.css    界面与动效
+tests/e2e.py      Playwright 端到端测试与录屏（模拟模型）
 ```
 
-## 路线图
+### 路线图
 
-- [x] v0.1 截图圈选 + 设计词典 + 三方案预览 + 提示词输出
-- [ ] 浏览器插件：在任意网页上直接圈选（不用截图）
+- [x] v0.1 截图圈选、设计词典、一眼对比、三方案预览、提示词输出
+- [ ] 浏览器插件：在任意网页上直接圈选，不用截图
 - [ ] MCP Server：让 Claude Code / Cursor 直接读取圈选结果
-- [ ] 接入 React Grab / Agentation / ComposeBridge 等定位工具，补上源码位置
+- [ ] 接入 React Grab、Agentation、ComposeBridge 等定位工具，补上源码位置
 - [ ] 安卓：通过 adb 截屏 + 无障碍树，自动获取真机界面
-- [ ] 词典扩充：动效、表单、数据可视化、无障碍；社区贡献词条
+- [ ] 词典与对比图扩充：动效、表单、数据可视化、无障碍
 - [ ] 方案对比：两个方案并排、滑块对比
 
-## 贡献
+### 参与贡献
 
-最有价值的贡献是 **扩充 `src/vocab.js` 设计词典**：每个词条包含白话解释（hint）和精确的提示词说法（prompt.zh / prompt.en）。
+最有价值的贡献是扩充 `src/vocab.js`：
+
+- **设计词典词条**：`hint`（白话解释）+ `prompt.zh` / `prompt.en`（精确说法）
+- **一眼对比**：`before` / `after`（两段迷你 HTML 图示）+ `prompt`
+
+欢迎提 Issue 和 PR。
 
 ---
 
 ## English
 
-**Dianjing (点睛, "dotting the dragon's eye" — the finishing touch that brings a picture to life)** — circle what bugs you on any UI screenshot, get it translated into precise design language, preview three variations, and copy a prompt your AI coding tool understands on the first try. Zero build, no backend, bring your own OpenAI-compatible vision model (optional). MIT.
+### The name
+
+*Huà lóng diǎn jīng* (画龙点睛) — "painting the dragon, then dotting its eyes." Legend says the dragon only came alive once its eyes were painted in. AI-generated UIs usually get you 80% of the way; Dianjing helps you land the finishing touch.
+
+### Why
+
+Plenty of tools already help an AI *locate* an element (React Grab, Agentation, stagewise, ComposeBridge…). They answer **where** to change. What actually stops most people is **what** to change it into: you feel the tab bar looks "cheap", but you can't say "floating pill, large radius, soft shadow, filled active state".
+
+| | Element pickers | Dianjing |
+|---|---|---|
+| Tell the AI which element | ✅ | ✅ Screenshot coordinates, semantic position, numbered annotated image |
+| Translate a vague feeling into design terms | ❌ | ✅ Design vocabulary + AI suggestions |
+| Express it without knowing the jargon | ❌ | ✅ Visual before → after tweaks |
+| Preview before changing anything | ❌ | ✅ Three distinct variations rendered live |
+| Needs source code / a specific framework | Yes | **No** — web, Android, iOS, mini-programs or design mockups |
+
+### Features
+
+1. **Circle on a screenshot** — upload, drag in or paste (⌘/Ctrl + V), then drag to mark one or more areas, with live size readout.
+2. **One-tap directions** — "More premium", "More compact", "Too messy"… no jargon needed.
+3. **Visual tweaks** — 18 tiny before → after illustrations such as rounded → sharp, filled → outline, row → column, full-width → inset floating. Tap one and the exact instruction goes into the prompt.
+4. **Design vocabulary** — 27 terms in 7 groups (spacing, hierarchy, color, typography, shape & depth, layout, overall style), each with a plain-language hint.
+5. **AI recognition** (optional) — identifies the element ("bottom tab bar"), describes its current style, points out issues and suggests terms.
+6. **Three variations** (optional) — generates three visual alternatives that match your intent; pick one to include in the prompt.
+7. **Output** — copy the prompt in Chinese or English plus a numbered annotated image, ready for Cursor, Claude Code, Trae, Codex, Lovable, v0, Bolt and more.
+
+Features 1–4 and 7 work fully offline. Add any **OpenAI-compatible vision model** to unlock 5 and 6: OpenAI, Qwen (DashScope), Zhipu GLM, Gemini, OpenRouter or local Ollama. Your API key stays in your own browser, and requests go straight to the provider you choose — no middle server.
+
+### Quick start
+
+Open the **[live demo](https://ttnan.github.io/dianjing/)** and click "先看看示例" (see the example).
+
+Run locally — no build step, no dependencies:
+
+```bash
+git clone https://github.com/TTNAN/dianjing.git
+cd dianjing
+python3 -m http.server 8000   # or: npx serve
+# open http://localhost:8000
+```
+
+> The app uses ES modules, so serve it over HTTP instead of opening `index.html` directly.
+
+It also deploys as-is to GitHub Pages, Vercel or Netlify.
+
+### What the prompt looks like
+
+```
+# UI change request
+I marked 1 element(s) on a 780×1688px screenshot (attached as an annotated image; numbers match the boxes). Change ONLY these elements, keep everything else as is, and reuse the project's existing design tokens/components.
+
+## 1. Bottom tab bar — full-width, bottom of the screen
+- Box: x=4, y=1532, w=772, h=152 (px on the screenshot)
+- Currently: white edge-to-edge bar, gray icons, dark active item
+- Desired changes:
+  - Layout: turn the edge-to-edge bar into an inset floating bar (16px sides, 12px bottom, large radius, shadow)
+  - Make it feel premium: restrained palette (one accent + neutrals), generous whitespace, refined type weights, subtle shadows and radii
+- In my words: looks cheap, want it to feel like Apple
+- Chosen direction: "Floating pill" — the bar lifts into a pill with a filled active item
+
+Before editing, find the component that renders each element (match by text and position). After editing, briefly list the files you changed.
+```
+
+### Project structure
+
+```
+index.html        App shell
+src/app.js        Selection, rendering, interactions and motion
+src/vocab.js      Design vocabulary + visual tweaks (PRs most welcome here)
+src/prompt.js     Prompt builder (Chinese / English)
+src/llm.js        OpenAI-compatible client: recognition + variations
+src/demo.js       Built-in example screen (a travel app)
+src/styles.css    UI and animation
+tests/e2e.py      Playwright end-to-end test and screen recording (mocked model)
+```
+
+### Roadmap
+
+- [x] v0.1 Screenshot circling, design vocabulary, visual tweaks, three variations, prompt output
+- [ ] Browser extension: circle directly on any web page, no screenshot needed
+- [ ] MCP server so Claude Code / Cursor can read your selections directly
+- [ ] Integrate element pickers (React Grab, Agentation, ComposeBridge) to add source locations
+- [ ] Android: capture real-device screens and the accessibility tree via adb
+- [ ] More vocabulary and visual tweaks: motion, forms, data viz, accessibility
+- [ ] Side-by-side and slider comparison of variations
+
+### Contributing
+
+The most valuable contributions extend `src/vocab.js`:
+
+- **Vocabulary terms**: a plain-language `hint` plus precise `prompt.zh` / `prompt.en`
+- **Visual tweaks**: `before` / `after` mini HTML illustrations plus a `prompt`
+
+Issues and pull requests are welcome.
+
+### License
+
+[MIT](LICENSE) © 2026 Caesar T

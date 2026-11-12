@@ -1,5 +1,5 @@
 // 任意 OpenAI 兼容的视觉模型接口（自带 Key，Key 只存在你自己的浏览器 localStorage）。
-import { VOCAB } from "./vocab.js";
+import { VOCAB, VISUAL } from "./vocab.js";
 
 export const PROVIDERS = [
   { name: "OpenAI", baseUrl: "https://api.openai.com/v1", model: "gpt-4o-mini" },
@@ -41,7 +41,7 @@ export function parseJSON(text) {
   return JSON.parse(body.slice(start, end + 1));
 }
 
-const termList = () => VOCAB.flatMap((c) => c.terms.map((t) => `${t.id}: ${t.zh} / ${t.en}`)).join("\n");
+const termList = () => [...VOCAB.flatMap((c) => c.terms), ...VISUAL].map((t) => `${t.id}: ${t.zh} / ${t.en}`).join("\n");
 
 // 1) 识别：这块区域是什么、现在长什么样、可能需要改什么
 export async function recognize(settings, cropDataUrl, contextDataUrl) {
