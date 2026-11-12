@@ -135,3 +135,26 @@ export const VISUAL = [
 ];
 
 for (const v of VISUAL) TERM_INDEX[v.id] = { ...v, category: { id: "visual", zh: "一眼对比", en: "Visual tweaks" } };
+
+// 点一下就变：每个"一眼对比"词条在内置示例上的本地改动（参数对象），
+// 圈中元素后点一下，直接画进图里；再点一次取消。
+// 结构类（横排↔竖排、列表↔网格）要动整页布局，本地改用重排预览，不进这里。
+export const STRUCTURAL = ["v-row-to-col", "v-list-to-grid"];
+export const LIVE = {
+  "v-round-to-square": { rx: 1 },
+  "v-square-to-round": { rx: 16 },
+  "v-box-to-pill": { rx: "pill" },
+  "v-square-to-circle": { rx: "circle" },
+  "v-fill-to-outline": { fill: "none", stroke: "#246fff", ink: "#246fff" },
+  "v-outline-to-fill": { fill: "#246fff", stroke: "none", ink: "#fff" },
+  "v-flat-to-float": { shadow: "strong" },
+  "v-border-to-none": { stroke: "none", fill: "#f7f7f7" },
+  "v-left-to-center": { align: "center" },
+  "v-small-to-big": { scale: 1.5 },
+  "v-big-to-small": { scale: 0.7 },
+  "v-tight-to-loose": { gap: "loose" },
+  "v-light-to-dark": { dark: true },
+  "v-solid-to-gradient": { gradient: true },
+  "v-text-to-icon": { icon: true },
+  "v-full-to-inset": { floating: true },
+};
