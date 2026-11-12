@@ -238,6 +238,8 @@ body.no-image #prompt { height: 110px; }
 .seg { position: relative; display: inline-flex; padding: 3px; border-radius: 10px; background: #f0f0f0; border: 1px solid var(--line); }
 .seg button { position: relative; z-index: 1; border: 0; background: transparent; color: var(--muted); padding: 5px 12px; font: 600 12px/1 inherit; font-family: inherit; cursor: pointer; transition: color .3s; }
 .seg button.on { color: #fff; }
+.mode-seg button { transition: color .18s ease, background-color .18s ease; }
+.mode-seg button.on { color: #fff; background: var(--ink); border-radius: 7px; }
 .seg-thumb { position: absolute; top: 3px; bottom: 3px; left: 3px; border-radius: 7px; background: var(--ink); transition: transform .45s var(--spring), width .45s var(--spring); }
 
 /* ============ Variants ============ */
