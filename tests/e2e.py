@@ -175,9 +175,9 @@ async def main():
     assert after == before + 1, (before, after)
     # 选中零件后检查器出现，改标题实时同步到手机
     assert await pg.locator("#skFLabel").count() == 1
-    await pg.fill("#skFLabel", "马上开做"); await pg.wait_for_timeout(300)
-    assert "马上开做" in (await pg.locator(".sk-phone-col.on .sk-btn").inner_text())
-    assert "宫保鸡丁" in (await pg.locator("#skPrompt").input_value())
+    await pg.fill("#skFLabel", "马上出发"); await pg.wait_for_timeout(300)
+    assert "马上出发" in (await pg.locator(".sk-phone-col.on .sk-btn").inner_text())
+    assert "大理三日" in (await pg.locator("#skPrompt").input_value())
     # 触发：把新按钮连到详情页，提示词应多一行跳转
     await pg.locator("#skITabs button[data-itab='trigger']").click(); await pg.wait_for_timeout(200)
     await pg.select_option("#skFAction", "s2"); await pg.wait_for_timeout(300)
@@ -200,7 +200,7 @@ async def main():
     await pg.wait_for_timeout(500)
     await pg.reload(); await pg.wait_for_timeout(500)
     await pg.click('#modeSeg button[data-mode="sketch"]'); await pg.wait_for_timeout(500)
-    assert "马上开做" in (await pg.locator("#skPrompt").input_value())
+    assert "马上出发" in (await pg.locator("#skPrompt").input_value())
     await pg.click('#modeSeg button[data-mode="annotate"]'); await pg.wait_for_timeout(300)
     s = await state(pg)
     assert len(s["regions"]) == 2, s
