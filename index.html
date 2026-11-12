@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="src/styles.css" />
+  <link rel="stylesheet" href="src/sketch.css" />
 </head>
 <body>
   <header class="top">
@@ -16,6 +17,7 @@
       <span class="wordmark">点睛</span><span class="en">Dianjing</span>
       <span class="tag">圈出来，说清楚</span>
     </div>
+    <div class="seg mode-seg" id="modeSeg"><i class="seg-thumb"></i><button data-mode="annotate" class="on">改截图</button><button data-mode="sketch">画界面</button></div>
     <nav class="actions">
       <label class="btn primary"><span>上传截图</span><input id="file" type="file" accept="image/*" hidden /></label>
       <button class="btn" id="demo"><span>载入示例</span></button>
@@ -88,6 +90,15 @@
     </aside>
   </main>
 
+  <main class="sketch" id="sketchRoot">
+    <aside class="sk-parts" id="skParts"></aside>
+    <section class="sk-stage" id="skStage">
+      <div class="sk-screenbar" id="skScreenbar"></div>
+      <div class="sk-canvas" id="skCanvas"></div>
+    </section>
+    <aside class="sk-panel" id="skPanel"></aside>
+  </main>
+
   <dialog id="settings">
     <form method="dialog" class="settings">
       <h3>模型设置 <span class="muted small">可选</span></h3>
@@ -102,5 +113,6 @@
 
   <div class="toast" id="toast"></div>
   <script type="module" src="src/app.js"></script>
+  <script type="module" src="src/sketch.js"></script>
 </body>
 </html>
