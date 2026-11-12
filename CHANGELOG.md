@@ -1,5 +1,10 @@
 # 更新日志 / Changelog
 
+## v0.5.3 (2026-11-12)
+- 手机顶栏再改：v0.5.1 那版在 390 宽是一行塞进去的，总宽 386、只剩 4px 余量，真机字体稍大就得挤爆。现在手机上模式切换永远独占一行、拉满整宽，两按钮各占一半（以后加第三个模式也放得下），320 / 360 / 390 三档均无重叠、无横向溢出
+
+- Mobile header, round two: the v0.5.1 header still squeezed everything onto one row at 390px (386px of content, 4px of slack) — any font scaling on a real phone would overflow it. On phones the mode switch now always takes its own full-width row, the two buttons split it 50/50 (a third mode would fit too). Verified at 320 / 360 / 390px: no overlap, no horizontal overflow
+
 ## v0.5.2 (2026-11-12)
 - 样式加版本戳：v0.5.1 的修复已经在线上，但手机浏览器还攥着部署前的旧样式（截图里「载入示例」和 Dianjing 还在就是证据），光靠刷新不一定重新下载。现在 CSS 和 JS 链接都带上 `?v=0.5.2`，地址一变浏览器必须拉新的，以后每次发版改一位数就行
 
