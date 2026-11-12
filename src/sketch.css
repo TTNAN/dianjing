@@ -158,4 +158,6 @@ body.sk-previewing .sketch { grid-template-columns: minmax(0, 1fr); }
 @media (max-width: 960px) {
   body.mode-sketch .sketch { grid-template-columns: 1fr; overflow-y: auto; }
   .sk-parts, .sk-panel { border: 0; }
+  .sk-screenbar { flex-wrap: wrap; row-gap: 8px; }
+  .sk-stage { overflow-y: auto; }
 }
