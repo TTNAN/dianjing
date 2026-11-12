@@ -113,7 +113,7 @@ test("structuralHtml：胶囊竖排的高度与条目数对得上", () => {
 });
 
 // ---------- 画界面模式 ----------
-import { PARTS, CATS, VARIANTS, TRANSITIONS, PALETTES, SHAPES, seedSketchDoc, describePart, buildSketchPrompt, screenById, partById } from "../src/sketch.js";
+import { PARTS, CATS, VARIANTS, TRANSITIONS, PALETTES, SHAPES, seedSketchDoc, isLegacyRecipeSeed, describePart, buildSketchPrompt, screenById, partById } from "../src/sketch.js";
 
 test("画界面：零件表 16 种、5 类，每种都有中文名和默认标题", () => {
   assert.equal(Object.keys(PARTS).length, 16);
@@ -148,6 +148,49 @@ test("画界面：提示词含十段结构与跳转句", () => {
   assert.ok(pr.includes("跳转到详情页屏幕"));
   assert.ok(pr.includes("共有 2 个屏幕"));
   assert.ok(pr.includes("primaryContainer"));
+});
+
+test("画界面：旧种子识别——没动过的菜谱示例才认，自己改过的不认", () => {
+  // 按旧菜谱种子的原样搭：标题菜谱、2 屏 14 个零件、卡片宫保鸡丁、按钮开始做饭
+  const legacy = {
+    title: "菜谱", theme: { palette: "blue", shape: "rounded" },
+    screens: [
+      { id: "s1", name: "首页", parts: [
+        { id: "p1", kind: "topAppBar", label: "菜谱" },
+        { id: "p2", kind: "searchBar", label: "搜索菜谱、食材" },
+        { id: "p3", kind: "chipRow", label: "全部、川菜、粤菜、素食" },
+        { id: "p4", kind: "card", label: "宫保鸡丁" },
+        { id: "p5", kind: "listItem", label: "麻婆豆腐" },
+        { id: "p6", kind: "listItem", label: "番茄炒蛋" },
+        { id: "p7", kind: "listItem", label: "清蒸鲈鱼" },
+        { id: "p8", kind: "bottomNav", label: "首页、菜谱、收藏、我的" },
+      ] },
+      { id: "s2", name: "详情页", parts: [
+        { id: "p9", kind: "image", label: "" },
+        { id: "p10", kind: "text", label: "宫保鸡丁" },
+        { id: "p11", kind: "chipRow", label: "30 分钟、中辣、4 人份" },
+        { id: "p12", kind: "text", label: "食材" },
+        { id: "p13", kind: "text", label: "步骤" },
+        { id: "p14", kind: "button", label: "开始做饭" },
+      ] },
+    ],
+  };
+  assert.equal(isLegacyRecipeSeed(legacy), true);
+  // 只换主题也照样迁移（主题不算标记）
+  assert.equal(isLegacyRecipeSeed({ ...legacy, theme: { palette: "green", shape: "square" } }), true);
+  // 改标题、改卡片文案、加零件，任一处动过都不认
+  assert.equal(isLegacyRecipeSeed({ ...legacy, title: "我的菜谱" }), false);
+  assert.equal(isLegacyRecipeSeed(structuredClone(legacy)), true);
+  const renamed = structuredClone(legacy);
+  renamed.screens[0].parts[3].label = "鱼香肉丝";
+  assert.equal(isLegacyRecipeSeed(renamed), false);
+  const added = structuredClone(legacy);
+  added.screens[0].parts.push({ id: "p15", kind: "text", label: "新零件" });
+  assert.equal(isLegacyRecipeSeed(added), false);
+  // 新种子（旅行记录）不认；空文档不认
+  assert.equal(isLegacyRecipeSeed(seedSketchDoc()), false);
+  assert.equal(isLegacyRecipeSeed(null), false);
+  assert.equal(isLegacyRecipeSeed({ title: "菜谱", screens: [] }), false);
 });
 
 test("画界面：describePart 覆盖全部 16 种且不为空", () => {
