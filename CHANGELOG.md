@@ -1,5 +1,15 @@
 # 更新日志 / Changelog
 
+## v0.5.9 (2026-11-13)
+
+- 画界面：零件能拖动换顺序了，在手机框里直接拖零件，松手就换位，拖的时候一条蓝线标出落点；触屏拖左边的把手，鼠标直接拖零件就行
+- 检查器里选中的零件多了 ↑ 上移、↓ 下移和撤销排序：手机上拖不方便时点按钮也能换顺序，换错了能撤销
+- 底栏固定在最后一位，不会被拖到中间去；换完顺序提示词和保存都跟着变，刷新还在
+
+- Sketch mode: parts can now be dragged to reorder — drag a part inside the phone frame and drop it, with a blue line showing where it will land; on touch, drag by the grip on the left, with the mouse just drag the part
+- The inspector for a selected part now has move up, move down and undo reorder: buttons work when dragging is awkward, and a mistaken reorder can be undone
+- The bottom tab bar stays pinned last and cannot be dragged into the middle; prompt and saved design follow the new order, and survive a refresh
+
 ## v0.5.8 (2026-11-13)
 
 - 演示改玩法：点图上的元素先选中（描边高亮 + 显示元素名），右边只列这个元素能用的几个改法，点一个才变；再点一次已选中的改法，恢复原样；点空白处取消选中

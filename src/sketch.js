@@ -462,6 +462,23 @@ export function numWrap(s) {
 export function thumbStyle(width, left) {
   return { width: width + "px", transform: `translateX(${left - 3}px)` };
 }
+// 拖拽排序的纯计算：把零件移到目标位（目标位是拿掉它之后数组里的下标），返回新数组，不改原数组
+export function reorderParts(parts, fromId, toIndex) {
+  const from = parts.findIndex((p) => p.id === fromId);
+  if (from < 0) return parts.slice();
+  const next = parts.slice();
+  const [moved] = next.splice(from, 1);
+  const t = Math.max(0, Math.min(toIndex, next.length));
+  next.splice(t, 0, moved);
+  return next;
+}
+// 底栏钉在最后：拖动目标位不能越过底栏（底栏自己不参与拖拽，toIndex 是拿掉被拖零件后数组里的下标）
+export function clampReorderIndex(parts, dragId, toIndex) {
+  const rest = parts.filter((p) => p.id !== dragId);
+  const nav = rest.findIndex((p) => p.kind === "bottomNav");
+  if (nav < 0) return Math.max(0, Math.min(toIndex, rest.length));
+  return Math.max(0, Math.min(toIndex, nav));
+}
 // 错峰延迟：每项间隔 step 毫秒，封顶 cap 毫秒（零件 200ms、18 张小图 560ms，总长都不超过 600ms）
 export function staggerDelay(i, step = 40, cap = 200) { return Math.min(i * step, cap); }
 
@@ -478,7 +495,7 @@ if (typeof document !== "undefined") {
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-  const state = { doc: null, screenId: "s1", partId: null, preview: null, booted: false, enteredOnce: false, deleting: false };
+  const state = { doc: null, screenId: "s1", partId: null, preview: null, booted: false, enteredOnce: false, deleting: false, orderUndo: [] };
   const lastNums = new Map(); // 每个零件上一次渲染时的数字，供数字滚动比对增减
   // 数字滚动：数值被改动时按增减方向给新值加滚入类（变大从下方进、变小从上方进）
   function rollNumbers() {
@@ -548,6 +565,7 @@ if (typeof document !== "undefined") {
     state.screenId = state.doc.screens[0].id;
     state.partId = null;
     state.preview = null;
+    state.orderUndo = [];
     save();
     renderAll();
     toast("已恢复到旅行记录示例");
@@ -600,7 +618,7 @@ if (typeof document !== "undefined") {
               <span class="pv pv-${kind}"></span><span>${sp.label}</span>
             </button>`).join("")}
         </div>`).join("")}
-      <p class="muted small" style="margin-top:14px;line-height:1.7">点一下就加进当前屏幕，位置在最下面；选中零件后在右边改它。拖拽排序下一版再加。</p>`;
+      <p class="muted small" style="margin-top:14px;line-height:1.7">点一下就加进当前屏幕，位置在最下面；选中零件后在右边改它。拖动零件（触屏拖左边的把手）就能换顺序，右边也有 ↑ ↓ 按钮。</p>`;
     $$(".sk-part-card", root).forEach((b) => b.addEventListener("click", () => addPart(b.dataset.kind)));
     const si = $("#skPartSearch", root);
     si.addEventListener("input", () => {
@@ -651,6 +669,7 @@ if (typeof document !== "undefined") {
         }).join("")).join("") || `<span class="muted">还没有跳转：在右边检查器的「触发」里给卡片或按钮连一页</span>`}
       </div>`;
     cv.querySelectorAll(".sk-phone-col").forEach((col) => col.addEventListener("click", (e) => {
+      if (dragSuppressClick) { dragSuppressClick = false; return; } // 刚拖完的这次点击不算选中
       const part = e.target.closest(".sk-part");
       state.screenId = col.dataset.sid;
       state.partId = part ? part.dataset.pid : null;
@@ -665,7 +684,119 @@ if (typeof document !== "undefined") {
       vp.addEventListener("scroll", update);
       update();
     });
+    // 拖拽排序：只在当前屏的手机框里。把手挂在每个零件上（底栏除外），拖起来换顺序
+    const activeCol = cv.querySelector(".sk-phone-col.on");
+    const avp = activeCol?.querySelector(".sk-viewport");
+    if (avp) {
+      avp.querySelectorAll(".sk-screen-body .sk-part:not(.sk-nav)").forEach((el) => {
+        const g = document.createElement("i");
+        g.className = "sk-grip";
+        g.title = "拖动换顺序";
+        g.textContent = "⠿";
+        el.appendChild(g);
+      });
+      attachPartDrag(avp);
+    }
     rollNumbers();
+  }
+
+  // ---------- 拖拽排序：Pointer Events，鼠标和触屏同一套 ----------
+  // 鼠标：零件身上按住拖；触屏：只认把手（零件身上滑动还是滚画布，互不干扰）。
+  // 拖起来后零件留在原位变半透明（占位），一条蓝线标出松手后的落点；松手才真正换顺序。
+  let dragSuppressClick = false;
+  function attachPartDrag(vp) {
+    vp.addEventListener("pointerdown", (e) => {
+      if (state.preview) return;
+      const partEl = e.target.closest(".sk-part");
+      if (!partEl || !vp.contains(partEl)) return;
+      const found = partById(state.doc, partEl.dataset.pid);
+      if (!found || found.part.kind === "bottomNav") return; // 底栏钉在最后，不参与拖拽
+      const onGrip = !!e.target.closest(".sk-grip");
+      if (e.pointerType === "touch" && !onGrip) return; // 触屏只认把手
+      const drag = {
+        pid: partEl.dataset.pid, pointerId: e.pointerId,
+        startX: e.clientX, startY: e.clientY, lastY: e.clientY,
+        started: false, targetIndex: -1, line: null, raf: 0,
+      };
+      const TH = 6; // 挪过 6px 才算拖，没拖起来就是一次点击
+      const updateDropLine = (clientY) => {
+        const parts = [...vp.querySelectorAll(".sk-screen-body .sk-part")].filter((el) => el.dataset.pid !== drag.pid);
+        const vr = vp.getBoundingClientRect();
+        let t = parts.length;
+        for (let i = 0; i < parts.length; i++) {
+          const pr = parts[i].getBoundingClientRect();
+          if (clientY < pr.top + pr.height / 2) { t = i; break; }
+        }
+        t = clampReorderIndex(currentScreen().parts, drag.pid, t);
+        drag.targetIndex = t;
+        let y;
+        if (t < parts.length) {
+          const pr = parts[t].getBoundingClientRect();
+          y = pr.top - vr.top + vp.scrollTop;
+        } else if (parts.length) {
+          const pr = parts[parts.length - 1].getBoundingClientRect();
+          y = pr.bottom - vr.top + vp.scrollTop;
+        } else {
+          y = 0;
+        }
+        drag.line.style.top = (y - 2) + "px";
+      };
+      const autoScroll = () => {
+        if (!drag.started || !vp.isConnected) return;
+        const vr = vp.getBoundingClientRect();
+        const near = 56;
+        if (drag.lastY < vr.top + near) vp.scrollTop -= 8;
+        else if (drag.lastY > vr.bottom - near) vp.scrollTop += 8;
+        else { drag.raf = requestAnimationFrame(autoScroll); return; }
+        updateDropLine(drag.lastY);
+        drag.raf = requestAnimationFrame(autoScroll);
+      };
+      const cleanup = () => {
+        cancelAnimationFrame(drag.raf);
+        drag.line?.remove();
+        partEl.classList.remove("sk-dragging");
+        vp.classList.remove("sk-dragging-on");
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onCancel);
+      };
+      const onMove = (ev) => {
+        if (ev.pointerId !== drag.pointerId || !vp.isConnected) return;
+        drag.lastY = ev.clientY;
+        if (!drag.started) {
+          if (Math.abs(ev.clientX - drag.startX) < TH && Math.abs(ev.clientY - drag.startY) < TH) return;
+          drag.started = true;
+          drag.line = document.createElement("div");
+          drag.line.className = "sk-drop-line";
+          vp.appendChild(drag.line);
+          partEl.classList.add("sk-dragging");
+          vp.classList.add("sk-dragging-on");
+          try { vp.setPointerCapture(ev.pointerId); } catch {}
+          drag.raf = requestAnimationFrame(autoScroll);
+        }
+        updateDropLine(ev.clientY);
+      };
+      const onUp = (ev) => {
+        if (ev.pointerId !== drag.pointerId) return;
+        const wasDragging = drag.started;
+        const t = drag.targetIndex;
+        cleanup();
+        if (!wasDragging) return; // 没拖起来就是一次点击，交给原有的选中逻辑
+        dragSuppressClick = true;
+        setTimeout(() => { dragSuppressClick = false; }, 250);
+        const s = currentScreen();
+        const from = s.parts.findIndex((p) => p.id === drag.pid);
+        if (from < 0 || t < 0 || t === from) return; // 落回原位就不动
+        pushOrderUndo();
+        s.parts = reorderParts(s.parts, drag.pid, t);
+        state.partId = drag.pid;
+        save(); renderCanvas(); renderInspector();
+      };
+      const onCancel = (ev) => { if (ev.pointerId === drag.pointerId) cleanup(); };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onCancel);
+    });
   }
   function field(label, inner) {
     return `<div class="sk-field"><label>${label}</label>${inner}</div>`;
@@ -696,8 +827,9 @@ if (typeof document !== "undefined") {
           ${field(`透明度 <span class="val">${Math.round((p.opacity ?? 1) * 100)}%</span>`, `<input type="range" id="skFOpacity" min="20" max="100" value="${Math.round((p.opacity ?? 1) * 100)}">`)}
           ${p.kind === "card" ? field(`圆角 <span class="val">${p.radius ?? 20}dp</span>`, `<input type="range" id="skFRadius" min="0" max="40" value="${p.radius ?? 20}">`) : ""}
           <div class="row">
-            <button class="btn sm" id="skMoveUp" ${idx <= 0 ? "disabled" : ""}>↑ 上移</button>
-            <button class="btn sm" id="skMoveDown" ${idx >= s.parts.length - 1 ? "disabled" : ""}>↓ 下移</button>
+            <button class="btn sm" id="skMoveUp" ${idx <= 0 || p.kind === "bottomNav" ? "disabled" : ""}>↑ 上移</button>
+            <button class="btn sm" id="skMoveDown" ${idx >= s.parts.length - 1 || p.kind === "bottomNav" || s.parts[idx + 1]?.kind === "bottomNav" ? "disabled" : ""}>↓ 下移</button>
+            <button class="btn sm" id="skUndoOrder" ${state.orderUndo.length ? "" : "disabled"}>⟲ 撤销排序</button>
             <button class="btn sm danger" id="skDelPart">删除</button>
           </div>
         </div>
@@ -803,6 +935,7 @@ if (typeof document !== "undefined") {
     });
     on("#skMoveUp", "click", () => movePart(p, -1));
     on("#skMoveDown", "click", () => movePart(p, 1));
+    on("#skUndoOrder", "click", undoOrder);
     on("#skDelPart", "click", () => {
       // 删除反向：先收起 225ms、淡出 160ms，下面的行补上来，再真正删掉
       const el = document.querySelector(`.sk-phone-col.on [data-pid="${p.id}"]`);
@@ -965,10 +1098,32 @@ if (typeof document !== "undefined") {
   }
   function movePart(p, d) {
     const s = currentScreen();
+    if (p.kind === "bottomNav") return; // 底栏钉在最后，不参与排序
     const i = s.parts.indexOf(p);
     const j = i + d;
     if (i < 0 || j < 0 || j >= s.parts.length) return;
-    [s.parts[i], s.parts[j]] = [s.parts[j], s.parts[i]];
+    if (s.parts[j]?.kind === "bottomNav") return; // 别把底栏顶出最后一位
+    pushOrderUndo();
+    s.parts = reorderParts(s.parts, p.id, j);
+    save(); renderCanvas(); renderInspector();
+  }
+  // 排序的单步撤销：换顺序前把当前屏的零件顺序拍下来，撤销时按 id 拼回去
+  // （快照之后删掉的零件不复活、之后新加的留在最后，只还原顺序）
+  function pushOrderUndo() {
+    const s = currentScreen();
+    state.orderUndo.push({ screenId: s.id, order: s.parts.map((p) => p.id) });
+    if (state.orderUndo.length > 20) state.orderUndo.shift();
+  }
+  function undoOrder() {
+    const snap = state.orderUndo.pop();
+    if (!snap) return;
+    const s = screenById(state.doc, snap.screenId) || state.doc.screens[0];
+    const byId = new Map(s.parts.map((p) => [p.id, p]));
+    const restored = snap.order.map((id) => byId.get(id)).filter(Boolean);
+    for (const p of s.parts) if (!snap.order.includes(p.id)) restored.push(p);
+    s.parts = restored;
+    state.screenId = s.id;
+    state.partId = null;
     save(); renderCanvas(); renderInspector();
   }
   function addScreen() {

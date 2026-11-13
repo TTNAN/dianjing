@@ -113,7 +113,7 @@ test("structuralHtml：胶囊竖排的高度与条目数对得上", () => {
 });
 
 // ---------- 画界面模式 ----------
-import { PARTS, CATS, VARIANTS, TRANSITIONS, PALETTES, SHAPES, PLATFORMS, PLATFORM_LIBS, COMPONENTS, DENSITIES, FONT_SIZES, SHADOWS, themeFor, partAdjustSuffix, targetFor, targetSpec, seedSketchDoc, isLegacyRecipeSeed, describePart, buildSketchPrompt, screenById, partById, numWrap, thumbStyle, staggerDelay } from "../src/sketch.js";
+import { PARTS, CATS, VARIANTS, TRANSITIONS, PALETTES, SHAPES, PLATFORMS, PLATFORM_LIBS, COMPONENTS, DENSITIES, FONT_SIZES, SHADOWS, themeFor, partAdjustSuffix, targetFor, targetSpec, seedSketchDoc, isLegacyRecipeSeed, describePart, buildSketchPrompt, screenById, partById, numWrap, thumbStyle, staggerDelay, reorderParts, clampReorderIndex } from "../src/sketch.js";
 
 test("画界面：零件表 16 种、5 类，每种都有中文名和默认标题", () => {
   assert.equal(Object.keys(PARTS).length, 16);
@@ -198,6 +198,60 @@ test("画界面：describePart 覆盖全部 16 种且不为空", () => {
   assert.equal(all.length, 16);
   for (const d of all) assert.ok(d.length > 1, d);
   assert.ok(describePart({ kind: "card", label: "大理三日", supporting: "洱海", variant: "filled" }).includes("大理三日"));
+});
+
+// ---------- 拖拽排序（v0.5.9）----------
+const mkParts = (kinds) => kinds.map((kind, i) => ({ id: `p${i}`, kind, label: kind }));
+
+test("拖拽排序：reorderParts 前后移都对，落到两端也对，不动原数组", () => {
+  const parts = mkParts(["topAppBar", "searchBar", "chipRow", "card", "bottomNav"]);
+  // 往下移：searchBar 从 1 移到 3（目标位是拿掉它之后数组里的下标）
+  assert.deepEqual(reorderParts(parts, "p1", 3).map((p) => p.id), ["p0", "p2", "p3", "p1", "p4"]);
+  // 往上移：card 从 3 移到 1
+  assert.deepEqual(reorderParts(parts, "p3", 1).map((p) => p.id), ["p0", "p3", "p1", "p2", "p4"]);
+  // 移到开头和结尾
+  assert.deepEqual(reorderParts(parts, "p3", 0).map((p) => p.id), ["p3", "p0", "p1", "p2", "p4"]);
+  assert.deepEqual(reorderParts(parts, "p0", 99).map((p) => p.id), ["p1", "p2", "p3", "p4", "p0"]);
+  assert.deepEqual(reorderParts(parts, "p2", -5).map((p) => p.id), ["p2", "p0", "p1", "p3", "p4"]);
+  // 落回原位、找不到的 id，都原样返回一个新数组
+  assert.deepEqual(reorderParts(parts, "p2", 2).map((p) => p.id), ["p0", "p1", "p2", "p3", "p4"]);
+  const unknown = reorderParts(parts, "px", 1);
+  assert.deepEqual(unknown.map((p) => p.id), ["p0", "p1", "p2", "p3", "p4"]);
+  assert.notEqual(unknown, parts);
+  // 原数组不动
+  assert.deepEqual(parts.map((p) => p.id), ["p0", "p1", "p2", "p3", "p4"]);
+});
+
+test("拖拽排序：clampReorderIndex 把落点拦在底栏前面，没有底栏时拦在末尾", () => {
+  const parts = mkParts(["topAppBar", "searchBar", "chipRow", "card", "bottomNav"]);
+  // 底栏在拿掉被拖零件后的下标 3，想落到 4、99 都拦回 3
+  assert.equal(clampReorderIndex(parts, "p1", 4), 3);
+  assert.equal(clampReorderIndex(parts, "p1", 99), 3);
+  assert.equal(clampReorderIndex(parts, "p1", 2), 2);
+  assert.equal(clampReorderIndex(parts, "p1", -1), 0);
+  // 拖的是底栏前一个零件，落到末尾也只能到底栏前面
+  assert.equal(clampReorderIndex(parts, "p3", 4), 3);
+  // 没有底栏：落点最多是末尾
+  const noNav = mkParts(["topAppBar", "searchBar", "card"]);
+  assert.equal(clampReorderIndex(noNav, "p0", 99), 2);
+  assert.equal(clampReorderIndex(noNav, "p0", 1), 1);
+});
+
+test("拖拽排序：换顺序后提示词里的屏幕结构跟着新顺序走，底栏仍在最后", () => {
+  const doc = seedSketchDoc();
+  const s1 = doc.screens[0];
+  // 把「大理三日」卡片拖到搜索栏前面（目标位是拿掉它之后数组里的下标 1）
+  const card = s1.parts.find((p) => p.kind === "card");
+  s1.parts = reorderParts(s1.parts, card.id, 1);
+  const prompt = buildSketchPrompt(doc);
+  const line = prompt.split("\n").find((l) => l.startsWith("首页屏幕从上到下依次如下："));
+  assert.ok(line, "提示词应有首页结构行");
+  const cardAt = line.indexOf("大理三日");
+  const searchAt = line.indexOf("搜索目的地");
+  const navAt = line.indexOf("导航栏");
+  assert.ok(cardAt > 0 && searchAt > 0 && navAt > 0, line);
+  assert.ok(cardAt < searchAt, "卡片应排在搜索栏前面");
+  assert.ok(navAt > searchAt && navAt > cardAt, "底栏仍在最后");
 });
 
 test("画界面：主题与过渡表完整", () => {

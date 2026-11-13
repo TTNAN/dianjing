@@ -87,6 +87,19 @@ body.sk-frame-none .sk-notch { display: none; }
 .sk-part { position: relative; margin: 0 16px var(--sk-gap, 12px); border-radius: 12px; cursor: default; }
 .sk-part.sel { outline: 2px solid var(--blue); outline-offset: 2px; }
 .sk-part.tap { cursor: pointer; }
+/* 拖拽排序：把手、拖起来的零件、插入位置线 */
+.sk-grip { position: absolute; left: 2px; top: 50%; transform: translateY(-50%); z-index: 4; width: 16px; height: 28px; line-height: 28px; text-align: center; font-size: 12px; font-style: normal; color: var(--muted); background: rgba(255,255,255,.85); border-radius: 6px; cursor: grab; touch-action: none; opacity: 0; transition: opacity .15s; user-select: none; -webkit-user-select: none; }
+.sk-phone-col.on .sk-part:hover .sk-grip, .sk-phone-col.on .sk-part.sel .sk-grip { opacity: .85; }
+.sk-grip:active { cursor: grabbing; }
+/* 触屏没有悬停，把手一直淡淡地显示，方便找到 */
+@media (hover: none) {
+  .sk-phone-col.on .sk-part .sk-grip { opacity: .55; }
+}
+.sk-part.sk-dragging { opacity: .45; }
+.sk-viewport.sk-dragging-on { touch-action: none; cursor: grabbing; }
+.sk-viewport.sk-dragging-on .sk-part { user-select: none; -webkit-user-select: none; }
+/* 插入位置线：浮在手机框里，不占布局，跟着指针走 */
+.sk-drop-line { position: absolute; left: 16px; right: 16px; height: 4px; margin: 0; border-radius: 99px; background: var(--blue); box-shadow: 0 0 0 1px rgba(36,111,255,.3), 0 2px 8px rgba(36,111,255,.45); z-index: 6; pointer-events: none; }
 /* 跳转徽章：平时不显示，只在鼠标悬停或零件被选中时出现，免得盖住卡片和底栏 */
 .sk-link { position: absolute; top: -8px; right: 6px; z-index: 2; font-style: normal; font-size: 10px; font-weight: 700; color: #fff; background: var(--blue); padding: 2px 7px; border-radius: 999px; box-shadow: 0 2px 6px rgba(36,111,255,.4); white-space: nowrap; opacity: 0; transition: opacity .2s; }
 .sk-part:hover .sk-link, .sk-part.sel .sk-link { opacity: 1; }

@@ -243,6 +243,60 @@ async def main():
     await pg.locator("#skITabs button[data-itab='trigger']").click(); await pg.wait_for_timeout(200)
     await pg.select_option("#skFAction", "s2"); await pg.wait_for_timeout(300)
     assert "跳转到详情页屏幕" in (await pg.locator("#skPrompt").input_value())
+    # ---- 拖拽排序（v0.5.9）----
+    order_js = """() => {
+      const doc = JSON.parse(localStorage.getItem('dianjing.sketch.v1')).doc;
+      const byId = new Map(doc.screens[0].parts.map(p => [p.id, p.kind]));
+      const dom = [...document.querySelectorAll('.sk-phone-col.on .sk-screen-body .sk-part')].map(el => byId.get(el.dataset.pid));
+      return { doc: doc.screens[0].parts.map(p => p.kind), dom };
+    }"""
+    o0 = await pg.evaluate(order_js)
+    assert o0["doc"] == ["topAppBar", "searchBar", "chipRow", "card", "listItem", "listItem", "listItem", "button", "bottomNav"], o0
+    assert o0["dom"] == o0["doc"], o0  # 画布渲染顺序和文档顺序一致
+    # 拖搜索栏到标签片行下面：拖的时候应出现一条蓝线，松手后顺序变、底栏仍在最后、提示词跟着变
+    await pg.evaluate("() => { document.querySelector('.sk-phone-col.on .sk-viewport').scrollTop = 0; }")
+    await pg.wait_for_timeout(200)
+    sb = await pg.locator(".sk-phone-col.on .sk-screen-body .sk-part >> nth=1").bounding_box()
+    cr = await pg.locator(".sk-phone-col.on .sk-screen-body .sk-part >> nth=2").bounding_box()
+    assert sb and cr, "拖拽前应能定位搜索栏和标签片行"
+    await pg.mouse.move(sb["x"] + sb["width"] / 2, sb["y"] + sb["height"] / 2)
+    await pg.mouse.down()
+    await pg.mouse.move(sb["x"] + sb["width"] / 2, cr["y"] + cr["height"] - 2, steps=12)
+    await pg.wait_for_timeout(200)
+    assert await pg.locator(".sk-drop-line").count() == 1, "拖起来后应出现插入位置线"
+    await pg.mouse.up()
+    await pg.wait_for_timeout(400)
+    o1 = await pg.evaluate(order_js)
+    assert o1["doc"] == ["topAppBar", "chipRow", "searchBar", "card", "listItem", "listItem", "listItem", "button", "bottomNav"], o1
+    assert o1["dom"] == o1["doc"], o1
+    prompt1 = await pg.locator("#skPrompt").input_value()
+    assert prompt1.index("全部、国内") < prompt1.index("搜索目的地"), "提示词里标签片行应在搜索栏前面"
+    # 撤销排序：回到拖之前的顺序
+    await pg.click("#skUndoOrder"); await pg.wait_for_timeout(300)
+    assert (await pg.evaluate(order_js))["doc"] == o0["doc"]
+    # 检查器上移/下移：选中搜索栏，下移再上移，回到原位；最后再下移一次，留作刷新后持久化的终态
+    await pg.locator(".sk-phone-col.on .sk-screen-body .sk-part >> nth=1").click(); await pg.wait_for_timeout(300)
+    await pg.click("#skMoveDown"); await pg.wait_for_timeout(300)
+    assert (await pg.evaluate(order_js))["doc"] == o1["doc"], "下移后搜索栏应在标签片行下面"
+    await pg.click("#skMoveUp"); await pg.wait_for_timeout(300)
+    assert (await pg.evaluate(order_js))["doc"] == o0["doc"], "上移后应回到原位"
+    await pg.click("#skMoveDown"); await pg.wait_for_timeout(300)
+    assert (await pg.evaluate(order_js))["doc"] == o1["doc"]
+    # 底栏钉在最后：按钮（底栏上一位）的下移应禁用；底栏自身的上下移都禁用；直接拖底栏也拖不动
+    await pg.locator(".sk-phone-col.on .sk-screen-body .sk-part >> nth=7").click(); await pg.wait_for_timeout(300)
+    assert await pg.locator("#skMoveDown").is_disabled(), "底栏上一位的下移应禁用"
+    nav = await pg.locator(".sk-phone-col.on .sk-screen-body .sk-part.sk-nav").bounding_box()
+    assert nav, "底栏应能定位"
+    await pg.mouse.move(nav["x"] + nav["width"] / 2, nav["y"] + nav["height"] / 2)
+    await pg.mouse.down()
+    await pg.mouse.move(nav["x"] + nav["width"] / 2, nav["y"] - 120, steps=10)
+    await pg.wait_for_timeout(200)
+    await pg.mouse.up()
+    await pg.wait_for_timeout(300)
+    assert (await pg.evaluate(order_js))["doc"] == o1["doc"], "拖底栏不应改变顺序"
+    await pg.locator(".sk-phone-col.on .sk-screen-body .sk-part.sk-nav").click(); await pg.wait_for_timeout(300)
+    assert await pg.locator("#skMoveUp").is_disabled(), "底栏自身的上移应禁用"
+    assert await pg.locator("#skMoveDown").is_disabled(), "底栏自身的下移应禁用"
     await pg.screenshot(path="./tmp-s1.png")
     # 预览：点卡片滑到详情页，返回退回，关闭回到编辑
     await pg.click("#skPreviewBtn"); await pg.wait_for_timeout(500)
@@ -262,6 +316,10 @@ async def main():
     await pg.reload(); await pg.wait_for_timeout(500)
     await pg.click('#modeSeg button[data-mode="sketch"]'); await pg.wait_for_timeout(500)
     assert "马上出发" in (await pg.locator("#skPrompt").input_value())
+    # 刷新后拖拽换过的顺序还在（搜索栏仍在标签片行下面，底栏仍在最后）
+    ro = await pg.evaluate(order_js)
+    assert ro["doc"] == ["topAppBar", "chipRow", "searchBar", "card", "listItem", "listItem", "listItem", "button", "bottomNav"], ro
+    assert ro["dom"] == ro["doc"], ro
     await pg.click('#modeSeg button[data-mode="annotate"]'); await pg.wait_for_timeout(300)
     s = await state(pg)
     assert len(s["regions"]) == 1, s
@@ -290,6 +348,6 @@ async def main():
     await mctx.close()
     print("ERRS", errs)
     assert not errs, errs
-    print("E2E PASS: 演示选中再挑改法（14 元素/选中不改图/适用改法/点改法才变/取消选中/计数/撤销/重置/复制/持久化）/真截图圈选识别互斥方案贴图移动缩放持久化复制/画界面（加零件/改标题/连跳转/预览切页/复制/持久化）/手机端（390px 无横向溢出）全部通过")
+    print("E2E PASS: 演示选中再挑改法（14 元素/选中不改图/适用改法/点改法才变/取消选中/计数/撤销/重置/复制/持久化）/真截图圈选识别互斥方案贴图移动缩放持久化复制/画界面（加零件/改标题/连跳转/拖拽排序/上移下移/底栏钉底/撤销排序/顺序进提示词/预览切页/复制/持久化）/手机端（390px 无横向溢出）全部通过")
     await ctx.close(); await b.close()
 asyncio.run(main())
