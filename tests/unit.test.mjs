@@ -372,3 +372,64 @@ test("画界面：零件的对齐与透明度进提示词", () => {
   assert.ok(card.startsWith("van-card"));
   assert.ok(card.includes("右对齐"));
 });
+
+// ---------- 演示直接点改 ----------
+import { DEMO_ELEMENTS, DEMO_NAMES, DEMO_CYCLES, nextDemoTerm } from "../src/demo.js";
+
+test("直接点改：14 个可见元素都有名、都有至少 2 个状态", () => {
+  assert.equal(DEMO_ELEMENTS.length, 14);
+  for (const el of DEMO_ELEMENTS) {
+    assert.ok(DEMO_NAMES[el.id]?.zh, el.id);
+    const cycle = DEMO_CYCLES[el.id];
+    assert.ok(Array.isArray(cycle) && cycle.length >= 2, `${el.id} 至少 2 个状态`);
+  }
+});
+
+test("直接点改：轮次里的词条都在词表里、都是参数类（进 LIVE），不含结构类", () => {
+  for (const [elId, cycle] of Object.entries(DEMO_CYCLES)) {
+    assert.equal(new Set(cycle).size, cycle.length, `${elId} 轮次里不重复`);
+    for (const term of cycle) {
+      assert.ok(TERM_INDEX[term], `${elId} 的 ${term} 在词表里`);
+      assert.ok(LIVE[term], `${elId} 的 ${term} 是参数类`);
+      assert.ok(!STRUCTURAL.includes(term), `${elId} 的 ${term} 不是结构类`);
+    }
+  }
+});
+
+test("直接点改：nextDemoTerm 走完一轮回到原样，不认识的当前态从头开始", () => {
+  assert.equal(nextDemoTerm("search", null), "v-round-to-square");
+  assert.equal(nextDemoTerm("search", "v-round-to-square"), "v-solid-to-gradient");
+  assert.equal(nextDemoTerm("search", "v-solid-to-gradient"), "v-flat-to-float");
+  assert.equal(nextDemoTerm("search", "v-flat-to-float"), null);
+  assert.equal(nextDemoTerm("search", "v-square-to-round"), "v-round-to-square");
+  assert.equal(nextDemoTerm("nope", null), null);
+  assert.equal(nextDemoTerm("tabbar", "v-solid-to-gradient"), null);
+});
+
+test("直接点改：轮次里每个状态点下去，图都真变（没有空转的状态）", () => {
+  const base = renderDemo();
+  for (const [elId, cycle] of Object.entries(DEMO_CYCLES)) {
+    for (const term of cycle) {
+      const changed = renderDemo({ [elId]: LIVE[term] });
+      assert.notEqual(changed, base, `${elId} 的 ${term} 没让图变`);
+    }
+  }
+});
+
+test("直接点改：内联 SVG 里 14 个元素组都挂了 data-el，悬停标题能挂上", () => {
+  const svg = renderDemo({}, { search: "搜索栏：点一下 → 圆角 → 直角", hero: "主卡：点一下 → 恢复原样" });
+  assert.equal((svg.match(/data-el="/g) || []).length, 14);
+  assert.ok(svg.includes('<g data-el="search"><title>搜索栏：点一下 → 圆角 → 直角</title>'));
+  assert.ok(svg.includes('<g data-el="hero"><title>主卡：点一下 → 恢复原样</title>'));
+  // 没传标题时不挂空 title
+  assert.ok(!renderDemo().includes("<title>"));
+});
+
+test("一眼对比小图：纯色 → 渐变的后一张是真渐变（不再全是蓝），通栏的前一张是满宽底栏", () => {
+  const g = VISUAL.find((v) => v.id === "v-solid-to-gradient");
+  assert.ok(g.after.includes("#ff4d8d") && g.after.includes("#2ee6d6"), "后态渐变里有粉有青，不再全蓝");
+  assert.ok(!g.after.includes("#1761fd"), "后态不再是三段蓝");
+  const f = VISUAL.find((v) => v.id === "v-full-to-inset");
+  assert.ok(f.before.includes("left:0;right:0;bottom:0;height:16px"), "前态是满宽贴底的底栏");
+  assert.ok(f.after.includes("left:6px;right:6px;bottom:4px") && f.after.includes("border-radius:99px"));
+});

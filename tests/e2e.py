@@ -2,8 +2,14 @@
 跑法：
   python3 -m http.server 8766   # 在仓库根目录
   python3 tests/e2e.py
-断言失败或页面报错都会让脚本以非零退出码结束，只截图不算通过。"""
-import json, asyncio, sys
+断言失败或页面报错都会让脚本以非零退出码结束，只截图不算通过。
+
+两条主线：
+  演示（内置示例）：图本身就是能改的元素，点一下直接换下一个样子；
+    一眼对比、设计词典、提示词框在演示里不出现，只留操作条。
+  真截图（上传的平图片）：圈选 + AI 识别 + 词条/对比格子那套原样保留。
+"""
+import json, asyncio, sys, os
 from playwright.async_api import async_playwright
 REC = {"type_zh":"底部导航栏","type_en":"Bottom tab bar","description":"白色通栏底栏，灰色线性图标，选中项蓝色，顶部细灰线","issues":["线性图标偏细，小尺寸下识别度一般","选中态只有颜色区分，缺少其他层次"],"suggested_terms":["floating-tabbar","premium"]}
 VAR = {"variants":[
@@ -12,7 +18,7 @@ VAR = {"variants":[
  {"title":"极简指示条","summary":"去掉图标底色，选中项下方小圆点","changes":["图标线性化","选中项 4px 圆点指示"],"html":"<div style='background:#fff;display:flex;justify-content:space-around;padding:16px'><b>总览•</b><span style='color:#999'>订单</span><span style='color:#999'>数据</span><span style='color:#999'>我的</span></div>"}]}
 
 async def state(pg):
-  return await pg.evaluate("() => { const s = window.__dianjing; return { regions: s.regions, selected: s.selected, preview: s.preview, lang: s.lang }; }")
+  return await pg.evaluate("() => { const s = window.__dianjing; return { regions: s.regions, selected: s.selected, preview: s.preview, lang: s.lang, isDemo: s.isDemo, demoHistory: s.demoHistory.length }; }")
 
 async def main():
   async with async_playwright() as p:
@@ -31,21 +37,88 @@ async def main():
     assert await pg.locator("body.no-image").count() == 1, "空状态下 body 应带 no-image"
     await pg.evaluate("localStorage.setItem('dianjing.settings', JSON.stringify({baseUrl:'https://fake.api/v1',model:'x',apiKey:'k'}))")
     await pg.reload(); await pg.wait_for_timeout(300)
+    # ---- 演示：直接点改 ----
     await pg.click("#demo2"); await pg.wait_for_timeout(1300)  # 空状态下顶栏的 #demo 已隐藏，改走首屏的「先看看示例」
     assert await pg.locator("#zoombar").is_visible(), "载入截图后缩放条应出现"
-    box = await pg.locator("#overlay").bounding_box()
-    sx=box["width"]/390; sy=box["height"]/844
-    await pg.mouse.move(box["x"]+4*sx, box["y"]+778*sy); await pg.mouse.down()
-    await pg.mouse.move(box["x"]+386*sx, box["y"]+842*sy, steps=30)
+    assert await pg.locator("#demoSvg svg").count() == 1, "演示应以内联 SVG 进画布"
+    assert await pg.locator("#demoSvg [data-el]").count() == 14, "演示 14 个元素都应是可点节点"
+    assert await pg.locator("#shot").is_hidden(), "演示不走光栅化，#shot 应隐藏"
+    assert await pg.locator("body.demo-mode").count() == 1, "演示应挂 demo-mode"
+    assert await pg.locator(".vsgrid").count() == 0, "演示里 18 格对比应收起来"
+    assert await pg.locator("#vocabDetails").count() == 0, "演示里设计词典应收起来"
+    assert await pg.locator(".prompt-card").is_hidden(), "演示里提示词卡应收起来"
+    assert await pg.locator(".demo-bar").count() == 1, "演示只留一条操作条"
+    assert (await pg.locator(".demo-count").inner_text()) == "已改 0 处"
+    assert await pg.locator("#demoUndo").is_disabled(), "没改之前撤销应禁用"
+    assert await pg.locator("#demoCopy").is_disabled(), "没改之前复制应禁用"
     await pg.screenshot(path="./tmp-e1.png")
-    await pg.mouse.up(); await pg.wait_for_timeout(500)
+    # 点搜索栏：圆角 → 直角，图变、计数变、提示词跟着变
+    svg0 = await pg.locator("#demoSvg").inner_html()
+    await pg.locator('#demoSvg [data-el="search"]').click(); await pg.wait_for_timeout(400)
+    assert await pg.locator("#demoSvg").inner_html() != svg0, "点搜索栏后 SVG 应变"
+    assert (await pg.locator(".demo-count").inner_text()) == "已改 1 处"
+    s = await state(pg)
+    assert s["regions"][0]["demoEl"] == "search" and s["regions"][0]["terms"] == ["v-round-to-square"], s["regions"]
+    prompt = await pg.locator("#prompt").input_value()
+    assert "圆角改为直角" in prompt and "搜索栏" in prompt, prompt
+    # 再点两下搜索栏：渐变 → 悬浮，同一元素计数不变；第四下回到原样，计数归零
+    await pg.locator('#demoSvg [data-el="search"]').click(); await pg.wait_for_timeout(300)
+    s = await state(pg); assert s["regions"][0]["terms"] == ["v-solid-to-gradient"], s["regions"]
+    await pg.locator('#demoSvg [data-el="search"]').click(); await pg.wait_for_timeout(300)
+    s = await state(pg); assert s["regions"][0]["terms"] == ["v-flat-to-float"], s["regions"]
+    assert (await pg.locator(".demo-count").inner_text()) == "已改 1 处"
+    await pg.locator('#demoSvg [data-el="search"]').click(); await pg.wait_for_timeout(300)
+    s = await state(pg); assert s["regions"] == [], s["regions"]
+    assert (await pg.locator(".demo-count").inner_text()) == "已改 0 处"
+    # 点两个元素，再撤销一步、重置
+    await pg.locator('#demoSvg [data-el="hero"]').click(); await pg.wait_for_timeout(300)
+    await pg.locator('#demoSvg [data-el="tabbar"]').click(); await pg.wait_for_timeout(300)
+    assert (await pg.locator(".demo-count").inner_text()) == "已改 2 处"
+    await pg.click("#demoUndo"); await pg.wait_for_timeout(400)
+    assert (await pg.locator(".demo-count").inner_text()) == "已改 1 处"
+    s = await state(pg); assert [r["demoEl"] for r in s["regions"]] == ["hero"], s["regions"]
+    await pg.click("#demoReset"); await pg.wait_for_timeout(400)
+    assert (await pg.locator(".demo-count").inner_text()) == "已改 0 处"
+    # 复制：改两处后点复制，按钮变已复制，提示词里两处都在
+    await pg.locator('#demoSvg [data-el="search"]').click(); await pg.wait_for_timeout(300)
+    await pg.locator('#demoSvg [data-el="pills"]').click(); await pg.wait_for_timeout(300)
+    await pg.click("#demoCopy"); await pg.wait_for_timeout(500)
+    assert "done" in (await pg.locator("#demoCopy").get_attribute("class") or "")
+    prompt = await pg.locator("#prompt").input_value()
+    assert "搜索栏" in prompt and "时间胶囊" in prompt, prompt
     await pg.screenshot(path="./tmp-e2.png")
+    # 演示的改动能持久化：刷新后还在（且是按元素记的，不是圈选框）
+    await pg.wait_for_timeout(900)
+    await pg.reload(); await pg.wait_for_timeout(800)
+    s = await state(pg)
+    assert s["isDemo"] and len(s["regions"]) == 2, s
+    assert sorted(r["demoEl"] for r in s["regions"]) == ["pills", "search"], s["regions"]
+    assert await pg.locator(".box").count() == 0, "演示不画圈选框"
+    # ---- 真截图：上传一张平图片，走圈选 + AI 识别 + 词条/对比格子 ----
+    await pg.set_input_files("#file", "docs/screenshot.png")
+    await pg.wait_for_timeout(1000)
+    assert await pg.locator("#shot").is_visible(), "真图应走 img"
+    assert await pg.locator("#demoSvg svg").count() == 0, "真图没有内联 SVG"
+    assert await pg.locator("body.demo-mode").count() == 0, "真图不挂 demo-mode"
+    s = await state(pg)
+    assert not s["isDemo"] and s["regions"] == [], s
+    img = await pg.evaluate("() => { const s = window.__dianjing; return { w: s.image.w, h: s.image.h }; }")
+    assert (img["w"], img["h"]) == (1400, 900), img
+    box = await pg.locator("#overlay").bounding_box()
+    # 在图上圈一条顶部横条（分数 0.02,0.10 → 0.50,0.30）
+    await pg.mouse.move(box["x"]+0.02*box["width"], box["y"]+0.10*box["height"]); await pg.mouse.down()
+    await pg.mouse.move(box["x"]+0.50*box["width"], box["y"]+0.30*box["height"], steps=20)
+    await pg.mouse.up(); await pg.wait_for_timeout(500)
+    await pg.screenshot(path="./tmp-e3.png")
     await pg.wait_for_function("window.__dianjing.regions[0]?.recog?.type_zh === '底部导航栏'", timeout=8000)
     s = await state(pg)
     assert len(s["regions"]) == 1, s
     r = s["regions"][0]
-    assert tuple(round(r[k]) for k in ("x", "y", "w", "h")) == (8, 1556, 764, 128), r
+    assert tuple(round(r[k]) for k in ("x", "y", "w", "h")) == (28, 90, 672, 180), r
     assert "floating-tabbar" in r["terms"] and "premium" in r["terms"], r["terms"]
+    assert await pg.locator(".vsgrid").count() == 1, "真图应有 18 格对比"
+    assert await pg.locator("#vocabDetails").count() == 1, "真图应有设计词典"
+    assert await pg.locator(".prompt-card").is_visible(), "真图应有提示词卡"
     # 快捷方向可开关：点“更高级”补齐三项，再点一次全部取消
     await pg.locator(".chip.quick").first.click(); await pg.wait_for_timeout(300)
     s = await state(pg); assert "shadow" in s["regions"][0]["terms"], s["regions"][0]["terms"]
@@ -62,6 +135,9 @@ async def main():
     await pg.locator('.vs[data-t="v-full-to-inset"]').hover(); await pg.wait_for_timeout(400)
     await pg.screenshot(path="./tmp-e7.png")
     await pg.locator('.vs[data-t="v-full-to-inset"]').click(); await pg.wait_for_timeout(500)
+    s = await state(pg)
+    assert "v-full-to-inset" in s["regions"][0]["terms"], s["regions"][0]["terms"]
+    assert await pg.locator("#shotAfter").is_hidden(), "真图点格子不画改后图层"
     # 框内文字进提示词，帮 AI 在代码里定位
     await pg.fill("#regionText", "总览 订单 数据 我的")
     await pg.fill("#note","看起来很廉价，想要像苹果那样")
@@ -69,7 +145,7 @@ async def main():
     prompt = await pg.locator("#prompt").input_value()
     assert "框内文字：总览 订单 数据 我的" in prompt, prompt
     await pg.click("#varBtn"); await pg.wait_for_timeout(600)
-    await pg.locator(".panel").evaluate("e=>e.scrollTo({top:900,behavior:'smooth'})"); await pg.screenshot(path="./tmp-e3.png")
+    await pg.locator(".panel").evaluate("e=>e.scrollTo({top:900,behavior:'smooth'})"); await pg.screenshot(path="./tmp-e4.png")
     await pg.wait_for_function("window.__dianjing.regions[0]?.variants?.length === 3", timeout=8000)
     assert await pg.locator(".variant").count() == 3
     await pg.locator(".variant").first.locator("button").click(); await pg.wait_for_timeout(700)
@@ -79,16 +155,17 @@ async def main():
     assert await pg.locator(".preview-layer").count() == 1, "选中的方案应贴回原图上"
     assert await pg.locator("#previewbar").is_visible(), "预览对比条应出现"
     await pg.screenshot(path="./tmp-e8.png")
-    # 拖框体移动（向左拖 30 屏像素，x 应 clamp 到 0），再用方向键微调
+    # 拖框体移动（向左拖够远，x 应 clamp 到 0），再用方向键微调
     info = await pg.evaluate("""() => { const s = window.__dianjing; const r = s.regions[0];
       const o = document.querySelector('#overlay').getBoundingClientRect();
       return { r, ox: o.x, oy: o.y, ow: o.width, oh: o.height, iw: s.image.w, ih: s.image.h }; }""")
     cx = info["ox"] + (info["r"]["x"] + info["r"]["w"]/2) / info["iw"] * info["ow"]
     cy = info["oy"] + (info["r"]["y"] + info["r"]["h"]/2) / info["ih"] * info["oh"]
+    drag = (info["r"]["x"] / info["iw"]) * info["ow"] + 40  # 拖过左边缘，x 钳到 0
     await pg.mouse.move(cx, cy); await pg.mouse.down()
-    await pg.mouse.move(cx - 30, cy, steps=10); await pg.mouse.up(); await pg.wait_for_timeout(300)
+    await pg.mouse.move(cx - drag, cy, steps=10); await pg.mouse.up(); await pg.wait_for_timeout(300)
     s = await state(pg); assert s["regions"][0]["x"] == 0, s["regions"][0]
-    await pg.mouse.click(cx - 30, cy)  # 点一下框体，把焦点还给画布
+    await pg.mouse.click(cx - drag, cy)  # 点一下框体，把焦点还给画布
     for _ in range(3): await pg.keyboard.press("ArrowRight"); await pg.wait_for_timeout(120)
     s = await state(pg); assert s["regions"][0]["x"] == 3, s["regions"][0]
     # 拖右下角手柄缩小（向左上拖，宽应减小）
@@ -103,13 +180,13 @@ async def main():
     await pg.click("#zoomFit"); await pg.wait_for_timeout(300)
     assert (await pg.locator("#zoomLabel").inner_text()) == "适应"
     await pg.locator(".panel").evaluate("e=>e.scrollTo({top:0,behavior:'smooth'})"); await pg.wait_for_timeout(300)
-    await pg.screenshot(path="./tmp-e4.png")
-    await pg.locator(".panel").evaluate("e=>e.scrollTo({top:900,behavior:'smooth'})"); await pg.wait_for_timeout(300)
     await pg.screenshot(path="./tmp-e5.png")
+    await pg.locator(".panel").evaluate("e=>e.scrollTo({top:900,behavior:'smooth'})"); await pg.wait_for_timeout(300)
+    await pg.screenshot(path="./tmp-e6.png")
     await pg.click("#copy"); await pg.wait_for_timeout(500)
     assert "done" in (await pg.locator("#copy").get_attribute("class") or "")
     await pg.locator(".panel").evaluate("e=>e.scrollTo({top:99999,behavior:'smooth'})"); await pg.wait_for_timeout(1500)
-    await pg.screenshot(path="./tmp-e6.png")
+    await pg.screenshot(path="./tmp-e9.png")
     # 持久化：等保存防抖落盘后刷新，圈选应还在
     await pg.wait_for_timeout(900)
     await pg.reload(); await pg.wait_for_timeout(800)
@@ -118,50 +195,7 @@ async def main():
     assert s["regions"][0]["recog"]["type_zh"] == "底部导航栏", s["regions"][0]
     prompt = await pg.locator("#prompt").input_value()
     assert "底部导航栏" in prompt and "框内文字" in prompt, prompt
-    await pg.screenshot(path="./tmp-e9.png")
-    # 点一下就变：再圈一组时间胶囊，点“圆角 → 直角”，图上应直接变
-    box = await pg.locator("#overlay").bounding_box()
-    sx=box["width"]/390; sy=box["height"]/844
-    await pg.mouse.move(box["x"]+24*sx, box["y"]+228*sy); await pg.mouse.down()
-    await pg.mouse.move(box["x"]+366*sx, box["y"]+258*sy, steps=20); await pg.mouse.up(); await pg.wait_for_timeout(600)
-    s = await state(pg)
-    assert len(s["regions"]) == 2, s
-    r2 = s["regions"][1]
-    assert tuple(round(r2[k]) for k in ("x", "y", "w", "h")) == (48, 456, 684, 60), r2
-    await pg.locator(".vsgrid").scroll_into_view_if_needed(); await pg.wait_for_timeout(300)
-    await pg.locator('.vs[data-t="v-round-to-square"]').click(); await pg.wait_for_timeout(900)
-    assert await pg.locator("#shotAfter").is_visible(), "点圆角→直角后改后图层应出现"
-    assert (await pg.locator("#shotAfter").get_attribute("src")) != (await pg.locator("#shot").get_attribute("src"))
-    assert await pg.locator("#compareBtn").is_visible(), "对比按钮应出现"
-    prompt = await pg.locator("#prompt").input_value()
-    assert "圆角改为直角" in prompt, prompt
     await pg.screenshot(path="./tmp-e10.png")
-    await pg.click("#compareBtn"); await pg.wait_for_timeout(300)
-    assert not await pg.locator("#shotAfter").is_visible(), "对比原图时改后图层应隐藏"
-    await pg.click("#compareBtn"); await pg.wait_for_timeout(300)
-    assert await pg.locator("#shotAfter").is_visible(), "再点应回到改后"
-    await pg.evaluate("window.__srcOn = document.querySelector('#shotAfter').src")
-    await pg.locator('.vs[data-t="v-round-to-square"]').click()
-    # 取消后图应重绘：1 号框的「通栏 → 悬浮」还活着，所以图层不消失，只是胶囊变回圆角
-    await pg.wait_for_function("() => document.querySelector('#shotAfter').src !== window.__srcOn", timeout=5000)
-    assert await pg.locator("#shotAfter").is_visible(), "1 号框的悬浮底栏还活着，改后图层应仍在"
-    # 全部生效的改动都取消后图层才消失：选中 1 号框，取消它的悬浮
-    await pg.locator(".box").first.click(); await pg.wait_for_timeout(300)
-    await pg.locator(".vsgrid").scroll_into_view_if_needed(); await pg.wait_for_timeout(300)
-    await pg.locator('.vs[data-t="v-full-to-inset"]').click(); await pg.wait_for_timeout(600)
-    assert not await pg.locator("#shotAfter").is_visible(), "没有生效的改动后，改后图层应消失"
-    assert not await pg.locator("#compareBtn").is_visible(), "没有生效的改动后，对比按钮应消失"
-    # 结构类：横排→竖排，本地重排预览应贴到原位置（先选回胶囊那框）
-    await pg.locator(".box").nth(1).click(); await pg.wait_for_timeout(300)
-    s = await state(pg); assert s["selected"] == s["regions"][1]["id"], s
-    await pg.locator(".vsgrid").scroll_into_view_if_needed(); await pg.wait_for_timeout(300)
-    await pg.locator('.vs[data-t="v-row-to-col"]').click(); await pg.wait_for_timeout(600)
-    assert await pg.locator(".preview-layer").count() == 1, "横排→竖排应弹出本地重排预览"
-    assert await pg.locator("#previewbar").is_visible()
-    assert "横排" in (await pg.locator("#pvTitle").inner_text())
-    await pg.screenshot(path="./tmp-e11.png")
-    await pg.locator('.vs[data-t="v-row-to-col"]').click(); await pg.wait_for_timeout(400)
-    assert await pg.locator(".preview-layer").count() == 0, "取消后本地预览应消失"
     # ---- 画界面模式 ----
     await pg.click('#modeSeg button[data-mode="sketch"]'); await pg.wait_for_timeout(500)
     assert await pg.locator("#sketchRoot").is_visible(), "画界面模式应显示"
@@ -203,7 +237,7 @@ async def main():
     assert "马上出发" in (await pg.locator("#skPrompt").input_value())
     await pg.click('#modeSeg button[data-mode="annotate"]'); await pg.wait_for_timeout(300)
     s = await state(pg)
-    assert len(s["regions"]) == 2, s
+    assert len(s["regions"]) == 1, s
     # ---- 手机端（390px）----
     mctx = await b.new_context(viewport={"width":390,"height":844})
     mpg = await mctx.new_page()
@@ -216,6 +250,7 @@ async def main():
     assert await mpg.locator(".top").bounding_box() and (await mpg.locator(".top").bounding_box())["height"] <= 120, "手机顶栏不应超过两行"
     await mpg.click("#demo2"); await mpg.wait_for_timeout(1000)
     assert (await mpg.evaluate("() => document.documentElement.scrollWidth")) <= 390
+    assert await mpg.locator(".demo-bar").count() == 1, "手机演示也应只有操作条"
     await mpg.click('#modeSeg button[data-mode="sketch"]'); await mpg.wait_for_timeout(700)
     assert (await mpg.evaluate("() => document.documentElement.scrollWidth")) <= 390, "手机画界面横向溢出"
     await mpg.click("#skPreviewBtn"); await mpg.wait_for_timeout(500)
@@ -224,6 +259,6 @@ async def main():
     await mctx.close()
     print("ERRS", errs)
     assert not errs, errs
-    print("E2E PASS: 圈选/识别/互斥/方案贴图/移动/缩放/持久化/复制/点一下就变/本地重排/画界面（加零件/改标题/连跳转/预览切页/复制/持久化）/手机端（390px 无横向溢出）全部通过")
+    print("E2E PASS: 演示直接点改（14 元素/计数/撤销/重置/复制/持久化）/真截图圈选识别互斥方案贴图移动缩放持久化复制/画界面（加零件/改标题/连跳转/预览切页/复制/持久化）/手机端（390px 无横向溢出）全部通过")
     await ctx.close(); await b.close()
 asyncio.run(main())

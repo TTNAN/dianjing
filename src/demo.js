@@ -37,6 +37,53 @@ export function demoElementAt(cx, cy) {
   return null;
 }
 
+// ---------- 直接点改：每个演示元素的状态轮次 ----------
+// 点一下就换到下一个样子，走完一轮回到原样。状态复用一眼对比的词条
+// （LIVE 参数），不另起一套；结构类（横排↔竖排、列表↔网格）不动整页
+// 布局，不进这里。
+export const DEMO_NAMES = {
+  search: { zh: "搜索栏", en: "Search bar" },
+  filter: { zh: "筛选按钮", en: "Filter button" },
+  pills: { zh: "时间胶囊", en: "Time chips" },
+  hero: { zh: "主卡", en: "Hero card" },
+  order1: { zh: "订单卡片", en: "Order card" },
+  order2: { zh: "订单卡片", en: "Order card" },
+  tabbar: { zh: "底部导航栏", en: "Bottom tab bar" },
+  statusPill: { zh: "状态胶囊", en: "Status pill" },
+  shipPill: { zh: "已发货胶囊", en: "Shipped pill" },
+  pendPill: { zh: "待处理胶囊", en: "Pending pill" },
+  avatar: { zh: "头像", en: "Avatar" },
+  title: { zh: "标题", en: "Heading" },
+  amount: { zh: "金额", en: "Amount" },
+  ordersTitle: { zh: "最近订单标题", en: "Recent orders heading" },
+};
+
+export const DEMO_CYCLES = {
+  search: ["v-round-to-square", "v-solid-to-gradient", "v-flat-to-float"],
+  filter: ["v-square-to-circle", "v-solid-to-gradient"],
+  pills: ["v-small-to-big", "v-fill-to-outline", "v-tight-to-loose"],
+  hero: ["v-round-to-square", "v-light-to-dark", "v-solid-to-gradient", "v-full-to-inset"],
+  order1: ["v-round-to-square", "v-solid-to-gradient", "v-flat-to-float"],
+  order2: ["v-big-to-small", "v-solid-to-gradient", "v-flat-to-float"],
+  tabbar: ["v-full-to-inset", "v-light-to-dark", "v-solid-to-gradient"],
+  statusPill: ["v-fill-to-outline", "v-solid-to-gradient", "v-small-to-big"],
+  shipPill: ["v-fill-to-outline", "v-solid-to-gradient"],
+  pendPill: ["v-outline-to-fill", "v-solid-to-gradient"],
+  avatar: ["v-solid-to-gradient", "v-fill-to-outline", "v-small-to-big"],
+  title: ["v-small-to-big", "v-left-to-center", "v-text-to-icon"],
+  amount: ["v-small-to-big", "v-left-to-center", "v-text-to-icon"],
+  ordersTitle: ["v-small-to-big", "v-left-to-center", "v-text-to-icon"],
+};
+
+// 当前状态 → 下一个状态；走完一轮回到原样（null）。
+export function nextDemoTerm(elId, currentTerm) {
+  const cycle = DEMO_CYCLES[elId] || [];
+  if (!currentTerm) return cycle[0] ?? null;
+  const i = cycle.indexOf(currentTerm);
+  if (i < 0) return cycle[0] ?? null;
+  return cycle[i + 1] ?? null;
+}
+
 // 深色模式下各元素的颜色（浅色默认值见模板）
 const DARK = {
   search: { fill: "#23202e", stroke: "#3a3747", ink: "#e8e8e8" },
@@ -90,8 +137,11 @@ export function structuralHtml(elementId, layout) {
   return { html, height: height + 24 };
 }
 
-export function renderDemo(overrides = {}) {
+export function renderDemo(overrides = {}, titles = {}) {
   const o = (id) => overrides[id] || {};
+  // 悬停提示：每个可点元素组里挂一个 <title>，鼠标放上去就知道下一点会变成什么
+  const escT = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const titleFor = (id) => titles[id] ? `<title>${escT(titles[id])}</title>` : "";
   // rx 的 "pill"/"circle" 按元素当前尺寸换算
   const rxVal = (id, v, w, h) => v === "pill" ? Math.round(h / 2) : v === "circle" ? Math.round(Math.min(w, h) / 2) : v;
   // 放大：按元素尺寸夹住，免得 1.5 倍撑破画布；缩小不夹
@@ -207,7 +257,8 @@ export function renderDemo(overrides = {}) {
     const shadow = oo.shadow === "strong" ? ` filter="url(#shStrong)"` : "";
     const cx = x + 167 / 2, cy = 594 + 168 / 2;
     const nameText = (oo.icon ? "★ " : "") + name;
-    const pillRx = rxVal(id === "order1" ? "shipPill" : "pendPill", (id === "order1" ? o("shipPill").rx : o("pendPill").rx) ?? 11, 64, 22);
+    const pillId = id === "order1" ? "shipPill" : "pendPill";
+    const pillRx = rxVal(pillId, (id === "order1" ? o("shipPill").rx : o("pendPill").rx) ?? 11, 64, 22);
     const pFill = id === "order1"
       ? (o("shipPill").gradient ? "url(#brandGrad)" : (o("shipPill").fill ?? "#d8f999"))
       : (o("pendPill").gradient ? "url(#brandGrad)" : (o("pendPill").fill ?? "#fff"));
@@ -224,11 +275,11 @@ export function renderDemo(overrides = {}) {
       `  <text x="${x + 58}" y="646" font-size="11" fill="${sub}">${meta}</text>\n` +
       `  <line x1="${x + 14}" y1="672" x2="${x + 153}" y2="672" stroke="${line}"/>\n` +
       `  <text x="${x + 14}" y="706" font-size="20" font-weight="800" fill="${ink}">${amount}</text>\n` +
-      `  <g${scaleAttr(id === "order1" ? "shipPill" : "pendPill", x + 46, 731)}><rect x="${x + 14}" y="720" width="64" height="22" rx="${pillRx}" fill="${pFill}"${pStroke}/>\n` +
+      `  <g data-el="${pillId}">${titleFor(pillId)}<g${scaleAttr(pillId, x + 46, 731)}><rect x="${x + 14}" y="720" width="64" height="22" rx="${pillRx}" fill="${pFill}"${pStroke}/>\n` +
       (id === "order1"
         ? `  <text x="${x + 46}" y="735" font-size="11" font-weight="700" fill="${pInk}" text-anchor="middle">${pill}</text>`
         : `  <circle cx="${x + 26}" cy="731" r="3.5" fill="#615fff"/>\n  <text x="${x + 53}" y="735" font-size="11" font-weight="700" fill="${pInk}" text-anchor="middle">${pill}</text>`) +
-      `</g>\n  </g>`;
+      `</g></g>\n  </g>`;
   };
   const ordersFilterAttr = ` filter="url(#sh2)"`;
 
@@ -281,42 +332,42 @@ export function renderDemo(overrides = {}) {
 <rect x="330" y="28" width="26" height="12" rx="3.5" fill="none" stroke="#0a0a0a" stroke-width="1.2"/><rect x="332.5" y="30.5" width="18" height="7" rx="1.5" fill="#0a0a0a"/>
 
 <text x="24" y="92" font-size="14" fill="#737373">早上好 👋</text>
-<text x="${titleCx}" y="128" font-size="${titleFs}" font-weight="800" fill="#0a0a0a"${titleAnchor}>${o("title").icon ? "★ " : ""}今日总览</text>
-<g${scaleAttr("avatar", 342, 104)}><circle cx="342" cy="104" r="${avatarR}" fill="${avatarFill}"${avatarStroke}/><text x="342" y="110" font-size="${avatarFs}" font-weight="700" fill="${avatarInk}" text-anchor="middle">C</text></g>${aO.icon ? `<text x="358" y="90" font-size="12" fill="#246fff">★</text>` : ""}
+<g data-el="title">${titleFor("title")}<text x="${titleCx}" y="128" font-size="${titleFs}" font-weight="800" fill="#0a0a0a"${titleAnchor}>${o("title").icon ? "★ " : ""}今日总览</text></g>
+<g data-el="avatar">${titleFor("avatar")}<g${scaleAttr("avatar", 342, 104)}><circle cx="342" cy="104" r="${avatarR}" fill="${avatarFill}"${avatarStroke}/><text x="342" y="110" font-size="${avatarFs}" font-weight="700" fill="${avatarInk}" text-anchor="middle">C</text></g>${aO.icon ? `<text x="358" y="90" font-size="12" fill="#246fff">★</text>` : ""}</g>
 
-<g${scaleAttr("search", 165, 178)}><rect x="20" y="152" width="290" height="52" rx="${rxVal("search", sO.rx ?? 12, 290, 52)}" fill="${searchFill}" stroke="${searchStroke}"${searchFilter}/>
+<g data-el="search">${titleFor("search")}<g${scaleAttr("search", 165, 178)}><rect x="20" y="152" width="290" height="52" rx="${rxVal("search", sO.rx ?? 12, 290, 52)}" fill="${searchFill}" stroke="${searchStroke}"${searchFilter}/>
 <circle cx="47" cy="176" r="7" fill="none" stroke="${searchInk}" stroke-width="2"/><line x1="52" y1="181" x2="57" y2="186" stroke="${searchInk}" stroke-width="2" stroke-linecap="round"/>
-<text x="68" y="183" font-size="14" fill="${searchInk}">${sO.icon ? "★ " : ""}搜索订单、客户、商品</text></g>
-<g${scaleAttr("filter", 344, 178)}><rect x="318" y="152" width="52" height="52" rx="${rxVal("filter", fO.rx ?? 12, 52, 52)}" fill="${filterFill}" stroke="${filterStroke}"${filterFilter}/>
+<text x="68" y="183" font-size="14" fill="${searchInk}">${sO.icon ? "★ " : ""}搜索订单、客户、商品</text></g></g>
+<g data-el="filter">${titleFor("filter")}<g${scaleAttr("filter", 344, 178)}><rect x="318" y="152" width="52" height="52" rx="${rxVal("filter", fO.rx ?? 12, 52, 52)}" fill="${filterFill}" stroke="${filterStroke}"${filterFilter}/>
 <g stroke="${filterInk}" stroke-width="2" stroke-linecap="round"><line x1="334" y1="170" x2="354" y2="170"/><line x1="334" y1="178" x2="354" y2="178"/><line x1="334" y1="186" x2="354" y2="186"/></g>
-<circle cx="340" cy="170" r="3" fill="#fff" stroke="${filterInk}" stroke-width="2"/><circle cx="349" cy="186" r="3" fill="#fff" stroke="${filterInk}" stroke-width="2"/></g>${fO.icon ? `<text x="362" y="164" font-size="11" fill="#246fff">★</text>` : ""}
+<circle cx="340" cy="170" r="3" fill="#fff" stroke="${filterInk}" stroke-width="2"/><circle cx="349" cy="186" r="3" fill="#fff" stroke="${filterInk}" stroke-width="2"/></g>${fO.icon ? `<text x="362" y="164" font-size="11" fill="#246fff">★</text>` : ""}</g>
 
-${pillsBlock}
+<g data-el="pills">${titleFor("pills")}${pillsBlock}</g>
 
-<g${heroFilter}${scaleAttr("hero", 195, 415)}>
+<g data-el="hero">${titleFor("hero")}<g${heroFilter}${scaleAttr("hero", 195, 415)}>
 <g clip-path="url(#hero)">
   <rect x="${heroX}" y="300" width="${heroW}" height="230" fill="${heroFill}"${heroStroke}/>
   <text x="${heroTitleX}" y="336" font-size="13" fill="${heroSub}"${heroTitleAnchor}>${heroTitleText}</text>
-  <text x="${amountCx}" y="368" font-size="${amountFs}" font-weight="800" fill="${heroInk}"${amountAnchor}>${amountText}</text>
-  <g${scaleAttr("statusPill", 300, 354)}><rect x="268" y="342" width="64" height="24" rx="${statusRx}" fill="${statusFill}"${statusStroke}/>
-  <text x="300" y="358" font-size="11" font-weight="700" fill="${statusInk}" text-anchor="middle">+14.8%</text></g>
+  <g data-el="amount">${titleFor("amount")}<text x="${amountCx}" y="368" font-size="${amountFs}" font-weight="800" fill="${heroInk}"${amountAnchor}>${amountText}</text></g>
+  <g data-el="statusPill">${titleFor("statusPill")}<g${scaleAttr("statusPill", 300, 354)}><rect x="268" y="342" width="64" height="24" rx="${statusRx}" fill="${statusFill}"${statusStroke}/>
+  <text x="300" y="358" font-size="11" font-weight="700" fill="${statusInk}" text-anchor="middle">+14.8%</text></g></g>
   <g stroke="${heroGrid}" stroke-width="1"><line x1="36" y1="420" x2="354" y2="420"/><line x1="36" y1="455" x2="354" y2="455"/><line x1="36" y1="490" x2="354" y2="490"/></g>
   <path d="M48 463 L94 448 L140 456 L186 433 L232 443 L278 418 L324 426 L324 498 L48 498 Z" fill="url(#area)"/>
   <path d="M48 463 L94 448 L140 456 L186 433 L232 443 L278 418 L324 426" fill="none" stroke="#246fff" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
   <circle cx="324" cy="426" r="4" fill="#246fff" stroke="#fff" stroke-width="2"/>
   <g font-size="10" fill="${heroSub}" text-anchor="middle"><text x="48" y="518">周一</text><text x="94" y="518">周二</text><text x="140" y="518">周三</text><text x="186" y="518">周四</text><text x="232" y="518">周五</text><text x="278" y="518">周六</text><text x="324" y="518">周日</text></g>
 </g>
-</g>
+</g></g>
 
-<text x="${ordersTitleCx}" y="572" font-size="${ordersTitleFs}" font-weight="800" fill="#0a0a0a"${ordersTitleAnchor}>${o("ordersTitle").icon ? "★ " : ""}最近订单</text>
+<g data-el="ordersTitle">${titleFor("ordersTitle")}<text x="${ordersTitleCx}" y="572" font-size="${ordersTitleFs}" font-weight="800" fill="#0a0a0a"${ordersTitleAnchor}>${o("ordersTitle").icon ? "★ " : ""}最近订单</text></g>
 <text x="366" y="572" font-size="13" fill="#246fff" text-anchor="end" font-weight="600">查看全部 →</text>
 
 <g${ordersFilterAttr}>
-${orderBlock("order1", 20, "#e8f0ff", "#246fff", "约", "约翰", "订单 #8241 · 今天", "¥3,412", "已发货")}
-${orderBlock("order2", 203 + ordDx, "#f3e8ff", "#7f22fe", "阿", "阿斯彭", "订单 #8238 · 今天", "¥1,899", "待处理")}
+<g data-el="order1">${titleFor("order1")}${orderBlock("order1", 20, "#e8f0ff", "#246fff", "约", "约翰", "订单 #8241 · 今天", "¥3,412", "已发货")}</g>
+<g data-el="order2">${titleFor("order2")}${orderBlock("order2", 203 + ordDx, "#f3e8ff", "#7f22fe", "阿", "阿斯彭", "订单 #8238 · 今天", "¥1,899", "待处理")}</g>
 </g>
 
-${tabbarBlock}
+<g data-el="tabbar">${titleFor("tabbar")}${tabbarBlock}</g>
 </svg>`;
 }
 

@@ -1,7 +1,7 @@
 import { VOCAB, QUICK, TERM_INDEX, VISUAL, CONFLICTS, LIVE, STRUCTURAL } from "./vocab.js";
 import { buildPrompt } from "./prompt.js";
 import { PROVIDERS, loadSettings, saveSettings, hasModel, recognize, variants } from "./llm.js";
-import { demoDataUrl, renderDemo, demoElementAt, structuralHtml } from "./demo.js";
+import { demoDataUrl, renderDemo, demoElementAt, structuralHtml, DEMO_ELEMENTS, DEMO_NAMES, DEMO_CYCLES, nextDemoTerm } from "./demo.js";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -19,6 +19,7 @@ const state = {
   tweakSrc: null,       // 改后图的 PNG（显示层）；原图永远留在 #shot，裁剪/导出都用原图
   tweakChanged: false,  // 改后图与原图是否真有差别
   compare: "after",     // "after" 看改后 / "before" 看原图
+  demoHistory: [],      // 演示直接点改的撤销栈：每次点之前先存一份 {元素 id: 词条} 快照
 };
 window.__dianjing = state; // 供端到端测试读取
 let nextId = 1;
@@ -52,7 +53,34 @@ function loadSaved() {
     state.selected = d.selected ?? state.regions.at(-1)?.id ?? null;
     nextId = Math.max(0, ...state.regions.map((r) => r.id || 0)) + 1;
     if (d.lang) state.lang = d.lang;
-    $("#shot").src = state.image.src;
+    if (state.isDemo) {
+      // 旧版演示存的是圈选框（2 倍坐标、无 demoEl），迁成按元素记的改动；
+      // 圈在空白处、或词条不在轮次里的，丢掉
+      state.demoHistory = [];
+      if (!state.image.src.startsWith("data:image/svg")) state.image.src = demoDataUrl();
+      const migrated = [];
+      for (const r of state.regions) {
+        const elId = r.demoEl || elementAtRegion(r);
+        if (!elId) continue;
+        const el = DEMO_ELEMENTS.find((e) => e.id === elId);
+        if (!el) continue;
+        const cycle = DEMO_CYCLES[elId] || [];
+        const terms = r.terms.filter((t) => cycle.includes(t)).slice(0, 1);
+        if (!terms.length) continue;
+        const [x, y, w, h] = el.rect;
+        const name = DEMO_NAMES[elId] || {};
+        const prev = migrated.find((m) => m.demoEl === elId);
+        if (prev) { prev.terms = terms; continue; }
+        migrated.push({ ...r, demoEl: elId, x: x * 2, y: y * 2, w: w * 2, h: h * 2, terms,
+          recog: { type_zh: name.zh || elId, type_en: name.en || elId } });
+      }
+      state.regions = migrated;
+      nextId = Math.max(0, ...state.regions.map((r) => r.id || 0)) + 1;
+      $("#shot").removeAttribute("src");
+    } else {
+      $("#shot").src = state.image.src;
+    }
+    syncDemoMode();
     $("#empty").hidden = true;
     $("#canvas").hidden = false;
     $("#zoombar").hidden = false;
@@ -65,10 +93,11 @@ function loadSaved() {
 function clearWorkspace() {
   try { localStorage.removeItem(SAVE_KEY); } catch {}
   state.image = null; state.regions = []; state.selected = null; state.preview = null; nextId = 1;
-  state.isDemo = false; state.tweakSrc = null; state.tweakChanged = false; state.compare = "after";
+  state.isDemo = false; state.tweakSrc = null; state.tweakChanged = false; state.compare = "after"; state.demoHistory = [];
   zoom = "fit"; applyZoom();
   $("#shot").removeAttribute("src");
-  $("#shotAfter").removeAttribute("src");
+  $("#demoSvg").innerHTML = "";
+  syncDemoMode();
   $("#empty").hidden = false; $("#canvas").hidden = true; $("#zoombar").hidden = true; $("#previewbar").hidden = true;
   document.body.classList.add("no-image");
   renderAll();
@@ -85,6 +114,10 @@ function rasterizeSvg(src, cb) {
   };
   img.onerror = () => cb(null);
   img.src = src;
+}
+// 演示不走光栅化：SVG 以内联方式进画布，元素可点；src 只存起来供持久化
+function loadDemo() {
+  finishLoad(demoDataUrl(), 780, 1688, true);
 }
 function loadImage(src, isDemo = false) {
   const img = new Image();
@@ -104,15 +137,27 @@ function finishLoad(finalSrc, w, h, isDemo) {
     state.isDemo = isDemo;
     state.regions = []; state.selected = null; state.preview = null; nextId = 1;
     state.tweakSrc = null; state.tweakChanged = false; state.compare = "after"; lastOvJson = "";
+    state.demoHistory = [];
     zoom = "fit"; applyZoom();
-    $("#shot").src = finalSrc;
+    if (isDemo) $("#shot").removeAttribute("src"); else $("#shot").src = finalSrc;
     $("#shotAfter").removeAttribute("src");
+    syncDemoMode();
     $("#empty").hidden = true;
     const cv = $("#canvas"); cv.hidden = false; cv.style.animation = "none"; cv.offsetHeight; cv.style.animation = "";
     $("#zoombar").hidden = false;
     document.body.classList.remove("no-image");
     $("#hint").classList.remove("gone");
     renderAll();
+}
+
+// 演示/真图两种形态的切换：body 挂 demo-mode 时，画布显示内联 SVG、
+// 遮罩层不接指针（点直接落到 SVG 元素上），右侧只留操作条
+function syncDemoMode() {
+  document.body.classList.toggle("demo-mode", state.isDemo);
+  $("#demoSvg").hidden = !state.isDemo;
+  if (!state.isDemo) $("#demoSvg").innerHTML = "";
+  $("#shot").hidden = state.isDemo;
+  $("#hint").hidden = state.isDemo;
 }
 function loadFile(file) {
   if (!file || !file.type.startsWith("image/")) return;
@@ -122,7 +167,7 @@ function loadFile(file) {
 }
 
 ["#file", "#file2"].forEach((id) => $(id).addEventListener("change", (e) => loadFile(e.target.files[0])));
-["#demo", "#demo2"].forEach((id) => $(id).addEventListener("click", () => loadImage(demoDataUrl(), true)));
+["#demo", "#demo2"].forEach((id) => $(id).addEventListener("click", loadDemo));
 window.addEventListener("paste", (e) => {
   const item = [...(e.clipboardData?.items || [])].find((i) => i.type.startsWith("image/"));
   if (item) loadFile(item.getAsFile());
@@ -136,10 +181,13 @@ stage.addEventListener("drop", (e) => { e.preventDefault(); stage.classList.remo
 const ZOOM_STEPS = [0.5, 0.75, 1, 1.5, 2, 3];
 let zoom = "fit";
 function applyZoom() {
-  const img = $("#shot");
   if (!state.image) return;
-  if (zoom === "fit") { img.style.width = ""; img.style.maxHeight = ""; img.style.maxWidth = ""; }
-  else { img.style.maxHeight = "none"; img.style.maxWidth = "none"; img.style.width = Math.round(state.image.w * zoom) + "px"; }
+  // 演示的内联 SVG 按 390 宽算（内部坐标是 2 倍的 780），真图按原宽算
+  const target = state.isDemo ? document.querySelector("#demoSvg svg") : $("#shot");
+  const baseW = state.isDemo ? state.image.w / 2 : state.image.w;
+  if (!target) return;
+  if (zoom === "fit") { target.style.width = ""; target.style.maxHeight = ""; target.style.maxWidth = ""; }
+  else { target.style.maxHeight = "none"; target.style.maxWidth = "none"; target.style.width = Math.round(baseW * zoom) + "px"; }
   const lab = $("#zoomLabel");
   if (lab) lab.textContent = zoom === "fit" ? "适应" : Math.round(zoom * 100) + "%";
 }
@@ -172,7 +220,7 @@ function toImg(e) {
   };
 }
 overlay.addEventListener("pointerdown", (e) => {
-  if (!state.image || e.target.closest(".box") || e.target.closest(".preview-layer")) return;
+  if (!state.image || state.isDemo || e.target.closest(".box") || e.target.closest(".preview-layer")) return;
   overlay.setPointerCapture(e.pointerId);
   const p = toImg(e);
   drag = { x0: p.x, y0: p.y, el: document.createElement("div") };
@@ -265,9 +313,12 @@ function removeRegion(id) {
 }
 const current = () => state.regions.find((r) => r.id === state.selected);
 
-// ---------- 点一下就变：内置示例按元素重绘 ----------
-// 圈中的区域 → 示例里的元素（区域中心落在哪个元素上；小元素先命中）。
-// 只有内置示例是活的：上传的截图是像素，改不了本身，变化还是靠 AI 方案贴图看。
+// ---------- 直接点改：演示图本身就是能改的元素 ----------
+// 点一下换到下一个样子，走的还是同一条 overrides 路：
+// computeDemoOverrides() → renderDemo(overrides) 重绘 + 提示词重算，
+// 和以前点一眼对比格子完全一样，只是触发从格子换成了图上的元素。
+// 每个元素在 regions 里占一条记录（demoEl + 一个轮次词条），提示词、
+// 持久化、撤销都复用这条记录，不另起一套。
 function elementAtRegion(r) {
   if (!state.isDemo) return null;
   const cx = (r.x + r.w / 2) / 2, cy = (r.y + r.h / 2) / 2; // 栅格化后是 2 倍坐标，除以 2 回到 demo 坐标
@@ -276,7 +327,7 @@ function elementAtRegion(r) {
 function computeDemoOverrides() {
   const map = {};
   for (const r of state.regions) {
-    const el = elementAtRegion(r);
+    const el = r.demoEl || elementAtRegion(r);
     if (!el) continue;
     for (const id of r.terms) {
       const live = LIVE[id];
@@ -286,6 +337,96 @@ function computeDemoOverrides() {
   }
   return map;
 }
+
+// 当前某个元素在第几个样子（null = 原样）
+function demoTermFor(elId) {
+  return state.regions.find((r) => r.demoEl === elId)?.terms?.[0] || null;
+}
+// 悬停提示：每个元素下一点会变成什么，恢复原样也写清楚
+function demoTitles() {
+  const t = {};
+  for (const elId of Object.keys(DEMO_CYCLES)) {
+    const next = nextDemoTerm(elId, demoTermFor(elId));
+    const name = DEMO_NAMES[elId]?.zh || elId;
+    t[elId] = next ? `${name}：点一下 → ${TERM_INDEX[next]?.zh || next}` : `${name}：点一下 → 恢复原样`;
+  }
+  return t;
+}
+// 内联 SVG 重绘：演示不走光栅化，改完直接换 SVG 字符串
+function renderDemoSvg() {
+  const el = $("#demoSvg");
+  if (!state.isDemo) { el.innerHTML = ""; return; }
+  el.innerHTML = renderDemo(computeDemoOverrides(), demoTitles());
+  applyZoom(); // 重绘会换掉 svg 元素，缩放宽度要重新挂上
+}
+// 点元素：先存快照（供撤销），再推进到下一个样子
+function advanceDemoElement(elId) {
+  if (!DEMO_CYCLES[elId]) return;
+  pushDemoHistory();
+  applyDemoTerm(elId, nextDemoTerm(elId, demoTermFor(elId)));
+  renderAll();
+}
+function applyDemoTerm(elId, term) {
+  state.regions = state.regions.filter((r) => r.demoEl !== elId);
+  if (!term) return; // 回到原样，记录删掉
+  const el = DEMO_ELEMENTS.find((e) => e.id === elId);
+  if (!el) return;
+  const [x, y, w, h] = el.rect;
+  const name = DEMO_NAMES[elId] || {};
+  state.regions.push({
+    id: nextId++, x: x * 2, y: y * 2, w: w * 2, h: h * 2,
+    terms: [term], note: "", text: "",
+    recog: { type_zh: name.zh || elId, type_en: name.en || elId },
+    variants: [], chosen: null, busy: "", demoEl: elId,
+  });
+}
+function snapshotDemo() {
+  const snap = {};
+  for (const r of state.regions) {
+    if (r.demoEl && r.terms.length) snap[r.demoEl] = r.terms[0];
+  }
+  return snap;
+}
+function applyDemoSnapshot(snap) {
+  state.regions = state.regions.filter((r) => !r.demoEl);
+  for (const [elId, term] of Object.entries(snap)) applyDemoTerm(elId, term);
+}
+function pushDemoHistory() {
+  state.demoHistory.push(snapshotDemo());
+  if (state.demoHistory.length > 50) state.demoHistory.shift();
+}
+function undoDemo() {
+  const snap = state.demoHistory.pop();
+  if (!snap) return toast("没有可撤销的");
+  applyDemoSnapshot(snap);
+  renderAll();
+}
+function resetDemo() {
+  if (!state.regions.some((r) => r.demoEl && r.terms.length)) return;
+  pushDemoHistory();
+  applyDemoSnapshot({});
+  renderAll();
+  toast("已重置");
+}
+async function copyDemoPrompt() {
+  if (!state.regions.some((r) => r.demoEl && r.terms.length)) return toast("先点图上的元素改一处");
+  const text = buildPrompt(state, "zh") + "\n\n---\n\n" + buildPrompt(state, "en");
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); ta.remove();
+  }
+  const btn = $("#demoCopy");
+  if (btn) { btn.classList.add("done"); setTimeout(() => btn.classList.remove("done"), 1600); }
+}
+$("#demoSvg").addEventListener("click", (e) => {
+  if (!state.isDemo) return;
+  const g = e.target.closest("[data-el]");
+  if (!g) return;
+  advanceDemoElement(g.dataset.el);
+});
 let tweakSeq = 0, lastOvJson = "";
 function updateTweakVisibility() {
   const after = $("#shotAfter");
@@ -302,6 +443,8 @@ $("#compareBtn").onclick = () => {
 // （字符串没变 = 这个词条对这个元素没用，点它只会写进提示词）。
 // 带 JSON 护栏：框拖动、方向键微调这些只调位置的操作不会反复重绘。
 function refreshTweaks() {
+  // 演示不走光栅化这一路（改动直接画进内联 SVG），这里只服务真截图
+  if (state.isDemo) { updateTweakVisibility(); return state.tweakChanged; }
   const after = $("#shotAfter");
   const ov = state.isDemo ? computeDemoOverrides() : {};
   const json = JSON.stringify(ov);
@@ -386,10 +529,11 @@ async function runVariants(r) {
 }
 
 // ---------- 渲染 ----------
-function renderAll() { renderBoxes(); renderTabs(); renderEditor(); renderPrompt(); renderPreview(); refreshTweaks(); saveState(); }
+function renderAll() { renderBoxes(); renderTabs(); renderEditor(); renderPrompt(); renderPreview(); if (state.isDemo) renderDemoSvg(); else refreshTweaks(); saveState(); }
 
 function renderBoxes() {
   overlay.querySelectorAll(".box:not(.drawing)").forEach((b) => b.remove());
+  if (state.isDemo) return; // 演示直接点元素改，不画圈选框
   state.regions.forEach((r, i) => {
     const b = document.createElement("div");
     b.className = "box" + (r.id === state.selected ? " sel" : "") + (r.busy === "recog" ? " scanning" : "") + (r.id === justCreated ? " pop ripple" : "");
@@ -407,6 +551,7 @@ function renderBoxes() {
   justCreated = null;
 }
 function renderTabs() {
+  if (state.isDemo) { $("#count").textContent = ""; $("#regionTabs").innerHTML = ""; return; }
   $("#count").textContent = state.regions.length ? `${state.regions.length} 处` : "";
   const box = $("#regionTabs");
   const ids = state.regions.map((r) => r.id).join(",");
@@ -479,6 +624,27 @@ $("#pvClose").onclick = () => { state.preview = null; renderPreview(); };
 
 function renderEditor() {
   const r = current(); const ed = $("#editor");
+  if (state.isDemo) {
+    // 演示只留一条操作条：提示、已改几处、撤销、重置、复制提示词。
+    // 一眼对比、设计词典、一句话方向、提示词文本框都不在这里出现。
+    const changed = state.regions.filter((x) => x.demoEl && x.terms.length).length;
+    const canUndo = state.demoHistory.length > 0;
+    ed.dataset.rid = "demo"; ed.className = "";
+    ed.innerHTML = `
+    <div class="demo-bar">
+      <p class="demo-hint">👆 点图上的元素，直接改</p>
+      <div class="demo-count">已改 ${changed} 处</div>
+      <div class="row demo-actions">
+        <button class="btn sm" id="demoUndo" ${canUndo ? "" : "disabled"}><span>撤销</span></button>
+        <button class="btn sm" id="demoReset" ${changed ? "" : "disabled"}><span>重置</span></button>
+        <button class="btn sm primary" id="demoCopy" ${changed ? "" : "disabled"}><span class="l1">复制提示词</span><span class="l2">✓ 已复制</span></button>
+      </div>
+    </div>`;
+    ed.querySelector("#demoUndo").onclick = undoDemo;
+    ed.querySelector("#demoReset").onclick = resetDemo;
+    ed.querySelector("#demoCopy").onclick = copyDemoPrompt;
+    return;
+  }
   if (!r) {
     ed.dataset.rid = ""; ed.className = "";
     ed.innerHTML = `<div class="placeholder"><div class="ico"></div>${state.image ? "在左侧截图上按住拖拽，<br>圈出第一个想改的地方。" : "还没有截图。<br>上传一张，或者先看看示例。"}</div>`;

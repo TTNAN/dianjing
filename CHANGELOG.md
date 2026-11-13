@@ -1,5 +1,17 @@
 # 更新日志 / Changelog
 
+## v0.5.7 (2026-11-13)
+
+- 演示改玩法：图本身就能点改，点一下元素直接换下一个样子，不用再圈选、不用再翻 18 格小图；搜索栏、胶囊、主卡、订单卡、底栏、头像、文字，每个都能改
+- 演示只留一条操作条：点图提示、已改几处、撤销、重置、复制提示词；一眼对比、设计词典和提示词框在演示里收起来了，自己传的截图不受影响
+- 复制提示词一次拿中英两份；点错了可以撤销，改乱了可以一键重置
+- 一眼对比的两张小图修好了：纯色 → 渐变的后一张真能看出渐变，通栏 → 内缩悬浮的前一张不再画残
+
+- Demo is now directly editable: click any element on the image to switch it to its next look — no more circling, no more 18-tile grid; search bar, chips, hero card, order cards, tab bar, avatar and text can all be changed
+- The demo view now has a single action bar: hint, change count, undo, reset and copy prompt; visual tweaks, vocab and the prompt box are hidden for the demo, while uploaded screenshots keep the full flow
+- Copy prompt now gives both Chinese and English in one go; undo a misclick, reset everything with one tap
+- Fixed two visual-tweak thumbnails: solid → gradient now clearly shows a gradient, and full-width → inset no longer renders a broken bar
+
 ## v0.5.6 (2026-11-12)
 
 - 顶栏与空状态：模式切换器在两个模式下都居中，不再跳动；空状态下顶栏不再重复出现上传截图 / 载入示例按钮

@@ -125,6 +125,27 @@ h1 { font-size: clamp(30px, 3.6vw, 46px); line-height: 1.12; margin: 26px 0 14px
 .canvas img { display: block; max-height: calc(100vh - 140px); max-width: 100%; border-radius: 14px; user-select: none; }
 /* 改后图层：盖在原图正上方，只负责展示；裁剪/导出永远用底下的原图 */
 #shotAfter { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* 演示以内联 SVG 进画布：容器本身不占盒子，SVG 直接撑起画布，和 img 一个尺寸规矩 */
+#demoSvg:not([hidden]) { display: contents; }
+#demoSvg svg { display: block; max-height: calc(100vh - 140px); max-width: 100%; border-radius: 14px; user-select: none; }
+/* 演示元素可点：悬停出细框 + 手型指针 */
+#demoSvg svg [data-el] { cursor: pointer; }
+#demoSvg svg [data-el]:hover { outline: 2px solid var(--blue); outline-offset: 2px; }
+/* 演示态：遮罩层不接指针（点直接落到 SVG 元素上），右侧只留操作条 */
+body.demo-mode .overlay { pointer-events: none; cursor: default; }
+body.demo-mode #shotAfter { display: none; }
+body.demo-mode #panel .prompt-card { display: none; }
+body.demo-mode #panel .regions-card .step-h,
+body.demo-mode #panel .regions-card #regionTabs { display: none; }
+/* 演示操作条：提示 + 已改几处 + 撤销 / 重置 / 复制 */
+.demo-bar { display: grid; gap: 10px; padding: 2px; }
+.demo-hint { margin: 0; font-size: 14px; font-weight: 700; color: var(--ink); }
+.demo-count { font-size: 13px; color: var(--ink-2); }
+.demo-actions { flex-wrap: wrap; }
+#demoCopy .l2 { position: absolute; inset: 0; display: grid; place-items: center; transform: translateY(110%); transition: transform .45s var(--spring); }
+#demoCopy .l1 { transition: transform .45s var(--spring), opacity .3s; }
+#demoCopy.done .l1 { transform: translateY(-160%); opacity: 0; }
+#demoCopy.done .l2 { transform: translateY(0); }
 .overlay { position: absolute; inset: 0; cursor: crosshair; touch-action: none; border-radius: 14px; }
 .hint { position: absolute; left: 50%; bottom: -46px; transform: translateX(-50%); white-space: nowrap; font-size: 12px; color: var(--ink-2); padding: 7px 14px; border-radius: 99px; border: 1px solid var(--line); background: rgba(255, 255, 255, .92); box-shadow: 0 8px 24px -8px rgba(0, 0, 0, .18); transition: opacity .4s, transform .4s var(--out); animation: rise .8s .4s var(--out) both, hintPulse 2.6s 1.4s ease-in-out infinite; }
 /* 引导脉冲：提醒用户圈这里 */

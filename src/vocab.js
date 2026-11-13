@@ -126,11 +126,11 @@ export const VISUAL = [
     prompt: { zh: "间距：子元素之间的间距加大一倍（如 8px → 16px）", en: "Spacing: double the gap between children (e.g. 8px → 16px)" } },
   { id: "v-light-to-dark", zh: "浅底 → 深底", en: "Light → Dark", before: el("width:34px;height:22px;background:#fff;border-radius:6px;border:1px solid #ddd", bar("width:16px;height:3px;margin:9px auto;background:#333")), after: el("width:34px;height:22px;background:#1d1b26;border-radius:6px", bar("width:16px;height:3px;margin:9px auto;background:#eee")),
     prompt: { zh: "配色：浅色背景改为深色背景（#1C1B22 左右），文字改为浅色", en: "Color: switch to a dark background (~#1C1B22) with light text" } },
-  { id: "v-solid-to-gradient", zh: "纯色 → 渐变", en: "Solid → Gradient", before: el(base + "border-radius:6px"), after: el("width:34px;height:22px;border-radius:6px;background:linear-gradient(120deg,#1761fd,#246fff,#2b7fff)"),
+  { id: "v-solid-to-gradient", zh: "纯色 → 渐变", en: "Solid → Gradient", before: el(base + "border-radius:6px"), after: el("width:34px;height:22px;border-radius:6px;background:linear-gradient(120deg,#ff4d8d,#8b5cff,#2ee6d6)"),
     prompt: { zh: "配色：纯色背景改为品牌色线性渐变（约 120°，两到三个相邻色）", en: "Color: replace solid fill with a brand linear gradient (~120°, 2–3 adjacent hues)" } },
   { id: "v-text-to-icon", zh: "纯文字 → 图标+文字", en: "Text → Icon + text", before: el(`width:40px;height:22px;background:${C};border-radius:6px;color:#fff;font:700 9px/22px sans-serif;text-align:center`, "Aa"), after: el(`width:40px;height:22px;background:${C};border-radius:6px;color:#fff;font:700 9px/22px sans-serif;text-align:center`, "★ Aa"),
     prompt: { zh: "内容：在文字左侧加一个语义相关的线性图标（16–20px，与文字间距 6px）", en: "Content: add a relevant line icon to the left of the label (16–20px, 6px gap)" } },
-  { id: "v-full-to-inset", zh: "通栏 → 内缩悬浮", en: "Full-width → Inset", before: `<i class="m frame-pos" style="position:absolute;left:0;right:0;bottom:0;height:12px;background:${C}"></i>`, after: `<i class="m frame-pos" style="position:absolute;left:6px;right:6px;bottom:4px;height:12px;background:${C};border-radius:99px;box-shadow:0 4px 8px rgba(36,111,255,.4)"></i>`,
+  { id: "v-full-to-inset", zh: "通栏 → 内缩悬浮", en: "Full-width → Inset", before: `<i class="m frame-pos" style="position:absolute;left:0;right:0;bottom:0;height:16px;background:${C}"></i>`, after: `<i class="m frame-pos" style="position:absolute;left:6px;right:6px;bottom:4px;height:12px;background:${C};border-radius:99px;box-shadow:0 4px 8px rgba(36,111,255,.4)"></i>`,
     prompt: { zh: "布局：贴边通栏改为四周留边距的悬浮条（左右 16px、底部 12px、大圆角、投影）", en: "Layout: turn the edge-to-edge bar into an inset floating bar (16px sides, 12px bottom, large radius, shadow)" } },
 ];
 

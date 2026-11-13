@@ -7,16 +7,16 @@
   <meta name="description" content="在 AI 生成的界面截图上圈出想改的地方，自动翻译成设计语言、预览多个方案，生成给 AI 编程工具的精准提示词。" />
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="stylesheet" href="src/styles.css?v=0.5.6" />
-  <link rel="stylesheet" href="src/sketch.css?v=0.5.6" />
+  <link rel="stylesheet" href="src/styles.css?v=0.5.7" />
+  <link rel="stylesheet" href="src/sketch.css?v=0.5.7" />
   <!-- importmap：app.js 里 import 的四个模块也带版本号，否则浏览器还会拿旧文件 -->
   <script type="importmap">
   {
     "imports": {
-      "./src/vocab.js": "./src/vocab.js?v=0.5.6",
-      "./src/prompt.js": "./src/prompt.js?v=0.5.6",
-      "./src/llm.js": "./src/llm.js?v=0.5.6",
-      "./src/demo.js": "./src/demo.js?v=0.5.6"
+      "./src/vocab.js": "./src/vocab.js?v=0.5.7",
+      "./src/prompt.js": "./src/prompt.js?v=0.5.7",
+      "./src/llm.js": "./src/llm.js?v=0.5.7",
+      "./src/demo.js": "./src/demo.js?v=0.5.7"
     }
   }
   </script>
@@ -59,6 +59,7 @@
       <div class="canvas" id="canvas" hidden>
         <img id="shot" alt="截图" draggable="false" />
         <img id="shotAfter" alt="" draggable="false" hidden />
+        <div id="demoSvg" hidden></div>
         <div class="overlay" id="overlay"></div>
         <div class="hint" id="hint">按住拖拽，圈出想改的地方</div>
       </div>
@@ -78,12 +79,12 @@
     </section>
 
     <aside class="panel" id="panel">
-      <section class="card step">
+      <section class="card step regions-card">
         <header class="step-h"><span class="n">1</span><h3>圈中的区域</h3><span class="count" id="count"></span></header>
         <div class="regions" id="regionTabs"></div>
         <div id="editor"></div>
       </section>
-      <section class="card step">
+      <section class="card step prompt-card">
         <header class="step-h"><span class="n">2</span><h3>提示词</h3>
           <div class="seg" id="seg"><i class="seg-thumb"></i><button data-lang="zh" class="on">中文</button><button data-lang="en">EN</button></div>
         </header>
@@ -124,7 +125,7 @@
   </dialog>
 
   <div class="toast" id="toast"></div>
-  <script type="module" src="src/app.js?v=0.5.6"></script>
-  <script type="module" src="src/sketch.js?v=0.5.6"></script>
+  <script type="module" src="src/app.js?v=0.5.7"></script>
+  <script type="module" src="src/sketch.js?v=0.5.7"></script>
 </body>
 </html>
