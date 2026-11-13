@@ -5,7 +5,7 @@
 断言失败或页面报错都会让脚本以非零退出码结束，只截图不算通过。
 
 两条主线：
-  演示（内置示例）：图本身就是能改的元素，点一下直接换下一个样子；
+  演示（内置示例）：点元素先选中，右边只列它适用的改法，点改法才变；
     一眼对比、设计词典、提示词框在演示里不出现，只留操作条。
   真截图（上传的平图片）：圈选 + AI 识别 + 词条/对比格子那套原样保留。
 """
@@ -19,6 +19,10 @@ VAR = {"variants":[
 
 async def state(pg):
   return await pg.evaluate("() => { const s = window.__dianjing; return { regions: s.regions, selected: s.selected, preview: s.preview, lang: s.lang, isDemo: s.isDemo, demoHistory: s.demoHistory.length }; }")
+
+async def svg_visual(pg):
+  # 只比看得见的部分：去掉悬停提示 <title> 和选中描边的 class="sel"
+  return await pg.evaluate("() => document.querySelector('#demoSvg').innerHTML.replace(/<title>[^<]*<\\/title>/g, '').replace(/ class=\"sel\"/g, '')")
 
 async def main():
   async with async_playwright() as p:
@@ -37,7 +41,7 @@ async def main():
     assert await pg.locator("body.no-image").count() == 1, "空状态下 body 应带 no-image"
     await pg.evaluate("localStorage.setItem('dianjing.settings', JSON.stringify({baseUrl:'https://fake.api/v1',model:'x',apiKey:'k'}))")
     await pg.reload(); await pg.wait_for_timeout(300)
-    # ---- 演示：直接点改 ----
+    # ---- 演示：点一下选中、再挑适用改法 ----
     await pg.click("#demo2"); await pg.wait_for_timeout(1300)  # 空状态下顶栏的 #demo 已隐藏，改走首屏的「先看看示例」
     assert await pg.locator("#zoombar").is_visible(), "载入截图后缩放条应出现"
     assert await pg.locator("#demoSvg svg").count() == 1, "演示应以内联 SVG 进画布"
@@ -48,31 +52,51 @@ async def main():
     assert await pg.locator("#vocabDetails").count() == 0, "演示里设计词典应收起来"
     assert await pg.locator(".prompt-card").is_hidden(), "演示里提示词卡应收起来"
     assert await pg.locator(".demo-bar").count() == 1, "演示只留一条操作条"
+    assert await pg.locator(".demo-chip").count() == 0, "没选中时右边不应有改法"
+    assert "看看它能怎么改" in (await pg.locator(".demo-hint").inner_text())
     assert (await pg.locator(".demo-count").inner_text()) == "已改 0 处"
     assert await pg.locator("#demoUndo").is_disabled(), "没改之前撤销应禁用"
     assert await pg.locator("#demoCopy").is_disabled(), "没改之前复制应禁用"
     await pg.screenshot(path="./tmp-e1.png")
-    # 点搜索栏：圆角 → 直角，图变、计数变、提示词跟着变
-    svg0 = await pg.locator("#demoSvg").inner_html()
+    # 点搜索栏：只选中、不改图；右边出现它自己的 3 个改法
+    svg0 = await svg_visual(pg)
     await pg.locator('#demoSvg [data-el="search"]').click(); await pg.wait_for_timeout(400)
-    assert await pg.locator("#demoSvg").inner_html() != svg0, "点搜索栏后 SVG 应变"
+    assert await svg_visual(pg) == svg0, "点选中不应改图"
+    assert (await pg.locator(".demo-count").inner_text()) == "已改 0 处"
+    assert await pg.locator('#demoSvg [data-el="search"].sel').count() == 1, "选中的元素应描边高亮"
+    assert "已选中「搜索栏」" in (await pg.locator(".demo-hint").inner_text())
+    chips = await pg.locator(".demo-chip").all_inner_texts()
+    assert chips == ["圆角 → 直角", "纯色 → 渐变", "平面 → 悬浮"], chips
+    # 点改法才变：圆角 → 直角，图变、计数变、标出变化、提示词跟着变
+    await pg.locator('.demo-chip[data-term="v-round-to-square"]').click(); await pg.wait_for_timeout(400)
+    assert await svg_visual(pg) != svg0, "点改法后 SVG 应变"
     assert (await pg.locator(".demo-count").inner_text()) == "已改 1 处"
+    assert "搜索栏：圆角 → 直角" in (await pg.locator(".demo-last").inner_text())
+    assert "on" in (await pg.locator('.demo-chip[data-term="v-round-to-square"]').get_attribute("class") or "")
     s = await state(pg)
     assert s["regions"][0]["demoEl"] == "search" and s["regions"][0]["terms"] == ["v-round-to-square"], s["regions"]
     prompt = await pg.locator("#prompt").input_value()
     assert "圆角改为直角" in prompt and "搜索栏" in prompt, prompt
-    # 再点两下搜索栏：渐变 → 悬浮，同一元素计数不变；第四下回到原样，计数归零
-    await pg.locator('#demoSvg [data-el="search"]').click(); await pg.wait_for_timeout(300)
-    s = await state(pg); assert s["regions"][0]["terms"] == ["v-solid-to-gradient"], s["regions"]
-    await pg.locator('#demoSvg [data-el="search"]').click(); await pg.wait_for_timeout(300)
-    s = await state(pg); assert s["regions"][0]["terms"] == ["v-flat-to-float"], s["regions"]
-    assert (await pg.locator(".demo-count").inner_text()) == "已改 1 处"
-    await pg.locator('#demoSvg [data-el="search"]').click(); await pg.wait_for_timeout(300)
+    # 再点一次已生效的改法：恢复原样，计数归零
+    await pg.locator('.demo-chip[data-term="v-round-to-square"]').click(); await pg.wait_for_timeout(300)
     s = await state(pg); assert s["regions"] == [], s["regions"]
     assert (await pg.locator(".demo-count").inner_text()) == "已改 0 处"
-    # 点两个元素，再撤销一步、重置
+    assert "已恢复原样" in (await pg.locator(".demo-last").inner_text())
+    # 再点同一个元素：取消选中，改法收起来
+    await pg.locator('#demoSvg [data-el="search"]').click(); await pg.wait_for_timeout(300)
+    assert await pg.locator(".demo-chip").count() == 0, "取消选中后改法应收起来"
+    assert await pg.locator('#demoSvg [data-el="search"].sel').count() == 0
+    # 点空白处也取消选中：先选中主卡（4 个改法），再点搜索栏和胶囊之间的空隙
     await pg.locator('#demoSvg [data-el="hero"]').click(); await pg.wait_for_timeout(300)
+    assert await pg.locator(".demo-chip").count() == 4, "主卡应有 4 个改法"
+    box = await pg.locator("#demoSvg svg").bounding_box()
+    await pg.mouse.click(box["x"] + 195/390*box["width"], box["y"] + 214/844*box["height"]); await pg.wait_for_timeout(300)
+    assert await pg.locator(".demo-chip").count() == 0, "点空白处应取消选中"
+    # 点两个元素、改两处，再撤销一步、重置
+    await pg.locator('#demoSvg [data-el="hero"]').click(); await pg.wait_for_timeout(300)
+    await pg.locator('.demo-chip[data-term="v-light-to-dark"]').click(); await pg.wait_for_timeout(300)
     await pg.locator('#demoSvg [data-el="tabbar"]').click(); await pg.wait_for_timeout(300)
+    await pg.locator('.demo-chip[data-term="v-full-to-inset"]').click(); await pg.wait_for_timeout(300)
     assert (await pg.locator(".demo-count").inner_text()) == "已改 2 处"
     await pg.click("#demoUndo"); await pg.wait_for_timeout(400)
     assert (await pg.locator(".demo-count").inner_text()) == "已改 1 处"
@@ -81,18 +105,21 @@ async def main():
     assert (await pg.locator(".demo-count").inner_text()) == "已改 0 处"
     # 复制：改两处后点复制，按钮变已复制，提示词里两处都在
     await pg.locator('#demoSvg [data-el="search"]').click(); await pg.wait_for_timeout(300)
+    await pg.locator('.demo-chip[data-term="v-solid-to-gradient"]').click(); await pg.wait_for_timeout(300)
     await pg.locator('#demoSvg [data-el="pills"]').click(); await pg.wait_for_timeout(300)
+    await pg.locator('.demo-chip[data-term="v-tight-to-loose"]').click(); await pg.wait_for_timeout(300)
     await pg.click("#demoCopy"); await pg.wait_for_timeout(500)
     assert "done" in (await pg.locator("#demoCopy").get_attribute("class") or "")
     prompt = await pg.locator("#prompt").input_value()
     assert "搜索栏" in prompt and "时间胶囊" in prompt, prompt
     await pg.screenshot(path="./tmp-e2.png")
-    # 演示的改动能持久化：刷新后还在（且是按元素记的，不是圈选框）
+    # 演示的改动能持久化：刷新后还在（且是按元素记的，不是圈选框），选中状态不保留
     await pg.wait_for_timeout(900)
     await pg.reload(); await pg.wait_for_timeout(800)
     s = await state(pg)
     assert s["isDemo"] and len(s["regions"]) == 2, s
     assert sorted(r["demoEl"] for r in s["regions"]) == ["pills", "search"], s["regions"]
+    assert await pg.locator(".demo-chip").count() == 0, "刷新后选中不保留"
     assert await pg.locator(".box").count() == 0, "演示不画圈选框"
     # ---- 真截图：上传一张平图片，走圈选 + AI 识别 + 词条/对比格子 ----
     await pg.set_input_files("#file", "docs/screenshot.png")
@@ -251,6 +278,10 @@ async def main():
     await mpg.click("#demo2"); await mpg.wait_for_timeout(1000)
     assert (await mpg.evaluate("() => document.documentElement.scrollWidth")) <= 390
     assert await mpg.locator(".demo-bar").count() == 1, "手机演示也应只有操作条"
+    await mpg.locator('#demoSvg [data-el="search"]').click(); await mpg.wait_for_timeout(500)
+    assert await mpg.locator(".demo-chip").count() == 3, "手机点元素也应出现它自己的改法"
+    await mpg.locator('.demo-chip[data-term="v-round-to-square"]').click(); await mpg.wait_for_timeout(400)
+    assert (await mpg.locator(".demo-count").inner_text()) == "已改 1 处"
     await mpg.click('#modeSeg button[data-mode="sketch"]'); await mpg.wait_for_timeout(700)
     assert (await mpg.evaluate("() => document.documentElement.scrollWidth")) <= 390, "手机画界面横向溢出"
     await mpg.click("#skPreviewBtn"); await mpg.wait_for_timeout(500)
@@ -259,6 +290,6 @@ async def main():
     await mctx.close()
     print("ERRS", errs)
     assert not errs, errs
-    print("E2E PASS: 演示直接点改（14 元素/计数/撤销/重置/复制/持久化）/真截图圈选识别互斥方案贴图移动缩放持久化复制/画界面（加零件/改标题/连跳转/预览切页/复制/持久化）/手机端（390px 无横向溢出）全部通过")
+    print("E2E PASS: 演示选中再挑改法（14 元素/选中不改图/适用改法/点改法才变/取消选中/计数/撤销/重置/复制/持久化）/真截图圈选识别互斥方案贴图移动缩放持久化复制/画界面（加零件/改标题/连跳转/预览切页/复制/持久化）/手机端（390px 无横向溢出）全部通过")
     await ctx.close(); await b.close()
 asyncio.run(main())

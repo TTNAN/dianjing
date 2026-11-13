@@ -131,6 +131,7 @@ h1 { font-size: clamp(30px, 3.6vw, 46px); line-height: 1.12; margin: 26px 0 14px
 /* 演示元素可点：悬停出细框 + 手型指针 */
 #demoSvg svg [data-el] { cursor: pointer; }
 #demoSvg svg [data-el]:hover { outline: 2px solid var(--blue); outline-offset: 2px; }
+#demoSvg svg [data-el].sel { outline: 2px solid var(--blue); outline-offset: 2px; }
 /* 演示态：遮罩层不接指针（点直接落到 SVG 元素上），右侧只留操作条 */
 body.demo-mode .overlay { pointer-events: none; cursor: default; }
 body.demo-mode #shotAfter { display: none; }
@@ -140,6 +141,9 @@ body.demo-mode #panel .regions-card #regionTabs { display: none; }
 /* 演示操作条：提示 + 已改几处 + 撤销 / 重置 / 复制 */
 .demo-bar { display: grid; gap: 10px; padding: 2px; }
 .demo-hint { margin: 0; font-size: 14px; font-weight: 700; color: var(--ink); }
+.demo-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.demo-last { font-size: 13px; font-weight: 600; color: var(--blue); }
+.demo-sub { margin: 0; font-size: 12px; line-height: 1.6; }
 .demo-count { font-size: 13px; color: var(--ink-2); }
 .demo-actions { flex-wrap: wrap; }
 #demoCopy .l2 { position: absolute; inset: 0; display: grid; place-items: center; transform: translateY(110%); transition: transform .45s var(--spring); }

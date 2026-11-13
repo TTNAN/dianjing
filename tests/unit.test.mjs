@@ -374,7 +374,7 @@ test("画界面：零件的对齐与透明度进提示词", () => {
 });
 
 // ---------- 演示直接点改 ----------
-import { DEMO_ELEMENTS, DEMO_NAMES, DEMO_CYCLES, nextDemoTerm } from "../src/demo.js";
+import { DEMO_ELEMENTS, DEMO_NAMES, DEMO_CYCLES } from "../src/demo.js";
 
 test("直接点改：14 个可见元素都有名、都有至少 2 个状态", () => {
   assert.equal(DEMO_ELEMENTS.length, 14);
@@ -396,14 +396,16 @@ test("直接点改：轮次里的词条都在词表里、都是参数类（进 L
   }
 });
 
-test("直接点改：nextDemoTerm 走完一轮回到原样，不认识的当前态从头开始", () => {
-  assert.equal(nextDemoTerm("search", null), "v-round-to-square");
-  assert.equal(nextDemoTerm("search", "v-round-to-square"), "v-solid-to-gradient");
-  assert.equal(nextDemoTerm("search", "v-solid-to-gradient"), "v-flat-to-float");
-  assert.equal(nextDemoTerm("search", "v-flat-to-float"), null);
-  assert.equal(nextDemoTerm("search", "v-square-to-round"), "v-round-to-square");
-  assert.equal(nextDemoTerm("nope", null), null);
-  assert.equal(nextDemoTerm("tabbar", "v-solid-to-gradient"), null);
+test("选中改法：只给适用的——文字类和头像没有形状词条，底栏没有尺寸词条，每个改法都有中文名", () => {
+  const SHAPE = ["v-round-to-square", "v-square-to-round", "v-box-to-pill", "v-square-to-circle"];
+  const SCALE = ["v-small-to-big", "v-big-to-small"];
+  for (const elId of ["title", "amount", "ordersTitle", "avatar"]) {
+    assert.ok(!DEMO_CYCLES[elId].some((t) => SHAPE.includes(t)), `${elId} 不该有形状词条`);
+  }
+  assert.ok(!DEMO_CYCLES.tabbar.some((t) => SCALE.includes(t)), "底栏不该有尺寸词条");
+  for (const [elId, cycle] of Object.entries(DEMO_CYCLES)) {
+    for (const t of cycle) assert.ok(TERM_INDEX[t]?.zh, `${elId} 的 ${t} 有中文名，右边才能写出来`);
+  }
 });
 
 test("直接点改：轮次里每个状态点下去，图都真变（没有空转的状态）", () => {
@@ -416,11 +418,11 @@ test("直接点改：轮次里每个状态点下去，图都真变（没有空�
   }
 });
 
-test("直接点改：内联 SVG 里 14 个元素组都挂了 data-el，悬停标题能挂上", () => {
-  const svg = renderDemo({}, { search: "搜索栏：点一下 → 圆角 → 直角", hero: "主卡：点一下 → 恢复原样" });
+test("直接点改：内联 SVG 里 14 个元素组都挂了 data-el，悬停标题说的是选中不是直接改", () => {
+  const svg = renderDemo({}, { search: "搜索栏：点一下选中", hero: "主卡：已选中，右边挑个改法" });
   assert.equal((svg.match(/data-el="/g) || []).length, 14);
-  assert.ok(svg.includes('<g data-el="search"><title>搜索栏：点一下 → 圆角 → 直角</title>'));
-  assert.ok(svg.includes('<g data-el="hero"><title>主卡：点一下 → 恢复原样</title>'));
+  assert.ok(svg.includes('<g data-el="search"><title>搜索栏：点一下选中</title>'));
+  assert.ok(svg.includes('<g data-el="hero"><title>主卡：已选中，右边挑个改法</title>'));
   // 没传标题时不挂空 title
   assert.ok(!renderDemo().includes("<title>"));
 });

@@ -37,10 +37,11 @@ export function demoElementAt(cx, cy) {
   return null;
 }
 
-// ---------- 直接点改：每个演示元素的状态轮次 ----------
-// 点一下就换到下一个样子，走完一轮回到原样。状态复用一眼对比的词条
-// （LIVE 参数），不另起一套；结构类（横排↔竖排、列表↔网格）不动整页
-// 布局，不进这里。
+// ---------- 选中后挑改法：每个演示元素适用的几个改法 ----------
+// 点元素先选中，右边只列这元素的改法（2–4 个），点一个才变。
+// 改法复用一眼对比的词条（LIVE 参数），不另起一套；结构类（横排↔竖排、
+// 列表↔网格）不动整页布局，不进这里。每个改法点下去都真让图变，
+// 文字类和头像不给形状词条，底栏不给尺寸词条。
 export const DEMO_NAMES = {
   search: { zh: "搜索栏", en: "Search bar" },
   filter: { zh: "筛选按钮", en: "Filter button" },
@@ -74,15 +75,6 @@ export const DEMO_CYCLES = {
   amount: ["v-small-to-big", "v-left-to-center", "v-text-to-icon"],
   ordersTitle: ["v-small-to-big", "v-left-to-center", "v-text-to-icon"],
 };
-
-// 当前状态 → 下一个状态；走完一轮回到原样（null）。
-export function nextDemoTerm(elId, currentTerm) {
-  const cycle = DEMO_CYCLES[elId] || [];
-  if (!currentTerm) return cycle[0] ?? null;
-  const i = cycle.indexOf(currentTerm);
-  if (i < 0) return cycle[0] ?? null;
-  return cycle[i + 1] ?? null;
-}
 
 // 深色模式下各元素的颜色（浅色默认值见模板）
 const DARK = {

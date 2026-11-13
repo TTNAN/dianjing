@@ -1,7 +1,7 @@
 import { VOCAB, QUICK, TERM_INDEX, VISUAL, CONFLICTS, LIVE, STRUCTURAL } from "./vocab.js";
 import { buildPrompt } from "./prompt.js";
 import { PROVIDERS, loadSettings, saveSettings, hasModel, recognize, variants } from "./llm.js";
-import { demoDataUrl, renderDemo, demoElementAt, structuralHtml, DEMO_ELEMENTS, DEMO_NAMES, DEMO_CYCLES, nextDemoTerm } from "./demo.js";
+import { demoDataUrl, renderDemo, demoElementAt, structuralHtml, DEMO_ELEMENTS, DEMO_NAMES, DEMO_CYCLES } from "./demo.js";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -20,6 +20,8 @@ const state = {
   tweakChanged: false,  // 改后图与原图是否真有差别
   compare: "after",     // "after" 看改后 / "before" 看原图
   demoHistory: [],      // 演示直接点改的撤销栈：每次点之前先存一份 {元素 id: 词条} 快照
+  demoSelected: null,   // 演示里当前选中的元素 id（null = 没选）；只选中、不直接改
+  demoLastChange: null, // 演示里最近一次挑的改法：{ elId, text }，如「搜索栏：圆角 → 直角」
 };
 window.__dianjing = state; // 供端到端测试读取
 let nextId = 1;
@@ -56,7 +58,7 @@ function loadSaved() {
     if (state.isDemo) {
       // 旧版演示存的是圈选框（2 倍坐标、无 demoEl），迁成按元素记的改动；
       // 圈在空白处、或词条不在轮次里的，丢掉
-      state.demoHistory = [];
+      state.demoHistory = []; state.demoSelected = null; state.demoLastChange = null;
       if (!state.image.src.startsWith("data:image/svg")) state.image.src = demoDataUrl();
       const migrated = [];
       for (const r of state.regions) {
@@ -94,6 +96,7 @@ function clearWorkspace() {
   try { localStorage.removeItem(SAVE_KEY); } catch {}
   state.image = null; state.regions = []; state.selected = null; state.preview = null; nextId = 1;
   state.isDemo = false; state.tweakSrc = null; state.tweakChanged = false; state.compare = "after"; state.demoHistory = [];
+  state.demoSelected = null; state.demoLastChange = null;
   zoom = "fit"; applyZoom();
   $("#shot").removeAttribute("src");
   $("#demoSvg").innerHTML = "";
@@ -137,7 +140,7 @@ function finishLoad(finalSrc, w, h, isDemo) {
     state.isDemo = isDemo;
     state.regions = []; state.selected = null; state.preview = null; nextId = 1;
     state.tweakSrc = null; state.tweakChanged = false; state.compare = "after"; lastOvJson = "";
-    state.demoHistory = [];
+    state.demoHistory = []; state.demoSelected = null; state.demoLastChange = null;
     zoom = "fit"; applyZoom();
     if (isDemo) $("#shot").removeAttribute("src"); else $("#shot").src = finalSrc;
     $("#shotAfter").removeAttribute("src");
@@ -342,28 +345,41 @@ function computeDemoOverrides() {
 function demoTermFor(elId) {
   return state.regions.find((r) => r.demoEl === elId)?.terms?.[0] || null;
 }
-// 悬停提示：每个元素下一点会变成什么，恢复原样也写清楚
+// 悬停提示：先告诉人家点一下是选中，不是直接改
 function demoTitles() {
   const t = {};
   for (const elId of Object.keys(DEMO_CYCLES)) {
-    const next = nextDemoTerm(elId, demoTermFor(elId));
     const name = DEMO_NAMES[elId]?.zh || elId;
-    t[elId] = next ? `${name}：点一下 → ${TERM_INDEX[next]?.zh || next}` : `${name}：点一下 → 恢复原样`;
+    t[elId] = elId === state.demoSelected ? `${name}：已选中，右边挑个改法` : `${name}：点一下选中`;
   }
   return t;
 }
-// 内联 SVG 重绘：演示不走光栅化，改完直接换 SVG 字符串
+// 内联 SVG 重绘：演示不走光栅化，改完直接换 SVG 字符串；选中的元素描边留住
 function renderDemoSvg() {
   const el = $("#demoSvg");
   if (!state.isDemo) { el.innerHTML = ""; return; }
   el.innerHTML = renderDemo(computeDemoOverrides(), demoTitles());
+  const sel = state.demoSelected && el.querySelector(`[data-el="${state.demoSelected}"]`);
+  if (sel) sel.classList.add("sel");
   applyZoom(); // 重绘会换掉 svg 元素，缩放宽度要重新挂上
 }
-// 点元素：先存快照（供撤销），再推进到下一个样子
-function advanceDemoElement(elId) {
-  if (!DEMO_CYCLES[elId]) return;
+// 点元素只选中、不直接改；再点同一个或点空白处取消选中
+function selectDemoElement(elId) {
+  state.demoSelected = state.demoSelected === elId ? null : elId;
+  renderAll();
+}
+// 点右边改法才变：再点一次已生效的改法，恢复原样
+function applyDemoChip(elId, term) {
+  if (!elId || !(DEMO_CYCLES[elId] || []).includes(term)) return;
   pushDemoHistory();
-  applyDemoTerm(elId, nextDemoTerm(elId, demoTermFor(elId)));
+  const name = DEMO_NAMES[elId]?.zh || elId;
+  if (demoTermFor(elId) === term) {
+    applyDemoTerm(elId, null);
+    state.demoLastChange = { elId, text: `${name}：已恢复原样` };
+  } else {
+    applyDemoTerm(elId, term);
+    state.demoLastChange = { elId, text: `${name}：${TERM_INDEX[term]?.zh || term}` };
+  }
   renderAll();
 }
 function applyDemoTerm(elId, term) {
@@ -424,8 +440,11 @@ async function copyDemoPrompt() {
 $("#demoSvg").addEventListener("click", (e) => {
   if (!state.isDemo) return;
   const g = e.target.closest("[data-el]");
-  if (!g) return;
-  advanceDemoElement(g.dataset.el);
+  if (!g) { // 点空白处：取消选中
+    if (state.demoSelected) { state.demoSelected = null; renderAll(); }
+    return;
+  }
+  selectDemoElement(g.dataset.el);
 });
 let tweakSeq = 0, lastOvJson = "";
 function updateTweakVisibility() {
@@ -625,14 +644,25 @@ $("#pvClose").onclick = () => { state.preview = null; renderPreview(); };
 function renderEditor() {
   const r = current(); const ed = $("#editor");
   if (state.isDemo) {
-    // 演示只留一条操作条：提示、已改几处、撤销、重置、复制提示词。
+    // 演示：点元素先选中，右边只列这个元素适用的改法，点改法才变。
     // 一眼对比、设计词典、一句话方向、提示词文本框都不在这里出现。
     const changed = state.regions.filter((x) => x.demoEl && x.terms.length).length;
     const canUndo = state.demoHistory.length > 0;
+    const sel = state.demoSelected;
+    const selName = sel ? (DEMO_NAMES[sel]?.zh || sel) : "";
+    const selCycle = sel ? (DEMO_CYCLES[sel] || []) : [];
+    const cur = sel ? demoTermFor(sel) : null;
+    const last = sel && state.demoLastChange?.elId === sel ? state.demoLastChange.text : "";
     ed.dataset.rid = "demo"; ed.className = "";
     ed.innerHTML = `
     <div class="demo-bar">
-      <p class="demo-hint">👆 点图上的元素，直接改</p>
+      <p class="demo-hint">${sel ? `已选中「${esc(selName)}」，挑个改法` : "👆 点图上的元素，看看它能怎么改"}</p>
+      ${sel ? `
+      <div class="demo-chips">
+        ${selCycle.map((id) => `<button class="chip demo-chip ${id === cur ? "on" : ""}" data-term="${id}">${esc(TERM_INDEX[id]?.zh || id)}</button>`).join("")}
+      </div>
+      ${last ? `<div class="demo-last">✓ ${esc(last)}</div>` : ""}
+      <p class="demo-sub muted small">只列这个元素能用的改法；再点一次已选中的改法，恢复原样；点空白处取消选中</p>` : ""}
       <div class="demo-count">已改 ${changed} 处</div>
       <div class="row demo-actions">
         <button class="btn sm" id="demoUndo" ${canUndo ? "" : "disabled"}><span>撤销</span></button>
@@ -643,6 +673,7 @@ function renderEditor() {
     ed.querySelector("#demoUndo").onclick = undoDemo;
     ed.querySelector("#demoReset").onclick = resetDemo;
     ed.querySelector("#demoCopy").onclick = copyDemoPrompt;
+    ed.querySelectorAll(".demo-chip").forEach((c) => c.onclick = () => applyDemoChip(sel, c.dataset.term));
     return;
   }
   if (!r) {

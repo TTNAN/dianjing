@@ -1,5 +1,17 @@
 # 更新日志 / Changelog
 
+## v0.5.8 (2026-11-13)
+
+- 演示改玩法：点图上的元素先选中（描边高亮 + 显示元素名），右边只列这个元素能用的几个改法，点一个才变；再点一次已选中的改法，恢复原样；点空白处取消选中
+- 改法按元素过滤：文字类不给圆角变直角，底栏不给尺寸词条，每个元素只看到它自己的 2–4 个改法
+- 点改法后会标出来（比如「搜索栏：圆角 → 直角」），提示词跟着变；撤销、重置、复制提示词都在
+- 自己传的截图不受影响，圈选 + AI 识别 + 格子那套原样保留
+
+- Demo now selects first, then changes: click an element to select it (outline + name), and only its own 2–4 applicable tweaks appear on the right — click one to apply it; click the active one again to revert, click empty space to deselect
+- Tweaks are filtered per element: text never gets corner changes, the tab bar never gets size tweaks
+- The applied change is labelled (e.g. “Search bar: Rounded → Sharp”) and the prompt follows; undo, reset and copy prompt stay
+- Uploaded screenshots are untouched and keep the circle + AI + grid flow
+
 ## v0.5.7 (2026-11-13)
 
 - 演示改玩法：图本身就能点改，点一下元素直接换下一个样子，不用再圈选、不用再翻 18 格小图；搜索栏、胶囊、主卡、订单卡、底栏、头像、文字，每个都能改
