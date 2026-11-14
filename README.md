@@ -10,11 +10,11 @@
 
 [**在线试用**](https://ttnan.github.io/dianjing/) · [English](README.en.md) · MIT 开源
 
-![点睛界面](docs/screenshot.png)
+![点睛界面](docs/redesign/02-demo-selected.png)
 
-🎬 动效演示视频
+🎬 动效演示（[高清 mp4](docs/redesign/demo.mp4)）
 
-https://github.com/user-attachments/assets/1dd060c5-f948-4e76-8a56-a7c16788132e
+![demo](docs/redesign/demo.gif)
 
 </div>
 
@@ -44,7 +44,9 @@ https://github.com/user-attachments/assets/1dd060c5-f948-4e76-8a56-a7c16788132e
 4. **设计词典**：7 大类 27 个词条（间距、层级、颜色、排版、质感、布局、风格），悬停看白话解释，默认收起、支持搜索。
 5. **画界面（第二个模式）**：16 种中文零件（按钮、标签片、卡片、列表项、底部导航……），点一下就加进当前屏幕；选中零件在右边改文案、样式、跳转目标；点「预览切页」进播放器，点卡片滑到下一页、返回退栈；整套设计实时生成十段结构的中提示词（配色、形状字体、屏幕结构、跳转、组件样式、整体原则），一键复制。目标平台可选微信小程序、uni-app、Taro、鸿蒙 ArkUI、Flutter，组件库随平台变（小程序类平台用 Vant、TDesign、Ant Design Mobile、NutUI，鸿蒙用 ArkUI 原生组件，Flutter 用 Flutter Widgets），提示词里的组件名和规范跟着走。画布上方能换设备框（iPhone 刘海/安卓挖孔/无框）、缩放和背景；检查器「调节」里改密度、字号、圆角（0–32 px）、阴影，提示词跟着变；零件能调对齐和透明度；预览里能调过渡时长和自动播放。主题可选蓝/紫/绿三套配色，设计自动保存在浏览器里。
 
-![画界面](docs/sketch.png)
+![画界面](docs/redesign/03-sketch.png)
+
+![画界面 · 五套风格包](docs/redesign/04-style-packs.png)
 6. **AI 识别**（可选）：自动认出「这是底部导航栏」，描述现状、指出问题、推荐修改方向。
 7. **三个方案预览**（可选）：按你的意图生成三个可视化变体，选一个直接贴到原截图上，拖滑块擦除对比改前改后。
 8. **框内文字**：填上框里的文字（如按钮文案），提示词里带上它，AI 在代码里找组件更准。
@@ -53,7 +55,7 @@ https://github.com/user-attachments/assets/1dd060c5-f948-4e76-8a56-a7c16788132e
 
 不配置模型也能用 1–5 和 8–10；填入任意 **OpenAI 兼容的视觉模型**即可解锁 6、7，支持 OpenAI、通义千问、智谱 GLM、Gemini、OpenRouter、本地 Ollama。API Key 只保存在你自己的浏览器里，请求直接发往你选择的服务商，不经过任何第三方服务器。
 
-![一眼对比](docs/visual-tweaks.png)
+![首页](docs/redesign/01-empty.png)
 
 ### 快速开始
 
@@ -119,6 +121,7 @@ python3 tests/e2e.py              # 需已安装 playwright + chromium
 
 - [x] v0.1 截图圈选、设计词典、一眼对比、三方案预览、提示词输出
 - [x] v0.2 方案贴回原图对比、框移动/缩放/微调、词典收起+搜索、框内文字、互斥自动取消、自动保存、文字+图一并复制
+- [x] v0.6 界面重做：宣纸 · 墨 · 朱砂，示例换成「山居 · 民宿」，画界面五套风格包（极简 / 编辑杂志 / 东方 / 暗夜奢华 / 柔光玻璃）
 - [x] v0.3 工具页改浅色（BoardUI 配色）、暖灰画布、取景眼 logo
 - [x] v0.4 点一下就变：内置示例上点建议直接改图、本地重排预览
 - [x] v0.5 画界面模式：16 种中文零件、跳转与切页预览、十段中文提示词

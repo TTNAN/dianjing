@@ -73,6 +73,70 @@ export const SHADOWS = [
   { id: "light", zh: "轻", phrase: "轻阴影", value: "0 1px 2px rgba(16,24,40,.05)", strong: "0 8px 22px rgba(0,0,0,.12)" },
   { id: "heavy", zh: "重", phrase: "重阴影", value: "0 4px 12px rgba(16,24,40,.12)", strong: "0 16px 36px rgba(16,24,40,.22)" },
 ];
+// ---------- 风格包：字体搭配 + 配色 + 圆角 + 阴影 + 动效，一套就是一种气质 ----------
+// 旧文档没有 pack 字段，照旧按 palette（蓝/紫/绿 Material 配色）渲染，完全向后兼容。
+const SERIF_CSS = `"Noto Serif SC","Source Han Serif SC","Songti SC","STSong",serif`;
+const SANS_CSS = `"Inter","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif`;
+const SF_CSS = `-apple-system,"SF Pro Display","SF Pro Text","Inter","PingFang SC",system-ui,sans-serif`;
+export const STYLE_PACKS = {
+  minimal: {
+    zh: "极简", en: "Minimal", tagline: "苹果式克制 · 白 · 大圆角",
+    mood: "苹果式的克制：大量留白、无衬线、柔和的大圆角和轻阴影，靠字号与字重分层级，不靠装饰。",
+    fonts: { head: "SF Pro Display（回退 Inter、PingFang SC）", body: "SF Pro Text（回退 Inter、PingFang SC）", headWeight: 600, headTrack: "-0.02em", cssHead: SF_CSS, cssBody: SF_CSS },
+    scale: { caption: 12, body: 15, subtitle: 17, title: 22, headline: 28, display: 34 },
+    colors: { background: "#FFFFFF", surface: "#F5F5F7", ink: "#1D1D1F", muted: "#86868B", line: "#E5E5EA", primary: "#1D1D1F", onPrimary: "#FFFFFF", primarySoft: "#EDEDF0" },
+    radius: 22, shadowLevel: "light",
+    shadow: { card: "0 1px 2px rgba(0,0,0,.04), 0 6px 20px rgba(0,0,0,.06)", raised: "0 2px 6px rgba(0,0,0,.06), 0 18px 40px rgba(0,0,0,.10)" },
+    motion: { ms: 240, easing: "cubic-bezier(.25,.1,.25,1)", desc: "淡入 + 上浮 8px，按下时缩放到 0.98" },
+    art: { sky1: "#E7ECF3", sky2: "#F8F9FB", sun: "#F0C7A4", far: "#CAD3DE", mid: "#9DAABB", near: "#5E6E80" },
+  },
+  editorial: {
+    zh: "编辑杂志", en: "Editorial", tagline: "米白 · 宋体大标题 · 直角细线",
+    mood: "像一本印刷精良的杂志：米白纸色、宋体大标题、直角、1px 细线分隔，不用阴影，版面靠栏线和留白组织。",
+    fonts: { head: "Noto Serif SC / 思源宋体（西文 Playfair Display）", body: "Inter（回退 PingFang SC）", headWeight: 600, headTrack: "-0.01em", cssHead: SERIF_CSS, cssBody: SANS_CSS },
+    scale: { caption: 11, body: 15, subtitle: 17, title: 24, headline: 32, display: 44 },
+    colors: { background: "#F3EEE4", surface: "#FAF7F1", ink: "#1A1814", muted: "#7A7268", line: "#D8CFBF", primary: "#1A1814", onPrimary: "#F3EEE4", primarySoft: "#E8E0D1" },
+    radius: 0, shadowLevel: "none",
+    shadow: { card: "none", raised: "0 1px 0 #D8CFBF" },
+    motion: { ms: 200, easing: "ease-out", desc: "只用淡入淡出和交叉渐变，不做位移和缩放" },
+    art: { sky1: "#E4D9C6", sky2: "#F1EADF", sun: "#B9573A", far: "#B4AA98", mid: "#857A69", near: "#3D3832" },
+  },
+  oriental: {
+    zh: "东方", en: "Oriental", tagline: "宣纸 · 墨 · 朱砂 · 宋体",
+    mood: "宣纸作底，墨色写字，朱砂只点在最关键的一处（主按钮、选中态）；宋体标题、小圆角、柔和的多层阴影，留白要多。",
+    fonts: { head: "Noto Serif SC / 思源宋体", body: "PingFang SC（回退 Inter、Microsoft YaHei）", headWeight: 600, headTrack: "0.02em", cssHead: SERIF_CSS, cssBody: SANS_CSS },
+    scale: { caption: 12, body: 15, subtitle: 17, title: 20, headline: 28, display: 40 },
+    colors: { background: "#F6F4EF", surface: "#FBFAF6", ink: "#141414", muted: "#6B6862", line: "#E4E0D7", primary: "#D9381E", onPrimary: "#FFFFFF", primarySoft: "#F5E2DB" },
+    radius: 6, shadowLevel: "light",
+    shadow: { card: "0 1px 2px rgba(20,20,20,.04), 0 8px 24px rgba(20,20,20,.06)", raised: "0 2px 4px rgba(20,20,20,.05), 0 16px 40px rgba(20,20,20,.10)" },
+    motion: { ms: 280, easing: "cubic-bezier(.2,.8,.2,1)", desc: "墨色晕开：淡入 + 2px 模糊消散，不回弹" },
+    art: { sky1: "#ECE4D5", sky2: "#F6F2EA", sun: "#D9381E", far: "#C6C1B4", mid: "#8E9389", near: "#38403C" },
+  },
+  noir: {
+    zh: "暗夜奢华", en: "Noir", tagline: "近黑 · 香槟金 · 衬线",
+    mood: "近黑底色配香槟金，衬线标题加大字距，金色只做细线和主操作；层次靠细微的明度差和深阴影，安静、昂贵。",
+    fonts: { head: "Noto Serif SC（西文 Cormorant Garamond）", body: "Inter（回退 PingFang SC），字距 +0.02em", headWeight: 600, headTrack: "0.04em", cssHead: SERIF_CSS, cssBody: SANS_CSS },
+    scale: { caption: 12, body: 14, subtitle: 16, title: 20, headline: 28, display: 40 },
+    colors: { background: "#0E0E0E", surface: "#181715", ink: "#F2EDE4", muted: "#8E877C", line: "#2A2724", primary: "#C8A97E", onPrimary: "#0E0E0E", primarySoft: "#2A241B" },
+    radius: 14, shadowLevel: "heavy",
+    shadow: { card: "0 0 0 1px rgba(200,169,126,.14), 0 12px 32px rgba(0,0,0,.45)", raised: "0 0 0 1px rgba(200,169,126,.24), 0 24px 60px rgba(0,0,0,.6)" },
+    motion: { ms: 360, easing: "cubic-bezier(.16,1,.3,1)", desc: "缓慢沉稳：淡入 + 从 0.98 缩放到 1" },
+    art: { sky1: "#1B1916", sky2: "#2D271F", sun: "#C8A97E", far: "#3B342A", mid: "#27211A", near: "#100E0B" },
+  },
+  glass: {
+    zh: "柔光玻璃", en: "Soft glass", tagline: "浅彩渐变 · 毛玻璃卡片",
+    mood: "浅彩渐变铺底，卡片是半透明毛玻璃（背景模糊 24px + 白色内描边），大圆角，颜色柔和不刺眼。",
+    fonts: { head: "Inter Display / SF Pro（回退 PingFang SC）", body: "Inter（回退 PingFang SC）", headWeight: 600, headTrack: "-0.015em", cssHead: SF_CSS, cssBody: SANS_CSS },
+    scale: { caption: 12, body: 14, subtitle: 16, title: 20, headline: 26, display: 34 },
+    colors: { background: "#F1ECFF", backgroundCss: "linear-gradient(160deg,#F2E7FF 0%,#E3EDFF 50%,#FFEDE3 100%)", surface: "rgba(255,255,255,.58)", ink: "#1F1B2D", muted: "#6E6A80", line: "rgba(255,255,255,.75)", primary: "#6D5DF6", onPrimary: "#FFFFFF", primarySoft: "rgba(109,93,246,.14)" },
+    radius: 24, shadowLevel: "light", blur: 24,
+    shadow: { card: "0 8px 32px rgba(76,64,160,.12), inset 0 1px 0 rgba(255,255,255,.7)", raised: "0 16px 48px rgba(76,64,160,.18), inset 0 1px 0 rgba(255,255,255,.8)" },
+    motion: { ms: 300, easing: "cubic-bezier(.2,.8,.2,1)", desc: "柔和的缩放（0.96→1）与背景模糊渐入" },
+    art: { sky1: "#E6D9FF", sky2: "#FFE7DA", sun: "#FFB48C", far: "#CBC3F2", mid: "#A89DE8", near: "#7A6ED8" },
+  },
+};
+export const PACK_IDS = Object.keys(STYLE_PACKS);
+export const packFor = (doc) => STYLE_PACKS[doc?.theme?.pack] ? doc.theme.pack : null;
 // 主题归一化：老文档只有 shape（方/圆/全圆）时按 8/20/28 换算成圆角数值；缺项落回默认值。
 export function themeFor(doc) {
   const t = doc?.theme || {};
@@ -82,7 +146,9 @@ export function themeFor(doc) {
   const font = FONT_SIZES.some((f) => f.id === t.font) ? t.font : "standard";
   const shadow = SHADOWS.some((s) => s.id === t.shadow) ? t.shadow : "light";
   const palette = PALETTES[t.palette] ? t.palette : "blue";
-  return { palette, radius, density, font, shadow };
+  const out = { palette, radius, density, font, shadow };
+  if (STYLE_PACKS[t.pack]) out.pack = t.pack; // 风格包可选：没有就是老的 Material 配色
+  return out;
 }
 // 文本类零件的对齐；透明度所有零件都有。
 export const ALIGN_KINDS = ["text", "card", "listItem", "button"];
@@ -103,7 +169,7 @@ export function seedSketchDoc() {
     title: "旅行记录",
     brief: "记录每一次旅行的应用。",
     platform: "web",
-    theme: { palette: "blue", radius: 20, density: "standard", font: "standard", shadow: "light" },
+    theme: { pack: "oriental", palette: "blue", radius: 6, density: "standard", font: "standard", shadow: "light" },
     target: { platform: "web", library: "material" },
     screens: [
       {
@@ -356,6 +422,25 @@ export function convertUnits(note, spec) {
   return note.replace(/(\d+(?:\.\d+)?)dp/g, (_, n) => Math.round(+n * spec.unitScale) + spec.unit);
 }
 
+// 风格包规范：写成 AI 能直接照做的数值（字体、字号阶梯、颜色角色、圆角、阴影、动效）
+export function packSpecLines(pk, theme, spec = targetSpec()) {
+  const u = (n) => Math.round(n * spec.unitScale) + spec.unit;
+  const c = pk.colors, sc = pk.scale;
+  const r = theme?.radius ?? pk.radius;
+  const shadowOff = theme?.shadow === "none";
+  const L = [`## 风格包：${pk.zh}`];
+  L.push(`气质：${pk.mood}`);
+  L.push(`- 字体：标题 ${pk.fonts.head}，字重 ${pk.fonts.headWeight}，字距 ${pk.fonts.headTrack}；正文 ${pk.fonts.body}，字重 400；数字用等宽数字（tabular-nums）。`);
+  L.push(`- 字号阶梯：说明 ${u(sc.caption)} / 正文 ${u(sc.body)} / 副标题 ${u(sc.subtitle)} / 标题 ${u(sc.title)} / 大标题 ${u(sc.headline)} / 展示 ${u(sc.display)}；正文行高 1.6，标题行高 1.25。`);
+  L.push(`- 颜色角色：背景 ${c.backgroundCss || c.background}，卡片表面 ${c.surface}，主文字 ${c.ink}，次要文字 ${c.muted}，分隔线 ${c.line}，强调色 ${c.primary}（其上文字 ${c.onPrimary}），强调浅底 ${c.primarySoft}。强调色只用在主按钮、选中态和最关键的一处，面积不超过一屏的 5%。`);
+  L.push(`- 圆角：卡片与图片 ${u(r)}，按钮与输入框 ${u(Math.min(r, 12))}${r >= 20 ? "（标签片与搜索栏用胶囊形）" : ""}${r === 0 ? "，全部直角" : ""}。`);
+  L.push(shadowOff
+    ? "- 阴影：不使用阴影，层次靠 1px 分隔线和背景明度差。"
+    : `- 阴影：卡片 box-shadow: ${pk.shadow.card}；浮起元素（底部栏、弹层、悬浮按钮）box-shadow: ${pk.shadow.raised}。${pk.blur ? `卡片与底栏使用 backdrop-filter: blur(${pk.blur}px)。` : ""}`);
+  L.push(`- 动效：${pk.motion.desc}；时长 ${pk.motion.ms}ms，缓动 ${pk.motion.easing}；尊重系统的「减弱动态效果」设置。`);
+  return L;
+}
+
 // ---------- 提示词生成：十段结构，中文 ----------
 export function buildSketchPrompt(doc) {
   const theme = themeFor(doc);
@@ -369,15 +454,26 @@ export function buildSketchPrompt(doc) {
   L.push(spec.targetLine);
   L.push("下面的屏幕结构是传达意图的草图，不是最终规格。不要把它当静态图片照搬，而要做成这类应用通常应具备的功能齐全、真正可用的成品。");
   L.push("");
+  const pk = theme.pack ? STYLE_PACKS[theme.pack] : null;
   L.push("## 配色");
-  L.push(isMaterial
+  if (pk) {
+    const c = pk.colors;
+    L.push(`风格包为「${pk.zh}」（${pk.en}）。以下颜色${isMaterial ? "设置到 Material 3 的配色角色里" : `按角色对应到 ${spec.libraryName}的主题变量里`}，UI 的所有颜色都通过这些角色引用。`);
+    const rowP = (pairs) => `- ${pairs.map(([k, v]) => `${k} ${v}`).join(" / ")}`;
+    L.push(rowP([["primary", c.primary], ["onPrimary", c.onPrimary], ["primaryContainer", c.primarySoft], ["onPrimaryContainer", c.ink]]));
+    L.push(rowP([["secondary", c.muted], ["surface", c.background], ["surfaceContainer", c.surface], ["surfaceContainerHigh", c.line]]));
+    L.push(rowP([["onSurface", c.ink], ["onSurfaceVariant", c.muted], ["outline", c.line], ["error", "#B3261E"]]));
+  } else L.push(isMaterial
     ? `主题为${pal.zh}系。请在 Material 3 的浅色和深色配色方案中设置以下颜色，UI 的所有颜色都通过这些角色引用。`
     : `主题为${pal.zh}系。以下颜色是主题的配色值；在 ${spec.libraryName}里按主色、背景、文字、描边、错误的角色对应使用，UI 的所有颜色都通过这些角色引用。`);
   const row = (pairs) => `- ${pairs.map(([k, v]) => `${k} ${v}`).join(" / ")}`;
-  L.push(row([["primary", pal.primary], ["onPrimary", pal.onPrimary], ["primaryContainer", pal.primaryContainer], ["onPrimaryContainer", pal.onPrimaryContainer]]));
-  L.push(row([["secondary", pal.secondary], ["surface", pal.surface], ["surfaceContainer", pal.surfaceContainer], ["surfaceContainerHigh", pal.surfaceContainerHigh]]));
-  L.push(row([["onSurface", pal.onSurface], ["onSurfaceVariant", pal.onSurfaceVariant], ["outline", pal.outline], ["error", pal.error]]));
+  if (!pk) {
+    L.push(row([["primary", pal.primary], ["onPrimary", pal.onPrimary], ["primaryContainer", pal.primaryContainer], ["onPrimaryContainer", pal.onPrimaryContainer]]));
+    L.push(row([["secondary", pal.secondary], ["surface", pal.surface], ["surfaceContainer", pal.surfaceContainer], ["surfaceContainerHigh", pal.surfaceContainerHigh]]));
+    L.push(row([["onSurface", pal.onSurface], ["onSurfaceVariant", pal.onSurfaceVariant], ["outline", pal.outline], ["error", pal.error]]));
+  }
   L.push("");
+  if (pk) L.push(...packSpecLines(pk, theme, spec), "");
   L.push("## 形状、字体与动效");
   // 圆角现在是 0–32 的数值：两端沿用克制/放大的提法，中间直接写数值。
   const shapeLine = radius <= 8
@@ -385,14 +481,16 @@ export function buildSketchPrompt(doc) {
     : radius >= 28
     ? "圆角尽量放大：按钮、标签片和输入框为胶囊形，卡片和图片 32dp，对话框和面板约 40dp。"
     : `圆角 ${radius}dp（按钮为胶囊形，卡片 ${radius}dp，对话框 ${radius + 8}dp）。`;
-  L.push(isMaterial ? shapeLine : convertUnits(shapeLine.replace("M3 Expressive 的", spec.libraryName + "的").replace("M3 的", spec.libraryName + "的"), spec));
+  if (pk) L.push(`圆角按上面的风格包规范（当前 ${Math.round(radius * spec.unitScale)}${spec.unit}），全局统一，不要混用别的圆角。`);
+  else L.push(isMaterial ? shapeLine : convertUnits(shapeLine.replace("M3 Expressive 的", spec.libraryName + "的").replace("M3 的", spec.libraryName + "的"), spec));
   const fontSpec = FONT_SIZES.find((f) => f.id === theme.font) || FONT_SIZES[1];
   const densitySpec = DENSITIES.find((d) => d.id === theme.density) || DENSITIES[1];
   const shadowSpec = SHADOWS.find((s) => s.id === theme.shadow) || SHADOWS[1];
   const u = (n) => Math.round(n * spec.unitScale) + spec.unit;
-  L.push(`${spec.fontLine}字号${fontSpec.zh}（正文 ${u(fontSpec.body)}，标题 ${u(fontSpec.title)}）。`);
+  const fontLine = pk ? `标题字体用 ${pk.fonts.head}，正文字体用 ${pk.fonts.body}（平台加载不到时回退：${spec.fontLine.replace(/^排版使用\s*/, "").replace(/。$/, "")}）。` : spec.fontLine;
+  L.push(`${fontLine}字号${fontSpec.zh}（正文 ${u(fontSpec.body)}，标题 ${u(fontSpec.title)}）。`);
   L.push(`密度${densitySpec.zh}（零件间距 ${u(densitySpec.gap)}），${shadowSpec.phrase}。`);
-  L.push("动效使用平滑过渡，不回弹；屏幕过渡和状态变化保持轻快。");
+  L.push(pk ? `动效：${pk.motion.desc}；时长 ${pk.motion.ms}ms，缓动 ${pk.motion.easing}。` : "动效使用平滑过渡，不回弹；屏幕过渡和状态变化保持轻快。");
   L.push("");
   L.push("## 屏幕结构");
   L.push(`共有 ${doc.screens.length} 个屏幕：${doc.screens.map((s) => s.name).join("、")}。`);
@@ -427,7 +525,13 @@ export function buildSketchPrompt(doc) {
     : `以下是所用组件的参考（${spec.libraryName}）。数值单位为 ${spec.unit}，能用标准组件实现的就交给标准组件，并可根据内容适当调整。`);
   for (const k of used) if (STYLE_NOTES[k]) {
     const cname = COMPONENTS[spec.library]?.[k];
-    const note = isMaterial ? STYLE_NOTES[k] : convertUnits(STYLE_NOTES[k], spec);
+    // 有风格包时，样式说明里的圆角跟着风格包走，不和上面的规范打架
+    let raw = STYLE_NOTES[k];
+    if (pk) {
+      raw = raw.replace(/圆角 20dp/g, `圆角 ${radius}dp`);
+      if (radius < 20) raw = raw.replace(/胶囊形/g, `圆角 ${Math.min(radius, 12)}dp`);
+    }
+    const note = isMaterial ? raw : convertUnits(raw, spec);
     L.push(cname ? `- ${cname}：${note}` : `- ${note}`);
   }
   L.push("");
@@ -488,8 +592,36 @@ let __sn = 2;
 const newScreenId = () => `s${++__sn}`;
 const newPartId = () => nid("p");
 
-const GLYPHS = { star: "★", home: "⌂", search: "⌕", add: "＋", edit: "✎", share: "⤴", favorite: "♥", person: "◯", settings: "⚙", menu: "☰", arrow: "→", check: "✓" };
-const glyph = (name) => GLYPHS[name] || "";
+// 细线图标（24 栅格，1.6 线宽，currentColor），代替 Unicode 字符
+const ICON_PATHS = {
+  star: `<path d="M12 3.8l2.4 5 5.4.6-4 3.7 1.1 5.4L12 15.8l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z"/>`,
+  home: `<path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M10 20v-5h4v5"/>`,
+  search: `<circle cx="11" cy="11" r="6.2"/><path d="m16 16 4 4"/>`,
+  add: `<path d="M12 5v14M5 12h14"/>`,
+  edit: `<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>`,
+  share: `<path d="M12 4v11M8 8l4-4 4 4"/><path d="M5 13v6h14v-6"/>`,
+  favorite: `<path d="M12 19.5s-7-4.3-7-9.4A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.1c0 5.1-7 9.4-7 9.4z"/>`,
+  person: `<circle cx="12" cy="8.5" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/>`,
+  settings: `<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>`,
+  menu: `<path d="M4 7h16M4 12h16M4 17h10"/>`,
+  arrow: `<path d="M5 12h14M13 6l6 6-6 6"/>`,
+  check: `<path d="m5 12.5 4.5 4.5L19 7.5"/>`,
+  compass: `<circle cx="12" cy="12" r="8.2"/><path d="m15 9-1.8 4.2L9 15l1.8-4.2z"/>`,
+  more: `<circle cx="6" cy="12" r=".9"/><circle cx="12" cy="12" r=".9"/><circle cx="18" cy="12" r=".9"/>`,
+  dot: `<circle cx="12" cy="12" r="3.4"/>`,
+  chev: `<path d="m9 6 6 6-6 6"/>`,
+};
+const icon = (name, cls = "ic") => ICON_PATHS[name] ? `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON_PATHS[name]}</svg>` : "";
+const glyph = (name) => icon(name);
+// 底栏条目按字面配图标
+const navIcon = (t) => /首页|主页|home/i.test(t) ? "home" : /发现|探索|搜索/.test(t) ? "compass" : /足迹|收藏|喜欢|行程/.test(t) ? "star" : /我|个人|账户/.test(t) ? "person" : /设置/.test(t) ? "settings" : "dot";
+// 图片占位：SVG 画的山峦光影，颜色跟着风格包走（CSS 变量）
+const ART_SVG = `<svg class="sk-art" viewBox="0 0 300 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true">` +
+  `<circle cx="212" cy="56" r="17" style="fill:var(--sk-art-sun)" opacity=".9"/>` +
+  `<path d="M0 104 C34 84 62 70 98 86 C128 100 150 62 190 58 C228 54 262 82 300 76 V160 H0Z" style="fill:var(--sk-art-far)"/>` +
+  `<rect class="mist" x="-20" y="92" width="340" height="22" fill="#fff" opacity=".22"/>` +
+  `<path d="M0 126 C46 104 82 110 122 120 C162 130 198 96 238 100 C268 103 284 114 300 110 V160 H0Z" style="fill:var(--sk-art-mid)"/>` +
+  `<path d="M0 148 C58 130 108 136 158 144 C208 152 250 134 300 138 V160 H0Z" style="fill:var(--sk-art-near)"/></svg>`;
 
 if (typeof document !== "undefined") {
   const $ = (s, r = document) => r.querySelector(s);
@@ -582,19 +714,20 @@ if (typeof document !== "undefined") {
       : "";
     const tabs = (p.label || "").split("、").filter(Boolean);
     switch (p.kind) {
-      case "topAppBar": return `<div class="sk-part sk-topbar${sel}${tap}" data-pid="${p.id}" style="${pst}"><b>${esc(p.label)}</b><span>${glyph(p.icon) || "⋮"}</span>${link}</div>`;
-      case "searchBar": return `<div class="sk-part sk-search${sel}${tap}" data-pid="${p.id}" style="${pst}">⌕ ${esc(p.label)}${link}</div>`;
+      case "topAppBar": return `<div class="sk-part sk-topbar${sel}${tap}" data-pid="${p.id}" style="${pst}"><b>${esc(p.label)}</b><span>${glyph(p.icon) || icon("more")}</span>${link}</div>`;
+      case "searchBar": return `<div class="sk-part sk-search${sel}${tap}" data-pid="${p.id}" style="${pst}">${icon("search")}<span>${esc(p.label)}</span>${link}</div>`;
+      case "chip": return `<div class="sk-part sk-chips${sel}${tap}" data-pid="${p.id}" style="${pst}"><span class="on">${esc(p.label)}</span>${link}</div>`;
       case "chipRow": return `<div class="sk-part sk-chips${sel}${tap}" data-pid="${p.id}" style="${pst}">${tabs.map((t, i) => `<span class="${i === p.selected ? "on" : ""}">${esc(t)}</span>`).join("")}${link}</div>`;
-      case "card": return `<div class="sk-part sk-card v-${p.variant || "filled"}${sel}${tap}" data-pid="${p.id}" style="${pst}">${p.media !== false ? `<div class="sk-card-media"></div>` : ""}<b>${esc(p.label)}</b><span>${numWrap(p.supporting || "")}</span>${link}</div>`;
-      case "listItem": return `<div class="sk-part sk-list${sel}${tap}" data-pid="${p.id}" style="${pst}"><i class="th">${esc((p.label || "?")[0])}</i><span class="tx"><b>${esc(p.label)}</b><s>${numWrap(p.supporting || "")}</s></span><em>›</em>${link}</div>`;
-      case "button": return `<div class="sk-part sk-btn v-${p.variant || "filled"}${sel}${tap}" data-pid="${p.id}" style="${pst}">${p.icon ? glyph(p.icon) + " " : ""}${esc(p.label)}${link}</div>`;
-      case "fab": return `<div class="sk-part sk-fabrow${sel}${tap}" data-pid="${p.id}" style="${pst}"><span class="sk-fab">${glyph(p.icon) || "＋"}</span>${link}</div>`;
-      case "bottomNav": return `<div class="sk-part sk-nav${sel}${tap}" data-pid="${p.id}" style="${pst}">${tabs.map((t, i) => `<span class="${i === (p.selected || 0) ? "on" : ""}">${esc(t)}</span>`).join("")}${link}</div>`;
+      case "card": return `<div class="sk-part sk-card v-${p.variant || "filled"}${sel}${tap}" data-pid="${p.id}" style="${pst}">${p.media !== false ? `<div class="sk-card-media">${ART_SVG}</div>` : ""}<b>${esc(p.label)}</b><span>${numWrap(p.supporting || "")}</span>${link}</div>`;
+      case "listItem": return `<div class="sk-part sk-list${sel}${tap}" data-pid="${p.id}" style="${pst}"><i class="th">${esc((p.label || "?")[0])}</i><span class="tx"><b>${esc(p.label)}</b><s>${numWrap(p.supporting || "")}</s></span><em>${icon("chev")}</em>${link}</div>`;
+      case "button": return `<div class="sk-part sk-btn v-${p.variant || "filled"}${sel}${tap}" data-pid="${p.id}" style="${pst}">${p.icon ? glyph(p.icon) : ""}${esc(p.label)}${link}</div>`;
+      case "fab": return `<div class="sk-part sk-fabrow${sel}${tap}" data-pid="${p.id}" style="${pst}"><span class="sk-fab">${glyph(p.icon) || icon("add")}</span>${link}</div>`;
+      case "bottomNav": return `<div class="sk-part sk-nav${sel}${tap}" data-pid="${p.id}" style="${pst}">${tabs.map((t, i) => `<span class="${i === (p.selected || 0) ? "on" : ""}">${icon(navIcon(t))}${esc(t)}</span>`).join("")}${link}</div>`;
       case "tabs": return `<div class="sk-part sk-tabs${sel}${tap}" data-pid="${p.id}" style="${pst}">${tabs.map((t, i) => `<span class="${i === (p.selected || 0) ? "on" : ""}">${esc(t)}</span>`).join("")}${link}</div>`;
       case "textField": return `<div class="sk-part sk-textfield${sel}${tap}" data-pid="${p.id}" style="${pst}"><label>${esc(p.label)}</label><div class="in">${esc(p.supporting || "请输入…")}</div>${link}</div>`;
       case "switch": return `<div class="sk-part sk-switchrow${sel}${tap}" data-pid="${p.id}" style="${pst}"><span>${esc(p.label)}</span><i class="tgl ${p.checked ? "on" : ""}"></i>${link}</div>`;
       case "text": return `<div class="sk-part sk-text${sel}${tap}" data-pid="${p.id}" style="${pst}"><b>${numWrap(p.label)}</b>${p.supporting ? `<span>${numWrap(p.supporting)}</span>` : ""}${link}</div>`;
-      case "image": return `<div class="sk-part sk-image${sel}${tap}" data-pid="${p.id}" style="${pst}">图片${link}</div>`;
+      case "image": return `<div class="sk-part sk-image${sel}${tap}" data-pid="${p.id}" style="${pst}">${ART_SVG}${link}</div>`;
       case "box": return `<div class="sk-part sk-box${sel}${tap}" data-pid="${p.id}" style="${pst}">${esc(p.label)}${link}</div>`;
       case "divider": return `<div class="sk-part sk-divider${sel}${tap}" data-pid="${p.id}" style="${pst}">${link}</div>`;
       default: return `<div class="sk-part${sel}" data-pid="${p.id}" style="${pst}">${esc(PARTS[p.kind]?.label || p.kind)}</div>`;
@@ -602,29 +735,41 @@ if (typeof document !== "undefined") {
   }
   function screenHTML(s, preview = false) {
     const inner = s.parts.map((p) => partHTML(p, preview)).join("");
-    return `<div class="sk-status"><span>9:41</span><span>5G ▂▄▆ █</span></div><div class="sk-screen-body">${inner}</div>`;
+    return `<div class="sk-status"><span>9:41</span><span class="sk-sig"><i></i><i></i><i></i><i></i><b></b></span></div><div class="sk-screen-body">${inner}</div>`;
   }
+
+  // 零件库缩略图用的示例零件（真实渲染，再缩小）
+  const SAMPLE = {
+    button: { label: "立即预订", variant: "filled" }, chip: { label: "周末" }, chipRow: { label: "全部、山野、海边", selected: 0 },
+    fab: { icon: "add" }, topAppBar: { label: "标题", icon: "menu" }, bottomNav: { label: "首页、发现、我的", selected: 0 },
+    searchBar: { label: "搜索目的地" }, tabs: { label: "全部、进行中", selected: 0 },
+    card: { label: "大理三日", supporting: "洱海 · 苍山", variant: "filled", media: true }, listItem: { label: "京都", supporting: "日本 · 5 天" },
+    box: { label: "容器" }, textField: { label: "姓名", supporting: "请输入" }, switch: { label: "提醒", checked: true },
+    text: { label: "标题", supporting: "一段安静的正文。" }, image: { label: "" }, divider: { label: "" },
+  };
+  const sampleFor = (kind) => ({ id: "pv-" + kind, kind, ...(SAMPLE[kind] || {}) });
 
   // ---------- 渲染 ----------
   function renderParts() {
     const root = $("#skParts");
     root.innerHTML = `
-      <div class="sk-search">⌕ <input id="skPartSearch" placeholder="搜索组件"></div>
+      <div class="sk-lib-head"><h2>零件</h2><span class="muted small">${Object.keys(PARTS).length} 种 · 按当前风格实时渲染</span></div>
+      <label class="sk-lib-search">${icon("search")}<input id="skPartSearch" placeholder="搜索组件"></label>
       ${CATS.map((c) => `
         <h3>${c}</h3>
         <div class="sk-pgrid">
           ${Object.entries(PARTS).filter(([, sp]) => sp.cat === c).map(([kind, sp]) => `
             <button class="sk-part-card" data-kind="${kind}" title="点一下加进当前屏">
-              <span class="pv pv-${kind}"></span><span>${sp.label}</span>
+              <span class="pv pv-${kind}" aria-hidden="true"><span class="pv-inner">${partHTML(sampleFor(kind), true)}</span></span><span class="pv-name">${sp.label}</span>
             </button>`).join("")}
         </div>`).join("")}
-      <p class="muted small" style="margin-top:14px;line-height:1.7">点一下就加进当前屏幕，位置在最下面；选中零件后在右边改它。拖动零件（触屏拖左边的把手）就能换顺序，右边也有 ↑ ↓ 按钮。</p>`;
+      <p class="muted small sk-lib-tip">点一下加进当前屏幕；选中零件后在右边改它。拖动零件（触屏拖左边的把手）可换顺序。</p>`;
     $$(".sk-part-card", root).forEach((b) => b.addEventListener("click", () => addPart(b.dataset.kind)));
     const si = $("#skPartSearch", root);
     si.addEventListener("input", () => {
       const kw = si.value.trim();
       $$(".sk-part-card", root).forEach((b) => {
-        b.style.display = !kw || b.textContent.includes(kw) ? "" : "none";
+        b.style.display = !kw || (b.querySelector(".pv-name")?.textContent || "").includes(kw) ? "" : "none";
       });
     });
   }
@@ -637,7 +782,7 @@ if (typeof document !== "undefined") {
         </button>`).join("")}
       <button class="sk-stab add" id="skAddScreen">＋ 添加屏幕</button>
       <span style="flex:1"></span>
-      <button class="btn sm" id="skPreviewBtn">▶ 预览切页</button>`;
+      <button class="btn sm primary" id="skPreviewBtn"><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4.5 3.2v9.6L12.5 8z" fill="currentColor"/></svg>预览切页</button>`;
     $$(".sk-stab[data-sid]", bar).forEach((b) => b.addEventListener("click", (e) => {
       if (e.target.dataset.del) return;
       state.screenId = b.dataset.sid;
@@ -811,7 +956,7 @@ if (typeof document !== "undefined") {
       const spec = PARTS[p.kind];
       const idx = s.parts.indexOf(p);
       html += `<section class="card">
-        <header class="step-h"><span class="n">1</span><h3>${spec.label}</h3><span class="count">${esc(s.name)}</span></header>
+        <header class="step-h"><span class="n">01</span><h3>${spec.label}</h3><span class="count">${esc(s.name)}</span></header>
         <div class="itabs" id="skITabs">
           <i class="seg-thumb"></i>
           <button class="on" data-itab="design">设计</button>
@@ -844,21 +989,36 @@ if (typeof document !== "undefined") {
         </div>
       </section>`;
     } else {
+      const curPack = theme.pack || "";
       html += `<section class="card">
-        <header class="step-h"><span class="n">1</span><h3>${esc(s.name)}</h3><span class="count">${s.parts.length} 个零件</span></header>
-        ${field("屏幕名称", `<input type="text" id="skFScreenName" value="${esc(s.name)}">`)}
-        ${state.doc.screens.length > 1 ? `<div class="row"><button class="btn sm danger" id="skDelScreen">删除这页</button></div>` : ""}
+        <header class="step-h"><span class="n">01</span><h3>风格包</h3><span class="count">${curPack ? esc(STYLE_PACKS[curPack].en) : "经典配色"}</span></header>
+        <div class="sk-packs" id="skFPack">
+          ${PACK_IDS.map((id) => { const pk = STYLE_PACKS[id]; const c = pk.colors; return `
+          <button class="sk-pack ${curPack === id ? "on" : ""}" data-v="${id}">
+            <span class="sk-pack-sw" style="background:${c.backgroundCss || c.background};color:${c.ink};border-radius:${Math.min(pk.radius, 10)}px">
+              <b style="font-family:${esc(pk.fonts.cssHead)}">Aa</b><i style="background:${c.primary}"></i>
+            </span>
+            <span class="sk-pack-tx"><b>${pk.zh}</b><s>${pk.tagline}</s></span>
+          </button>`; }).join("")}
+        </div>
+        ${field("经典配色（Material，无风格包）", `<select id="skFPalette">${curPack ? `<option value="" selected>— 使用风格包 —</option>` : ""}${Object.entries(PALETTES).map(([k, v]) => `<option value="${k}" ${!curPack && state.doc.theme.palette === k ? "selected" : ""}>${v.zh}</option>`).join("")}</select>`)}
       </section>
       <section class="card">
-        <header class="step-h"><span class="n">2</span><h3>主题与应用</h3></header>
+        <header class="step-h"><span class="n">02</span><h3>${esc(s.name)}</h3><span class="count">${s.parts.length} 个零件</span></header>
+        ${field("屏幕名称", `<input type="text" id="skFScreenName" value="${esc(s.name)}">`)}
+        ${state.doc.screens.length > 1 ? `<div class="row"><button class="btn sm ghost danger" id="skDelScreen">删除这页</button></div>` : ""}
+      </section>
+      <section class="card">
+        <header class="step-h"><span class="n">03</span><h3>应用与平台</h3></header>
         ${field("应用名称", `<input type="text" id="skFTitle" value="${esc(state.doc.title)}">`)}
         ${field("一句话简介", `<input type="text" id="skFBrief" value="${esc(state.doc.brief || "")}">`)}
-        ${field("主色", `<select id="skFPalette">${Object.entries(PALETTES).map(([k, v]) => `<option value="${k}" ${state.doc.theme.palette === k ? "selected" : ""}>${v.zh}</option>`).join("")}</select>`)}
+        <div class="sk-2col">
         ${field("目标平台", `<select id="skFTarget">${PLATFORMS.map((p) => `<option value="${p.id}" ${targetFor(state.doc).platform === p.id ? "selected" : ""}>${p.zh}</option>`).join("")}</select>`)}
         ${field("组件库", `<select id="skFLibrary">${PLATFORM_LIBS[targetFor(state.doc).platform].map((l) => `<option value="${l.id}" ${targetFor(state.doc).library === l.id ? "selected" : ""}>${l.zh}</option>`).join("")}</select>`)}
+        </div>
       </section>
       <section class="card">
-        <header class="step-h"><span class="n">3</span><h3>调节</h3></header>
+        <header class="step-h"><span class="n">04</span><h3>调节</h3></header>
         ${field("密度", `<div class="sk-styleseg" id="skFDensity">${DENSITIES.map((d) => `<button class="${theme.density === d.id ? "on" : ""}" data-v="${d.id}">${d.zh}</button>`).join("")}</div>`)}
         ${field("字号", `<div class="sk-styleseg" id="skFFont">${FONT_SIZES.map((f) => `<button class="${theme.font === f.id ? "on" : ""}" data-v="${f.id}">${f.zh}</button>`).join("")}</div>`)}
         ${field(`圆角 <span class="val">${theme.radius}px</span>`, `<input type="range" id="skFThemeRadius" min="0" max="32" value="${theme.radius}">`)}
@@ -866,11 +1026,11 @@ if (typeof document !== "undefined") {
       </section>`;
     }
     html += `<section class="card">
-      <header class="step-h"><span class="n">${p ? "2" : "4"}</span><h3>提示词</h3></header>
+      <header class="step-h"><span class="n">${p ? "02" : "05"}</span><h3>提示词</h3><span class="count">${esc(state.doc.theme.pack ? STYLE_PACKS[state.doc.theme.pack].zh + " · " : "")}${esc(targetFor(state.doc).platform === "web" ? "Web" : (PLATFORMS.find((x) => x.id === targetFor(state.doc).platform)?.zh || ""))}</span></header>
       <div class="prompt-wrap"><textarea id="skPrompt" spellcheck="false" readonly></textarea></div>
       <div class="row">
         <button class="btn primary grow" id="skCopy"><span class="l1">复制提示词</span><span class="l2"><svg class="check-draw" viewBox="0 0 16 16"><path pathLength="1" d="M3 8.5 L6.5 12 L13 4.5"/></svg> 已复制</span></button>
-        <button class="btn danger" id="skReset"><span>重新开始</span></button>
+        <button class="btn ghost danger" id="skReset"><span>重新开始</span></button>
       </div>
       <p class="muted small">提示词跟着画布实时生成，粘贴给 Claude Code、Codex、Cursor，直接生成能跑的应用。设计自动保存在浏览器里，刷新还在。</p>
     </section>`;
@@ -894,7 +1054,20 @@ if (typeof document !== "undefined") {
     on("#skFScreenName", "input", (e) => { s.name = e.target.value; save(); renderScreenbar(); renderCanvas(); renderPromptText(); });
     on("#skFTitle", "input", (e) => { state.doc.title = e.target.value; save(); renderPromptText(); });
     on("#skFBrief", "input", (e) => { state.doc.brief = e.target.value; save(); renderPromptText(); });
-    on("#skFPalette", "change", (e) => { state.doc.theme.palette = e.target.value; save(); applyTheme(); renderPromptText(); });
+    on("#skFPalette", "change", (e) => {
+      if (!e.target.value) return;
+      state.doc.theme.palette = e.target.value; delete state.doc.theme.pack; // 选经典配色 = 不用风格包
+      save(); applyTheme(); renderInspector(); renderParts();
+    });
+    // 风格包：一套切换字体、配色、圆角、阴影、动效，画布和零件库实时跟着变
+    on("#skFPack", "click", (e) => {
+      const b = e.target.closest("button[data-v]"); if (!b) return;
+      const pk = STYLE_PACKS[b.dataset.v]; if (!pk) return;
+      state.doc.theme.pack = b.dataset.v;
+      state.doc.theme.radius = pk.radius;
+      state.doc.theme.shadow = pk.shadowLevel;
+      save(); applyTheme(true); renderInspector();
+    });
     // 换平台后组件库跟着变：当前库不属于新平台时落到该平台的第一个库，不出现不可能的组合
     on("#skFTarget", "change", (e) => {
       const t = targetFor(state.doc);
@@ -976,18 +1149,47 @@ if (typeof document !== "undefined") {
     const ta = $("#skPrompt");
     if (ta) ta.value = buildSketchPrompt(state.doc);
   }
-  function applyTheme() {
-    const pal = PALETTES[state.doc.theme.palette] || PALETTES.blue;
+  function applyTheme(animate = false) {
     const theme = themeFor(state.doc);
+    const pal = PALETTES[theme.palette] || PALETTES.blue;
+    const pk = theme.pack ? STYLE_PACKS[theme.pack] : null;
     const root = $("#sketchRoot");
-    root.style.setProperty("--sk-primary", pal.primary);
-    root.style.setProperty("--sk-primary-soft", pal.primaryContainer);
-    root.style.setProperty("--sk-radius", theme.radius + "px");
-    root.style.setProperty("--sk-gap", (DENSITIES.find((d) => d.id === theme.density)?.gap || 12) + "px");
-    root.style.setProperty("--sk-zoom", String(FONT_SIZES.find((f) => f.id === theme.font)?.zoom || 1));
+    const set = (k, v) => root.style.setProperty(k, v);
+    // 风格包 → CSS 变量；没有风格包的旧存档按 Material 配色映射成同一套变量
+    const c = pk ? pk.colors : {
+      background: pal.surface, surface: "#FFFFFF", ink: pal.onSurface, muted: pal.onSurfaceVariant, line: "#E3E3E8",
+      primary: pal.primary, onPrimary: pal.onPrimary, primarySoft: pal.primaryContainer,
+    };
+    const art = pk ? pk.art : { sky1: pal.primaryContainer, sky2: "#FFFFFF", sun: pal.primary, far: pal.surfaceContainerHigh, mid: pal.outline, near: pal.onPrimaryContainer };
+    set("--sk-bg", c.backgroundCss || c.background);
+    set("--sk-bg-solid", c.background);
+    set("--sk-surface", c.surface);
+    set("--sk-ink", c.ink);
+    set("--sk-muted", c.muted);
+    set("--sk-line", c.line);
+    set("--sk-primary", c.primary);
+    set("--sk-on-primary", c.onPrimary);
+    set("--sk-primary-soft", c.primarySoft);
+    set("--sk-font-head", pk ? pk.fonts.cssHead : SANS_CSS);
+    set("--sk-font-body", pk ? pk.fonts.cssBody : SANS_CSS);
+    set("--sk-head-weight", String(pk ? pk.fonts.headWeight : 700));
+    set("--sk-head-track", pk ? pk.fonts.headTrack : "0");
+    set("--sk-blur", pk?.blur ? pk.blur + "px" : "0px");
+    set("--sk-motion", (pk ? pk.motion.ms : 280) + "ms");
+    for (const [k, v] of Object.entries(art)) set("--sk-art-" + k, v);
+    set("--sk-art-sky", `linear-gradient(180deg, ${art.sky1}, ${art.sky2})`);
+    set("--sk-radius", theme.radius + "px");
+    set("--sk-radius-sm", Math.min(theme.radius, 12) + "px");
+    set("--sk-gap", (DENSITIES.find((d) => d.id === theme.density)?.gap || 12) + "px");
+    set("--sk-zoom", String(FONT_SIZES.find((f) => f.id === theme.font)?.zoom || 1));
     const sh = SHADOWS.find((s) => s.id === theme.shadow) || SHADOWS[1];
-    root.style.setProperty("--sk-shadow", sh.value);
-    root.style.setProperty("--sk-shadow-strong", sh.strong);
+    set("--sk-shadow", theme.shadow === "none" ? "none" : pk ? (theme.shadow === "heavy" ? pk.shadow.raised : pk.shadow.card) : sh.value);
+    set("--sk-shadow-strong", theme.shadow === "none" ? "none" : pk ? pk.shadow.raised : sh.strong);
+    root.dataset.pack = theme.pack || "classic";
+    // 换风格包：手机屏幕整体墨色晕开一下（减弱动态效果时跳过）
+    if (animate && !reduceMotion()) {
+      root.querySelectorAll(".sk-viewport, .pv-inner").forEach((v) => { v.classList.remove("sk-repaint"); void v.offsetWidth; v.classList.add("sk-repaint"); });
+    }
   }
 
   // ---------- 展示设置：只管怎么看，不进设计文档、不进提示词 ----------
@@ -1155,6 +1357,7 @@ if (typeof document !== "undefined") {
     const done = () => {
       if (btn.classList.contains("done")) return; // 已在完成态时不重播勾号
       btn.classList.add("done");
+      document.dispatchEvent(new Event("dj:ink"));
       setTimeout(() => btn.classList.remove("done"), 1600);
       toast("已复制：提示词已在剪贴板，粘贴给 Claude Code / Codex / Cursor 即可生成应用");
     };

@@ -1,5 +1,17 @@
 # 更新日志 / Changelog
 
+## v0.6.0 (2026-11-14)
+
+- 全新视觉「宣纸 · 墨 · 朱砂」：暖白纸色、宋体标题、只留一种朱砂强调色；截图画布占满，缩放和撤销收进底部悬浮工具条，右侧检查器按「元素 → 改法 → 提示词」排好；字体随项目自带，离线和国内网络都能正常显示
+- 首页改成杂志封面：一句宋体大标题配一笔朱砂手绘圈，旁边是示例 App 的真实缩略图；把截图拖进来时，整块画布出现朱砂虚线框
+- 示例换成「山居 · 精品民宿」：宋体标题、暖中性色、用 SVG 画的山峦光影代替照片；选中元素时四角像相机对焦一样收拢，每个改法都配前后小图，改动平滑过渡，提示词实时写在下方，生成提示词时 logo 的眼睛会点上一滴朱砂
+- 画界面新增 5 套风格包——极简、编辑杂志、东方、暗夜奢华、柔光玻璃，一键换字体、配色、圆角、阴影和动效，提示词里写出这套风格的完整规范；零件库缩略图按当前风格实时渲染，手机换成细边框真机外观；以前保存的设计照常打开
+
+- New look, “rice paper · ink · vermilion”: warm paper tones, serif headings and a single vermilion accent; the screenshot canvas fills the screen, zoom and undo live in a floating dock at the bottom, and the inspector on the right reads Element → Tweak → Prompt; fonts now ship with the project, so it looks right offline and on networks where Google Fonts is blocked
+- The start screen is now a magazine-style cover: one large serif headline with a hand-drawn vermilion circle, next to a real miniature of the demo app; dragging a screenshot in outlines the whole canvas in a vermilion dashed frame
+- The demo is now “Shanju”, a boutique guesthouse app with serif headings, warm neutrals and SVG-drawn mountain scenery instead of photos; selecting an element snaps four corners in like a camera focusing, every tweak shows a before/after thumbnail, changes cross-fade smoothly, the prompt is written live underneath, and the logo’s eye gets a drop of vermilion when a prompt is generated
+- Sketch mode gains 5 style packs — Minimal, Editorial, Oriental, Noir and Soft glass — that switch fonts, colors, corner radius, shadows and motion in one click, and the prompt spells out each pack’s full spec; the parts library previews render live in the current style, the phone frame is now a slim, realistic device, and previously saved designs open as before
+
 ## v0.5.9 (2026-11-13)
 
 - 画界面：零件能拖动换顺序了，在手机框里直接拖零件，松手就换位，拖的时候一条蓝线标出落点；触屏拖左边的把手，鼠标直接拖零件就行

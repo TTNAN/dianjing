@@ -80,7 +80,7 @@ test("demo 默认渲染：布局锚点都在（搜索 y152、主卡、底栏）"
   assert.match(svg, /x="20" y="152" width="290" height="52" rx="12"/);
   assert.match(svg, /x="20" y="300" width="350" height="230"/);
   assert.match(svg, /<rect x="0" y="776" width="390" height="68"/);
-  assert.match(svg, /今日总览/);
+  assert.match(svg, /寻一处山居/);
 });
 
 test("demo 覆盖：主卡圆角改直角只动裁剪，不动锚点", () => {
@@ -107,7 +107,7 @@ test("LIVE：16 组参数类 + 2 组结构类，结构类不在 LIVE 里", () =>
 
 test("structuralHtml：胶囊竖排的高度与条目数对得上", () => {
   const s = structuralHtml("pills", "col");
-  assert.ok(s.html.includes("全部") && s.html.includes("今年"));
+  assert.ok(s.html.includes("全部") && s.html.includes("海边"));
   assert.equal(s.height, 5 * 38 + 4 * 8 + 24);
   assert.equal(structuralHtml("hero", "col"), null);
 });
@@ -383,12 +383,17 @@ test("画界面：themeFor 归一化——缺项落回默认，老 shape 按 8/2
   assert.equal(themeFor({ theme: { radius: 40 } }).radius, 32);
   assert.equal(themeFor({ theme: { radius: -5 } }).radius, 0);
   assert.equal(themeFor({ theme: { density: "nope", font: "nope", shadow: "nope", palette: "nope" } }).density, "standard");
-  assert.equal(themeFor(seedSketchDoc()).radius, 20);
-  assert.deepEqual(seedSketchDoc().theme, { palette: "blue", radius: 20, density: "standard", font: "standard", shadow: "light" });
+  // v0.6.0：种子示例用「东方」风格包（圆角 6）；风格包是可选字段，非法值不写回
+  assert.equal(themeFor(seedSketchDoc()).radius, 6);
+  assert.deepEqual(seedSketchDoc().theme, { pack: "oriental", palette: "blue", radius: 6, density: "standard", font: "standard", shadow: "light" });
+  assert.deepEqual(themeFor(seedSketchDoc()), seedSketchDoc().theme);
+  assert.equal(themeFor({ theme: { pack: "nope" } }).pack, undefined);
 });
 
+// 旧存档（没有风格包，蓝色 Material 配色、圆角 20）：提示词与 v0.5.x 一字不差
+const legacyDoc = () => { const d = seedSketchDoc(); d.theme = { palette: "blue", radius: 20, density: "standard", font: "standard", shadow: "light" }; return d; };
 test("画界面：调节进提示词——默认是标准字号/标准密度/轻阴影/圆角 20", () => {
-  const pr = buildSketchPrompt(seedSketchDoc());
+  const pr = buildSketchPrompt(legacyDoc());
   assert.ok(pr.includes("圆角 20dp（按钮为胶囊形，卡片 20dp，对话框 28dp）。"));
   assert.ok(pr.includes("字号标准（正文 14dp，标题 17dp）。"));
   assert.ok(pr.includes("密度标准（零件间距 12dp），轻阴影。"));
@@ -401,11 +406,11 @@ test("画界面：调节进提示词——宽松+大字号+无阴影+圆角 0 �
   assert.ok(pr.includes("圆角保持克制：整体缩小 M3 的形状比例"));
   assert.ok(pr.includes("字号大（正文 15dp，标题 18dp）。"));
   assert.ok(pr.includes("密度宽松（零件间距 20dp），无阴影。"));
-  const doc2 = seedSketchDoc();
+  const doc2 = legacyDoc();
   doc2.theme.radius = 28;
   assert.ok(buildSketchPrompt(doc2).includes("圆角尽量放大：按钮、标签片和输入框为胶囊形，卡片和图片 32dp"));
   // 小程序平台：数值按 rpx 换算（20dp -> 40rpx，间距 12dp -> 24rpx）
-  const doc3 = seedSketchDoc();
+  const doc3 = legacyDoc();
   doc3.target = { platform: "miniprogram", library: "vant" };
   const pr3 = buildSketchPrompt(doc3);
   assert.ok(pr3.includes("圆角 40rpx"));
@@ -481,11 +486,49 @@ test("直接点改：内联 SVG 里 14 个元素组都挂了 data-el，悬停标
   assert.ok(!renderDemo().includes("<title>"));
 });
 
-test("一眼对比小图：纯色 → 渐变的后一张是真渐变（不再全是蓝），通栏的前一张是满宽底栏", () => {
+test("一眼对比小图：纯色 → 渐变的后一张是真渐变（墨 → 朱砂），通栏的前一张是满宽底栏", () => {
   const g = VISUAL.find((v) => v.id === "v-solid-to-gradient");
-  assert.ok(g.after.includes("#ff4d8d") && g.after.includes("#2ee6d6"), "后态渐变里有粉有青，不再全蓝");
-  assert.ok(!g.after.includes("#1761fd"), "后态不再是三段蓝");
+  assert.ok(g.after.includes("linear-gradient") && g.after.includes("#141414") && g.after.includes("#D9381E"), "后态是墨到朱砂的渐变");
+  // v0.6.0：去掉所有品牌蓝，小图只用墨色与浅灰
+  for (const v of VISUAL) assert.ok(!/#246fff|#1761fd|#2b7fff/i.test(v.before + v.after), v.id);
   const f = VISUAL.find((v) => v.id === "v-full-to-inset");
   assert.ok(f.before.includes("left:0;right:0;bottom:0;height:16px"), "前态是满宽贴底的底栏");
   assert.ok(f.after.includes("left:6px;right:6px;bottom:4px") && f.after.includes("border-radius:99px"));
+});
+
+// ---------- v0.6.0 风格包 ----------
+import { STYLE_PACKS, PACK_IDS, packSpecLines, packFor } from "../src/sketch.js";
+
+test("风格包：5 套，每套都有字体、字号阶梯、颜色角色、圆角、阴影、动效", () => {
+  assert.deepEqual(PACK_IDS, ["minimal", "editorial", "oriental", "noir", "glass"]);
+  for (const [id, pk] of Object.entries(STYLE_PACKS)) {
+    assert.ok(pk.zh && pk.fonts.head && pk.fonts.body && pk.fonts.cssHead, id);
+    assert.equal(Object.keys(pk.scale).length, 6, id);
+    for (const k of ["background", "surface", "ink", "muted", "line", "primary", "onPrimary", "primarySoft"]) assert.ok(pk.colors[k], `${id}.${k}`);
+    assert.ok(typeof pk.radius === "number" && pk.shadow.card && pk.motion.ms > 0, id);
+  }
+  assert.equal(STYLE_PACKS.noir.colors.background, "#0E0E0E");
+  assert.equal(STYLE_PACKS.noir.colors.primary, "#C8A97E");
+  assert.equal(STYLE_PACKS.editorial.radius, 0);
+});
+
+test("风格包：提示词写出该风格包的具体规范，旧存档不写", () => {
+  const doc = seedSketchDoc();
+  const pr = buildSketchPrompt(doc);
+  assert.ok(pr.includes("## 风格包：东方"));
+  assert.ok(pr.includes("Noto Serif SC"));
+  assert.ok(pr.includes("字号阶梯：说明 12dp / 正文 15dp"));
+  assert.ok(pr.includes("强调色 #D9381E"));
+  assert.ok(pr.includes("box-shadow: 0 1px 2px rgba(20,20,20,.04), 0 8px 24px rgba(20,20,20,.06)"));
+  assert.ok(pr.includes("280ms"));
+  assert.ok(pr.includes("primaryContainer"));
+  doc.theme.pack = "noir";
+  const pn = buildSketchPrompt(doc);
+  assert.ok(pn.includes("## 风格包：暗夜奢华") && pn.includes("#C8A97E") && pn.includes("#0E0E0E"));
+  doc.theme.pack = "glass";
+  assert.ok(buildSketchPrompt(doc).includes("backdrop-filter: blur(24px)"));
+  assert.ok(!buildSketchPrompt(legacyDoc()).includes("## 风格包"));
+  assert.equal(packFor(legacyDoc()), null);
+  // 小程序：字号阶梯按 rpx 换算
+  assert.ok(packSpecLines(STYLE_PACKS.oriental, { radius: 6 }, { unit: "rpx", unitScale: 2 }).some((l) => l.includes("正文 30rpx")));
 });

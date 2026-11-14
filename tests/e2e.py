@@ -111,7 +111,7 @@ async def main():
     await pg.click("#demoCopy"); await pg.wait_for_timeout(500)
     assert "done" in (await pg.locator("#demoCopy").get_attribute("class") or "")
     prompt = await pg.locator("#prompt").input_value()
-    assert "搜索栏" in prompt and "时间胶囊" in prompt, prompt
+    assert "搜索栏" in prompt and "分类标签" in prompt, prompt  # v0.6.0：示例换成民宿 App，时间胶囊改名分类标签
     await pg.screenshot(path="./tmp-e2.png")
     # 演示的改动能持久化：刷新后还在（且是按元素记的，不是圈选框），选中状态不保留
     await pg.wait_for_timeout(900)

@@ -10,11 +10,11 @@ There's also a second mode, **画界面 (Sketch screens)**, in the top bar: clic
 
 [**Live demo**](https://ttnan.github.io/dianjing/) · [中文](README.md) · MIT
 
-![Dianjing UI](docs/screenshot.png)
+![Dianjing UI](docs/redesign/02-demo-selected.png)
 
-🎬 Demo video
+🎬 Demo ([HD mp4](docs/redesign/demo.mp4))
 
-https://github.com/user-attachments/assets/1dd060c5-f948-4e76-8a56-a7c16788132e
+![demo](docs/redesign/demo.gif)
 
 </div>
 
@@ -44,7 +44,9 @@ Plenty of tools already help an AI *locate* an element (React Grab, Agentation, 
 4. **Design vocabulary** — 27 terms in 7 groups (spacing, hierarchy, color, typography, shape & depth, layout, overall style), each with a plain-language hint.
 5. **Sketch screens (second mode)** — 16 Chinese parts (button, chip, card, list item, bottom navigation…), click to add; edit copy, style and tap targets in the inspector; the preview player plays the tap-through flow with a history stack; the whole design generates a live 10-section Chinese prompt (colors, shape/type/motion, screen structure, behavior & navigation, component styles, principles). 3 palettes × 3 corner styles; autosaved to the browser.
 
-![Sketch screens](docs/sketch.png)
+![Sketch screens](docs/redesign/03-sketch.png)
+
+![Sketch mode · five style packs](docs/redesign/04-style-packs.png)
 
 6. **AI recognition** (optional) — identifies the element ("bottom tab bar"), describes its current style, points out issues and suggests terms.
 7. **Three variations** (optional) — generates three visual alternatives that match your intent; pick one to include in the prompt.
@@ -107,6 +109,7 @@ tests/unit.test.mjs  Unit tests: vocabulary scale, conflict pairs, prompt builde
 
 - [x] v0.1 Screenshot circling, design vocabulary, visual tweaks, three variations, prompt output
 - [x] v0.2 In-place variant preview, box move/resize/nudge, collapsible searchable vocabulary, region text, conflicting directions auto-cancelled, autosave, copy text + image together
+- [x] v0.6 Redesign: rice paper · ink · vermilion, new "Shanju" boutique-stay demo, five style packs for sketch mode (Minimal / Editorial / Oriental / Noir / Soft glass)
 - [x] v0.3 Light tool page (BoardUI palette), warm-gray canvas, viewfinder-eye logo
 - [x] v0.4 Click to change: apply a tweak straight onto the demo, local re-layout previews
 - [x] v0.5 Sketch screens mode: 16 Chinese parts, navigation and preview player, 10-section Chinese prompt

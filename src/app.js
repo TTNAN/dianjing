@@ -189,8 +189,8 @@ function applyZoom() {
   const target = state.isDemo ? document.querySelector("#demoSvg svg") : $("#shot");
   const baseW = state.isDemo ? state.image.w / 2 : state.image.w;
   if (!target) return;
-  if (zoom === "fit") { target.style.width = ""; target.style.maxHeight = ""; target.style.maxWidth = ""; }
-  else { target.style.maxHeight = "none"; target.style.maxWidth = "none"; target.style.width = Math.round(baseW * zoom) + "px"; }
+  if (zoom === "fit") { target.style.width = ""; target.style.height = ""; target.style.maxHeight = ""; target.style.maxWidth = ""; }
+  else { target.style.maxHeight = "none"; target.style.maxWidth = "none"; target.style.height = "auto"; target.style.width = Math.round(baseW * zoom) + "px"; }
   const lab = $("#zoomLabel");
   if (lab) lab.textContent = zoom === "fit" ? "适应" : Math.round(zoom * 100) + "%";
 }
@@ -205,6 +205,7 @@ function zoomStep(dir) {
 $("#zoomIn").onclick = () => zoomStep(1);
 $("#zoomOut").onclick = () => zoomStep(-1);
 $("#zoomFit").onclick = () => { zoom = "fit"; applyZoom(); };
+$("#dockUndo").onclick = () => undoDemo();
 stage.addEventListener("wheel", (e) => {
   if (!state.image || !(e.ctrlKey || e.metaKey)) return;
   e.preventDefault();
@@ -355,14 +356,68 @@ function demoTitles() {
   return t;
 }
 // 内联 SVG 重绘：演示不走光栅化，改完直接换 SVG 字符串；选中的元素描边留住
+let lastDemoOv = null;
+const reduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 function renderDemoSvg() {
   const el = $("#demoSvg");
-  if (!state.isDemo) { el.innerHTML = ""; return; }
-  el.innerHTML = renderDemo(computeDemoOverrides(), demoTitles());
+  if (!state.isDemo) { el.innerHTML = ""; lastDemoOv = null; return; }
+  const ov = computeDemoOverrides();
+  const ovJson = JSON.stringify(ov);
+  // 改法生效：把旧图叠在上面 260ms 淡出，元素看起来是平滑变过去的
+  const prev = el.querySelector("svg");
+  if (prev && lastDemoOv !== null && ovJson !== lastDemoOv && !reduceMotion()) {
+    $("#canvas").querySelectorAll(".demo-ghost").forEach((g) => g.remove());
+    const ghost = document.createElement("div");
+    ghost.className = "demo-ghost";
+    ghost.setAttribute("aria-hidden", "true");
+    ghost.innerHTML = prev.outerHTML.replace(/<title>[^<]*<\/title>/g, "").replace(/ data-el="[^"]*"/g, "");
+    $("#canvas").appendChild(ghost);
+    setTimeout(() => ghost.remove(), 320);
+  }
+  lastDemoOv = ovJson;
+  el.innerHTML = renderDemo(ov, demoTitles());
   const sel = state.demoSelected && el.querySelector(`[data-el="${state.demoSelected}"]`);
   if (sel) sel.classList.add("sel");
   applyZoom(); // 重绘会换掉 svg 元素，缩放宽度要重新挂上
 }
+// 相机对焦框：选中的元素四角从外向内收拢，左上挂元素名和尺寸
+let lastFocusId = null;
+function renderFocus() {
+  let ring = overlay.querySelector(".focus-ring");
+  const id = state.isDemo ? state.demoSelected : null;
+  if (!id) { ring?.remove(); lastFocusId = null; return; }
+  const meta = DEMO_ELEMENTS.find((e) => e.id === id);
+  if (!meta) return;
+  let [x, y, w, h] = meta.rect;
+  try {
+    const g = document.querySelector(`#demoSvg [data-el="${id}"]`);
+    const bb = g?.getBBox();
+    if (bb && bb.width > 0 && bb.height > 0) { x = bb.x; y = bb.y; w = bb.width; h = bb.height; }
+  } catch { /* 还没进文档时用命中表的坐标 */ }
+  if (!ring) {
+    ring = document.createElement("div");
+    ring.className = "focus-ring";
+    ring.innerHTML = `<i></i><i></i><i></i><i></i><span class="tagline"></span>`;
+    overlay.appendChild(ring);
+  }
+  const pad = 3;
+  ring.style.left = ((x - pad) / 390 * 100) + "%";
+  ring.style.top = ((y - pad) / 844 * 100) + "%";
+  ring.style.width = ((w + pad * 2) / 390 * 100) + "%";
+  ring.style.height = ((h + pad * 2) / 844 * 100) + "%";
+  ring.classList.toggle("below", y < 60);
+  ring.querySelector(".tagline").textContent = `${DEMO_NAMES[id]?.zh || id} · ${Math.round(meta.rect[2])}×${Math.round(meta.rect[3])}`;
+  if (id !== lastFocusId) { ring.classList.remove("snap"); void ring.offsetWidth; ring.classList.add("snap"); }
+  lastFocusId = id;
+}
+// 点睛：提示词生成（或复制）那一刻，logo 的眼睛点上一滴朱砂
+function inkDrop() {
+  const logo = $("#logo");
+  if (!logo) return;
+  logo.classList.add("dotted");
+  logo.classList.remove("drop"); void logo.offsetWidth; logo.classList.add("drop");
+}
+document.addEventListener("dj:ink", inkDrop);
 // 点元素只选中、不直接改；再点同一个或点空白处取消选中
 function selectDemoElement(elId) {
   state.demoSelected = state.demoSelected === elId ? null : elId;
@@ -436,6 +491,7 @@ async function copyDemoPrompt() {
   }
   const btn = $("#demoCopy");
   if (btn) { btn.classList.add("done"); setTimeout(() => btn.classList.remove("done"), 1600); }
+  inkDrop();
 }
 $("#demoSvg").addEventListener("click", (e) => {
   if (!state.isDemo) return;
@@ -514,10 +570,10 @@ function annotated(maxW = Infinity) {
   g.drawImage(img, 0, 0, c.width, c.height);
   const lw = Math.max(2, c.width / 250);
   state.regions.forEach((r, i) => {
-    g.strokeStyle = "#246fff"; g.lineWidth = lw;
+    g.strokeStyle = "#D9381E"; g.lineWidth = lw;
     g.strokeRect(r.x * s, r.y * s, r.w * s, r.h * s);
     const R = lw * 6;
-    g.fillStyle = "#246fff"; g.beginPath(); g.arc(r.x * s, r.y * s, R, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#D9381E"; g.beginPath(); g.arc(r.x * s, r.y * s, R, 0, Math.PI * 2); g.fill();
     g.fillStyle = "#fff"; g.font = `bold ${R * 1.2}px sans-serif`; g.textAlign = "center"; g.textBaseline = "middle";
     g.fillText(String(i + 1), r.x * s, r.y * s + 1);
   });
@@ -548,7 +604,7 @@ async function runVariants(r) {
 }
 
 // ---------- 渲染 ----------
-function renderAll() { renderBoxes(); renderTabs(); renderEditor(); renderPrompt(); renderPreview(); if (state.isDemo) renderDemoSvg(); else refreshTweaks(); saveState(); }
+function renderAll() { renderBoxes(); renderTabs(); renderEditor(); renderPrompt(); renderPreview(); if (state.isDemo) renderDemoSvg(); else refreshTweaks(); renderFocus(); requestAnimationFrame(moveThumb); saveState(); }
 
 function renderBoxes() {
   overlay.querySelectorAll(".box:not(.drawing)").forEach((b) => b.remove());
@@ -556,7 +612,7 @@ function renderBoxes() {
   state.regions.forEach((r, i) => {
     const b = document.createElement("div");
     b.className = "box" + (r.id === state.selected ? " sel" : "") + (r.busy === "recog" ? " scanning" : "") + (r.id === justCreated ? " pop ripple" : "");
-    b.innerHTML = `<span class="num">${i + 1}</span>` + (r.id === state.selected
+    b.innerHTML = `<span class="num">${i + 1}</span>` + (r.id === justCreated ? `<i class="fc tl"></i><i class="fc tr"></i><i class="fc br"></i><i class="fc bl"></i>` : "") + (r.id === state.selected
       ? `<i class="h nw"></i><i class="h ne"></i><i class="h sw"></i><i class="h se"></i>` : "");
     if (r.id !== justCreated) b.querySelector(".num").style.animation = "none";
     place(b, r);
@@ -654,23 +710,38 @@ function renderEditor() {
     const cur = sel ? demoTermFor(sel) : null;
     const last = sel && state.demoLastChange?.elId === sel ? state.demoLastChange.text : "";
     ed.dataset.rid = "demo"; ed.className = "";
+    const selMeta = sel ? DEMO_ELEMENTS.find((e) => e.id === sel) : null;
+    const step = sel ? 2 : changed ? 3 : 1;
+    const VIS = Object.fromEntries(VISUAL.map((v) => [v.id, v]));
+    const promptText = changed ? buildPrompt(state, "zh") : "";
     ed.innerHTML = `
     <div class="demo-bar">
-      <p class="demo-hint">${sel ? `已选中「${esc(selName)}」，挑个改法` : "👆 点图上的元素，看看它能怎么改"}</p>
+      <section class="demo-sec">
+        <p class="demo-eyebrow ${step === 1 ? "cur" : ""}"><span class="n">01</span>元素<span class="eb-en">Element</span></p>
+        <p class="demo-hint ${sel ? "" : "idle"}">${sel ? `已选中「${esc(selName)}」，挑个改法` : "点图上的元素，看看它能怎么改"}</p>
+        <div class="demo-meta">${sel ? `${esc(DEMO_NAMES[sel]?.en || sel)} · ${selMeta ? `${selMeta.rect[2]} × ${selMeta.rect[3]}` : ""}` : "搜索栏、主卡、标签、底栏……共 14 处可点"}</div>
+      </section>
       ${sel ? `
-      <div class="demo-chips">
-        ${selCycle.map((id) => `<button class="chip demo-chip ${id === cur ? "on" : ""}" data-term="${id}">${esc(TERM_INDEX[id]?.zh || id)}</button>`).join("")}
-      </div>
-      ${last ? `<div class="demo-last">✓ ${esc(last)}</div>` : ""}
-      <p class="demo-sub muted small">只列这个元素能用的改法；再点一次已选中的改法，恢复原样；点空白处取消选中</p>` : ""}
-      <div class="demo-count">已改 ${changed} 处</div>
-      <div class="row demo-actions">
-        <button class="btn sm" id="demoUndo" ${canUndo ? "" : "disabled"}><span>撤销</span></button>
-        <button class="btn sm" id="demoReset" ${changed ? "" : "disabled"}><span>重置</span></button>
-        <button class="btn sm primary" id="demoCopy" ${changed ? "" : "disabled"}><span class="l1">复制提示词</span><span class="l2">✓ 已复制</span></button>
-      </div>
+      <section class="demo-sec">
+        <p class="demo-eyebrow ${step === 2 ? "cur" : ""}"><span class="n">02</span>改法<span class="eb-en">Tweak</span></p>
+        <div class="demo-chips">
+          ${selCycle.map((id) => `<button class="chip demo-chip ${id === cur ? "on" : ""}" data-term="${id}"><span class="pair" aria-hidden="true"><span class="fr">${VIS[id]?.before || ""}</span><i class="arr"></i><span class="fr">${VIS[id]?.after || ""}</span></span><span class="lbl">${esc(TERM_INDEX[id]?.zh || id)}</span></button>`).join("")}
+        </div>
+        ${last ? `<div class="demo-last">✓ ${esc(last)}</div>` : ""}
+        <p class="demo-sub muted small">只列这个元素能用的改法；再点一次已选中的改法，恢复原样；点空白处取消选中</p>
+      </section>` : ""}
+      <section class="demo-sec">
+        <p class="demo-eyebrow ${step === 3 ? "cur" : ""}"><span class="n">${sel ? "03" : "02"}</span>提示词<span class="demo-count">已改 ${changed} 处</span></p>
+        <pre class="demo-prompt ${promptText ? "" : "empty-p"}">${promptText ? esc(promptText) : "改一处，这里就写好给 AI 的话。"}</pre>
+        <div class="row demo-actions">
+          <button class="btn sm ghost" id="demoUndo" ${canUndo ? "" : "disabled"}><span>撤销</span></button>
+          <button class="btn sm ghost" id="demoReset" ${changed ? "" : "disabled"}><span>重置</span></button>
+          <button class="btn sm primary" id="demoCopy" ${changed ? "" : "disabled"}><span class="l1">复制提示词</span><span class="l2">✓ 已复制</span></button>
+        </div>
+      </section>
     </div>`;
     ed.querySelector("#demoUndo").onclick = undoDemo;
+    $("#dockUndo").disabled = !canUndo;
     ed.querySelector("#demoReset").onclick = resetDemo;
     ed.querySelector("#demoCopy").onclick = copyDemoPrompt;
     ed.querySelectorAll(".demo-chip").forEach((c) => c.onclick = () => applyDemoChip(sel, c.dataset.term));
@@ -852,12 +923,13 @@ function renderPrompt(flash = true) {
   const ta = $("#prompt");
   if (ta.value === next) return;
   ta.value = next;
+  if (next) inkDrop(); else $("#logo")?.classList.remove("dotted");
   if (flash && next) { const w = ta.parentElement; w.classList.remove("flash"); w.offsetWidth; w.classList.add("flash"); }
 }
 
 // ---------- 输出 ----------
 function moveThumb() {
-  const on = $("#seg .on"), th = $(".seg-thumb");
+  const on = $("#seg .on"), th = $("#seg .seg-thumb");
   if (!on || !th) return;
   th.style.width = on.offsetWidth + "px"; th.style.transform = `translateX(${on.offsetLeft - 3}px)`;
 }
@@ -871,7 +943,7 @@ $("#copy").onclick = async () => {
   const t = $("#prompt").value;
   if (!t) return toast("先圈选并选一个修改方向");
   try { await navigator.clipboard.writeText(t); } catch { const ta = $("#prompt"); ta.select(); document.execCommand("copy"); ta.setSelectionRange(0, 0); ta.blur(); }
-  const btn = $("#copy"); btn.classList.add("done");
+  const btn = $("#copy"); btn.classList.add("done"); inkDrop();
   setTimeout(() => btn.classList.remove("done"), 1600);
 };
 function downloadAnnotated() {
@@ -927,15 +999,6 @@ $("#saveSettings").onclick = () => {
 function updateDot() { $("#aiDot").classList.toggle("on", hasModel(state.settings)); }
 updateDot();
 
-// 卡片边缘跟随鼠标的高光
-document.addEventListener("pointermove", (e) => {
-  document.querySelectorAll(".card").forEach((c) => {
-    const b = c.getBoundingClientRect();
-    c.style.setProperty("--mx", e.clientX - b.left + "px");
-    c.style.setProperty("--my", e.clientY - b.top + "px");
-  });
-});
-
 let toastTimer;
 function toast(msg) {
   const t = $("#toast"); t.textContent = msg; t.classList.add("show");
@@ -943,6 +1006,8 @@ function toast(msg) {
 }
 
 document.body.classList.add("no-image");
+// 空状态右侧：示例 App 的缩小版（id 加前缀，免得和画布里那份撞名）
+$("#heroDemo").innerHTML = renderDemo({}, {}, { prefix: "h-" }).replace(/ data-el="[^"]*"/g, "");
 const restored = loadSaved();
 if (restored) setTimeout(() => toast("已恢复上次的圈选"), 400);
 renderAll();

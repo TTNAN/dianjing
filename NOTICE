@@ -39,3 +39,10 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## 字体 / Fonts（v0.6.0 起随仓库分发）
+
+- Noto Serif SC（思源宋体），Copyright 2012 Google Inc.，SIL Open Font License 1.1
+- Inter，Copyright 2020 The Inter Project Authors，SIL Open Font License 1.1
+
+两者都按项目界面用到的字做了子集化，放在 `assets/fonts/`，许可全文见 `assets/fonts/OFL.txt`。
