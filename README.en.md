@@ -1,137 +1,146 @@
 <div align="center">
 
-# ◎ Dianjing 点睛
+<img src="favicon.svg" width="56" alt="Dianjing" />
 
-**Circle it. Say it like a designer.**
+# Dianjing 点睛
 
-Circle what bugs you on any UI screenshot. Dianjing turns the feeling into precise design language, shows visual before → after tweaks and three live previews, then writes a prompt your AI coding tool gets right the first time.
+**Circle it. Say it right.**
 
-There's also a second mode, **画界面 (Sketch screens)**, in the top bar: click parts from a library to assemble an app's screens, link cards to other screens, tap through the flow in a preview player, and get a full Chinese prompt for the whole design — paste it into Claude Code / Codex / Cursor and it generates a runnable app. Target platform and component library are selectable (WeChat Mini Program, uni-app, Taro, HarmonyOS ArkUI, Flutter × Vant, TDesign, Ant Design Mobile, NutUI), and the prompt uses the chosen system's component names.
+AI-generated UIs are always almost right. Drop in a screenshot, circle what feels off,<br/>
+and Dianjing turns that feeling into design language, shows you the change before you make it,<br/>
+then hands Cursor, Claude Code, Trae or Lovable a prompt they get on the first try.
 
-[**Live demo**](https://ttnan.github.io/dianjing/) · [中文](README.md) · MIT
+[**Try it online →**](https://ttnan.github.io/dianjing/) &nbsp;·&nbsp; [中文](README.md) &nbsp;·&nbsp; MIT &nbsp;·&nbsp; zero build, pure front end
 
-![Dianjing UI](docs/redesign/02-demo-selected.png)
+<br/>
 
-🎬 Demo ([HD mp4](docs/redesign/demo.mp4))
-
-![demo](docs/redesign/demo.gif)
+![Dianjing · home](docs/redesign/01-empty.png)
 
 </div>
 
 ---
 
-### The name
+## The name
 
-*Huà lóng diǎn jīng* (画龙点睛) — "painting the dragon, then dotting its eyes." Legend says the dragon only came alive once its eyes were painted in. AI-generated UIs usually get you 80% of the way; Dianjing helps you land the finishing touch.
+**画龙点睛**, "dotting the dragon's eye": a painted dragon only comes alive with the final stroke on its eyes.
 
-### Why
+AI-written interfaces get you 80% of the way. The last 20% is a corner radius, a shadow, a bit of whitespace. You can see it's wrong but can't say why. Dianjing helps you land that last stroke.
 
-Plenty of tools already help an AI *locate* an element (React Grab, Agentation, stagewise, ComposeBridge…). They answer **where** to change. What actually stops most people is **what** to change it into: you feel the tab bar looks "cheap", but you can't say "floating pill, large radius, soft shadow, filled active state".
+## Two modes
 
-| | Element pickers | Dianjing |
+### 1 · Annotate: circle it, say it right
+
+![Annotate](docs/redesign/02-demo-selected.png)
+
+- **Circle**: upload, drag in or ⌘/Ctrl + V any screenshot (web, Android, iOS, mini-programs, design files) and drag a box around what you want changed. Move, resize, nudge with arrow keys, Ctrl/⌘ + wheel to zoom.
+- **Translate**: one-line directions ("more premium", "too busy") plus a 27-term design vocabulary in 7 groups (spacing, hierarchy, color, type, finish, layout, style), each with a plain-language hint.
+- **At a glance**: 18 before → after thumbnails (round → square, solid → outline, light → dark, full-width → inset floating). Conflicting directions cancel each other.
+- **Preview**: on the built-in demo, click an element and only its 2–4 applicable tweaks appear; click one and the picture changes, with undo, reset and compare-to-original. For your own screenshots, an AI model can generate three variants pasted back in place with a wipe slider.
+- **Deliver**: copy the prompt in Chinese or English, with coordinates, semantic position, in-box text and a numbered annotated image. Boxes without a direction are left out.
+
+### 2 · Sketch: assemble it, describe it all at once
+
+![Sketch](docs/redesign/03-sketch.png)
+
+- **16 parts**: buttons, chips, cards, list items, tab bars and more. Click to add, drag to reorder.
+- **Links and tap-through preview**: wire cards and buttons to other screens (7 transitions) and tap through like a real app.
+- **Five style packs**: switch the whole aesthetic in one click (type pairing, palette, radius, shadow, motion), and the prompt spells out the exact spec so the AI can actually build it.
+- **Platforms and component libraries**: WeChat mini-program, uni-app, Taro, HarmonyOS ArkUI, Flutter; Vant, TDesign, Ant Design Mobile, NutUI. The prompt uses the chosen library's component names.
+- **Autosave** in the browser.
+
+![Five style packs](docs/redesign/04-style-packs.png)
+
+| Pack | Feel |
+|---|---|
+| Minimal | Apple-like restraint · white · large radius · light shadow |
+| Editorial | Off-white · serif headlines · square corners, hairlines |
+| Oriental | Rice paper · ink · vermilion · serif |
+| Noir | Near-black · champagne gold · serif |
+| Soft Glass | Pastel gradients · frosted cards |
+
+## Demo
+
+![Demo](docs/redesign/demo.gif)
+
+[HD mp4](docs/redesign/demo.mp4)
+
+## Why
+
+Plenty of tools help an AI *locate* an element (React Grab, Agentation, stagewise, ComposeBridge…), but they only answer **where**. What stops most people is **what to change it to**: you feel the tab bar looks cheap but can't say "floating capsule, large radius, soft shadow, solid active state".
+
+| | Locator tools | Dianjing |
 |---|---|---|
-| Tell the AI which element | ✅ | ✅ Screenshot coordinates, semantic position, numbered annotated image |
-| Translate a vague feeling into design terms | ❌ | ✅ Design vocabulary + AI suggestions |
-| Express it without knowing the jargon | ❌ | ✅ Visual before → after tweaks |
-| Preview before changing anything | ❌ | ✅ Three distinct variations rendered live |
-| Needs source code / a specific framework | Yes | **No** — web, Android, iOS, mini-programs or design mockups |
+| Tell the AI which element | ✅ | ✅ coordinates + semantic position + numbered image |
+| Turn a vague feeling into design terms | ❌ | ✅ vocabulary + AI suggestions |
+| Express it without jargon | ❌ | ✅ before → after thumbnails |
+| See the result before changing code | ❌ | ✅ click-to-change / three variants in place |
+| Needs source code or a framework | Yes | **No**, any screenshot works |
 
-### Features
+## AI model (optional)
 
-1. **Circle on a screenshot** — upload, drag in or paste (⌘/Ctrl + V), then drag to mark one or more areas, with live size readout.
-2. **One-tap directions** — "More premium", "More compact", "Too messy"… no jargon needed.
-3. **Visual tweaks** — 18 tiny before → after illustrations such as rounded → sharp, filled → outline, row → column, full-width → inset floating. Tap one and the exact instruction goes into the prompt.
-4. **Design vocabulary** — 27 terms in 7 groups (spacing, hierarchy, color, typography, shape & depth, layout, overall style), each with a plain-language hint.
-5. **Sketch screens (second mode)** — 16 Chinese parts (button, chip, card, list item, bottom navigation…), click to add; edit copy, style and tap targets in the inspector; the preview player plays the tap-through flow with a history stack; the whole design generates a live 10-section Chinese prompt (colors, shape/type/motion, screen structure, behavior & navigation, component styles, principles). 3 palettes × 3 corner styles; autosaved to the browser.
+Without a model, everything works except two features: **AI recognition** (identifies the element, points out problems, suggests tweaks) and **three variant previews**. Add any **OpenAI-compatible vision model** to unlock them: OpenAI, Qwen, Zhipu GLM, Gemini, OpenRouter or local Ollama. Your API key stays in your browser and requests go straight to your provider.
 
-![Sketch screens](docs/redesign/03-sketch.png)
+## Quick start
 
-![Sketch mode · five style packs](docs/redesign/04-style-packs.png)
+Open the **[online demo](https://ttnan.github.io/dianjing/)** and click "先看看示例" (see an example).
 
-6. **AI recognition** (optional) — identifies the element ("bottom tab bar"), describes its current style, points out issues and suggests terms.
-7. **Three variations** (optional) — generates three visual alternatives that match your intent; pick one to include in the prompt.
-8. **Output** — copy the prompt in Chinese or English plus a numbered annotated image, ready for Cursor, Claude Code, Trae, Codex, Lovable, v0, Bolt and more.
-
-Features 1–5 and 8 work fully offline. Add any **OpenAI-compatible vision model** to unlock 6 and 7: OpenAI, Qwen (DashScope), Zhipu GLM, Gemini, OpenRouter or local Ollama. Your API key stays in your own browser, and requests go straight to the provider you choose — no middle server.
-
-### Quick start
-
-Open the **[live demo](https://ttnan.github.io/dianjing/)** and click "先看看示例" (see the example).
-
-Run locally — no build step, no dependencies:
+Run locally, no build, no dependencies:
 
 ```bash
 git clone https://github.com/TTNAN/dianjing.git
 cd dianjing
-python3 -m http.server 8000   # or: npx serve
+python3 -m http.server 8000   # or npx serve
 # open http://localhost:8000
 ```
 
-> The app uses ES modules, so serve it over HTTP instead of opening `index.html` directly.
+> ES modules need a local server; don't open `index.html` directly. Deploys as-is to GitHub Pages, Vercel or Netlify.
 
-It also deploys as-is to GitHub Pages, Vercel or Netlify.
-
-### What the prompt looks like
+## Project layout
 
 ```
-# UI change request
-I marked 1 element(s) on a 780×1688px screenshot (attached as an annotated image; numbers match the boxes). Change ONLY these elements, keep everything else as is, and reuse the project's existing design tokens/components.
-
-## 1. Bottom tab bar — full-width, bottom of the screen
-- Box: x=4, y=1532, w=772, h=152 (px on the screenshot)
-- Currently: white edge-to-edge bar, gray icons, dark active item
-- Desired changes:
-  - Layout: turn the edge-to-edge bar into an inset floating bar (16px sides, 12px bottom, large radius, shadow)
-  - Make it feel premium: restrained palette (one accent + neutrals), generous whitespace, refined type weights, subtle shadows and radii
-- In my words: looks cheap, want it to feel like Apple
-- Chosen direction: "Floating pill" — the bar lifts into a pill with a filled active item
-
-Before editing, find the component that renders each element (match by text and position). After editing, briefly list the files you changed.
+index.html           page shell
+favicon.svg          icon
+assets/fonts/        font subsets (Noto Serif SC + Inter, SIL OFL)
+src/app.js           annotate mode: boxes, inspector, click-to-change, motion
+src/demo.js          built-in "Shanju" boutique-stay demo (SVG, redrawable per element)
+src/vocab.js         vocabulary + before/after tweaks (best place for PRs)
+src/prompt.js        prompt assembly (zh / en)
+src/llm.js           OpenAI-compatible client: recognition + variants
+src/sketch.js        sketch mode: parts, screens, style packs, prompt
+src/styles.css       global look: rice paper · ink · vermilion
+src/sketch.css       sketch mode styles
+tests/unit.test.mjs  unit tests
+tests/e2e.py         Playwright end-to-end tests and recording
 ```
 
-### Project structure
+## Tests
 
-```
-index.html        App shell
-src/app.js        Selection, rendering, interactions and motion
-src/vocab.js      Design vocabulary + visual tweaks (PRs most welcome here)
-src/prompt.js     Prompt builder (Chinese / English)
-src/llm.js        OpenAI-compatible client: recognition + variations
-src/demo.js       Built-in example screen (a travel app)
-src/sketch.js     Sketch mode: parts, screens and prompt builder (adapted from m3e-canvas, see NOTICE)
-src/sketch.css    Sketch-mode styles (phone frame, part library, inspector)
-src/styles.css    UI and animation
-tests/e2e.py      Playwright end-to-end test and screen recording (mocked model)
-tests/unit.test.mjs  Unit tests: vocabulary scale, conflict pairs, prompt builder, sketch seed and migration
+```bash
+node --test tests/unit.test.mjs
+python3 -m http.server 8766       # from the repo root
+python3 tests/e2e.py              # needs playwright + chromium
 ```
 
-### Roadmap
+## Roadmap
 
-- [x] v0.1 Screenshot circling, design vocabulary, visual tweaks, three variations, prompt output
-- [x] v0.2 In-place variant preview, box move/resize/nudge, collapsible searchable vocabulary, region text, conflicting directions auto-cancelled, autosave, copy text + image together
-- [x] v0.6 Redesign: rice paper · ink · vermilion, new "Shanju" boutique-stay demo, five style packs for sketch mode (Minimal / Editorial / Oriental / Noir / Soft glass)
-- [x] v0.3 Light tool page (BoardUI palette), warm-gray canvas, viewfinder-eye logo
-- [x] v0.4 Click to change: apply a tweak straight onto the demo, local re-layout previews
-- [x] v0.5 Sketch screens mode: 16 Chinese parts, navigation and preview player, 10-section Chinese prompt
-- [x] v0.5.5 Travel-journal example, old-seed auto-migration, header and cache fixes
-- [ ] Browser extension: circle directly on any web page, no screenshot needed
-- [ ] MCP server so Claude Code / Cursor can read your selections directly
-- [ ] Integrate element pickers (React Grab, Agentation, ComposeBridge) to add source locations
-- [ ] Android: capture real-device screens and the accessibility tree via adb
-- [ ] More vocabulary and visual tweaks: motion, forms, data viz, accessibility
-- [ ] Side-by-side and slider comparison of variations
+- [x] Screenshot annotation, vocabulary, before/after tweaks, three variants, prompt output
+- [x] Click-to-change demo with per-element tweaks
+- [x] Sketch mode with links, tap-through preview, Chinese platforms and component libraries
+- [x] v0.6 redesign (rice paper · ink · vermilion) and five style packs
+- [ ] Browser extension: annotate any live page, no screenshot needed
+- [ ] MCP server so Claude Code / Cursor can read annotations directly
+- [ ] Integrate React Grab, Agentation, ComposeBridge for source locations
+- [ ] Android via adb screenshots + accessibility tree
+- [ ] More style packs; vocabulary for motion, forms, data viz, accessibility
 
-### Contributing
+Full history in the [CHANGELOG](CHANGELOG.md).
 
-The most valuable contributions extend `src/vocab.js`:
+## Contributing
 
-- **Vocabulary terms**: a plain-language `hint` plus precise `prompt.zh` / `prompt.en`
-- **Visual tweaks**: `before` / `after` mini HTML illustrations plus a `prompt`
+The most valuable contributions extend `src/vocab.js` (vocabulary terms and before/after tweaks) or add a style pack in `src/sketch.js`. Issues and PRs welcome.
 
-Issues and pull requests are welcome.
-
-### License
+## License
 
 [MIT](LICENSE) © 2026 Caesar T
 
-Sketch mode is adapted from [lnkiai/m3e-canvas](https://github.com/lnkiai/m3e-canvas) (MIT); see [NOTICE](NOTICE) for the attribution.
+Sketch mode is adapted from [lnkiai/m3e-canvas](https://github.com/lnkiai/m3e-canvas) (MIT). Fonts: Noto Serif SC and Inter (SIL OFL). See [NOTICE](NOTICE).
