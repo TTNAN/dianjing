@@ -10,7 +10,7 @@ AI-generated UIs are always almost right. Drop in a screenshot, circle what feel
 and Dianjing turns that feeling into design language, shows you the change before you make it,<br/>
 then hands Cursor, Claude Code, Trae or Lovable a prompt they get on the first try.
 
-[**Try it online →**](https://ttnan.github.io/dianjing/) &nbsp;·&nbsp; [中文](README.md) &nbsp;·&nbsp; MIT &nbsp;·&nbsp; zero build, pure front end
+[**Try it online →**](https://dianjing.loc.cc) &nbsp;·&nbsp; [中文](README.md) &nbsp;·&nbsp; MIT &nbsp;·&nbsp; zero build, pure front end
 
 <br/>
 
@@ -82,7 +82,7 @@ Without a model, everything works except two features: **AI recognition** (ident
 
 ## Quick start
 
-Open the **[online demo](https://ttnan.github.io/dianjing/)** and click "先看看示例" (see an example).
+Open the **[online demo](https://dianjing.loc.cc)** and click "先看看示例" (see an example).
 
 Run locally, no build, no dependencies:
 
