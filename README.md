@@ -10,7 +10,7 @@ AI 生成的界面总差那么一点。把截图拖进来，圈出你觉得不�
 点睛把「感觉」翻译成设计师的语言，让你先看到改完的样子，<br/>
 再交给 Cursor、Claude Code、Trae、通义灵码一段一次就能听懂的提示词。
 
-[**在线试用 →**](https://dianjing.loc.cc) &nbsp;·&nbsp; [English](README.en.md) &nbsp;·&nbsp; MIT 开源 &nbsp;·&nbsp; 零构建、纯前端
+[**在线试用 →**](https://ttnan.github.io/dianjing) &nbsp;·&nbsp; [English](README.en.md) &nbsp;·&nbsp; MIT 开源 &nbsp;·&nbsp; 零构建、纯前端
 
 <br/>
 
@@ -101,7 +101,7 @@ AI 写出来的界面往往有八十分，剩下的二十分差在一个圆角�
 
 ## 快速开始
 
-直接打开 **[在线试用](https://dianjing.loc.cc)**，点「先看看示例」。
+直接打开 **[在线试用](https://ttnan.github.io/dianjing)**，点「先看看示例」。
 
 本地运行，无需构建，也无需安装依赖：
 
