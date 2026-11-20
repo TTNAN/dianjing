@@ -139,6 +139,14 @@ Full history in the [CHANGELOG](CHANGELOG.md).
 
 The most valuable contributions extend `src/vocab.js` (vocabulary terms and before/after tweaks) or add a style pack in `src/sketch.js`. Issues and PRs welcome.
 
+## Buy me a coffee
+
+If this project saved you some time, feel free to buy me a coffee. ☕
+
+| WeChat Reward |
+| ---------- |
+| <img src="assets/wechat-pay.png" width="220" alt="WeChat Reward QR"> |
+
 ## License
 
 [MIT](LICENSE) © 2026 Caesar T
